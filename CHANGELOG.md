@@ -4,6 +4,8 @@ Result numbers are those of arXiv:2611.23658v1.
 
 ## 0.2.0
 
+Zenodo: version DOI [10.5281/zenodo.24403196](https://doi.org/10.5281/zenodo.24403196); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+
 - Proposition 1.2 (two-term expansion of the tail of the maximum over a fixed interval)
   is now proved for the constructed Airy₁ process for every length `T > 0`, under
   `Airy1FddPositive` and `GOELeftTail`:
