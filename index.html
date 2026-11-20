@@ -159,16 +159,30 @@ v0.2.0), under <code>Airy1FddPositive</code> and <code>GOELeftTail</code>; like 
 conditional on those inputs.</p>
 </li>
 <li>
-<p>Lemma 3.1 is proved for two unit intervals, not for general equal lengths.
-Remark 5.3 (the Ferrari–Liu derivation) is not covered.</p>
+<p>Lemma 3.1 is proved for the constructed process for two intervals of any equal
+length <code>T &gt; 0</code> (since v0.3.0), under <code>Airy1FddPositive</code> and <code>GOELeftTail</code>. What is
+formalized is the trace-class form (3.3) of Remark 3.2, <code>det(I − K̃∪)</code> with the
+conjugated kernel. The determinant displayed in (3.1) has no separate Lean
+definition: the paper reads it through (3.3), and that reading is the paper's, not
+a Lean theorem.</p>
 </li>
 <li>
-<p>This repository does not certify the whole manuscript: it checks the main theorem
-along the route described above and the component results listed in
-<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/claims.yaml"><code>claims.yaml</code></a> and <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/claims.yaml"><code>contrib/claims.yaml</code></a>.</p>
+<p>Remark 5.3 (the Ferrari–Liu derivation) is not covered.</p>
 </li>
+<li>This repository does not certify the whole manuscript: it checks the main theorem
+along the route described above and the component results listed in
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/claims.yaml"><code>claims.yaml</code></a> and <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/claims.yaml"><code>contrib/claims.yaml</code></a>.</li>
 </ul>
 </div>
+<p>Since v0.3.0, Lemma 3.1 (the two-interval determinant formula) is proved for the
+constructed process for every equal length <code>T &gt; 0</code>, under <code>Airy1FddPositive</code> and
+<code>GOELeftTail</code>:
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/TwoIntervalLaw.lean"><code>Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length</code></a>
+states that, for <code>T &gt; 0</code>, <code>r &gt; 0</code>, <code>M &gt; 0</code>, <code>x ≥ 0</code> and any weight <code>a ≥ 2T + r + 1</code>,
+<code>ℙ{Ã ≤ M on [x, x+T] and on [x+T+r, x+2T+r]} = det(I − K̃∪)</code>, where <code>K̃∪ = U_a K∪ U_a⁻¹</code>
+is the conjugated kernel of (3.2)–(3.3) in Remark 3.2. The paper's case is <code>x = 0</code>,
+<code>a = √(2M)</code>. Versions 0.1.0 and 0.2.0 had this law for two unit intervals only; that
+statement is unchanged and is now the case <code>T = 1</code>.</p>
 <p>Since v0.2.0, Proposition 1.2 (the two-term expansion of the tail of the maximum over a
 fixed interval) is proved for the constructed process for every length <code>T &gt; 0</code>, under
 <code>Airy1FddPositive</code> and <code>GOELeftTail</code>:
