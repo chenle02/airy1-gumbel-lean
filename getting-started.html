@@ -91,8 +91,11 @@ defined, without proofs and from Mathlib only, in
 <a href="https://github.com/chenle02/airy1-gumbel-lean/tree/main/ChallengeDefs/Airy1Gumbel"><code>ChallengeDefs/Airy1Gumbel/</code></a>: the Airy function, the kernels of
 the Quastel-Remenik path integral, the entire Fredholm determinant, the distribution functions
 <code>airy1FinCdf</code>, the three named inputs and the normalization. The law and the continuous version
-are not constructed there: each statement asserts that an Airy₁ law and a version continuous on
-<code>[0, ∞)</code> exist, and that the Gumbel limit holds for every such law and version.
+are not constructed there: each statement asserts that an Airy₁ law exists, and that for such
+laws a version continuous on <code>[0, ∞)</code> exists and the Gumbel limit holds for every such version
+(in the first form for every law and every continuous version satisfying the mixing input; in
+the second for every law whose coordinate process satisfies it). The check verifies the
+headline under the three inputs, not the inputs.
 <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Solution.lean"><code>Solution.lean</code></a> proves both statements from the package headlines, and
 <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/comparator.json"><code>comparator.json</code></a> is the configuration the comparator checks (each Solution
 theorem has exactly its Challenge type and uses only the three standard axioms):</p>
@@ -102,7 +105,7 @@ theorem has exactly its Challenge type and uses only the three standard axioms):
 <pre><code class="language-toml">[[require]]
 name = &quot;airy1-gumbel-lean&quot;
 git = &quot;https://github.com/chenle02/airy1-gumbel-lean&quot;
-rev = &quot;v0.1.0&quot;
+rev = &quot;v0.2.0&quot;
 </code></pre>
     </main>
   </div>

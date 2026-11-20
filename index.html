@@ -154,9 +154,13 @@ check the paper's Proposition 4.3 or Lemmas 4.1–4.2 as stated (arbitrary level
 and cutoff <code>R(M)</code>); only the specialisation used in Section 5.2 is proved.</p>
 </li>
 <li>
-<p>Proposition 1.2 is proved for the determinant for every <code>T &gt; 0</code>, but at the level of
-the process only for <code>T ≥ 1</code>. Lemma 3.1 is proved for two unit intervals, not for
-general equal lengths. Remark 5.3 (the Ferrari–Liu derivation) is not covered.</p>
+<p>Proposition 1.2 is proved for the constructed process for every <code>T &gt; 0</code> (since
+v0.2.0), under <code>Airy1FddPositive</code> and <code>GOELeftTail</code>; like the headline, it is
+conditional on those inputs.</p>
+</li>
+<li>
+<p>Lemma 3.1 is proved for two unit intervals, not for general equal lengths.
+Remark 5.3 (the Ferrari–Liu derivation) is not covered.</p>
 </li>
 <li>
 <p>This repository does not certify the whole manuscript: it checks the main theorem
@@ -165,6 +169,14 @@ along the route described above and the component results listed in
 </li>
 </ul>
 </div>
+<p>Since v0.2.0, Proposition 1.2 (the two-term expansion of the tail of the maximum over a
+fixed interval) is proved for the constructed process for every length <code>T &gt; 0</code>, under
+<code>Airy1FddPositive</code> and <code>GOELeftTail</code>:
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/BlockLawUnconditional.lean"><code>Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO</code></a>
+states that <code>ℙ{∃ t ∈ [0, T], Ã(t) &gt; M} − (T·ρ(M) + ρ(M)/(4M)) = o(ρ(M)/M)</code> as <code>M → ∞</code>,
+where <code>Ã</code> is the continuous version <code>airy1ContR h</code>. Version 0.1.0 had this expansion for
+the Fredholm determinant for every <code>T &gt; 0</code>, and for the process only for <code>T ≥ 1</code>. See
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CHANGELOG.md"><code>CHANGELOG.md</code></a>.</p>
 <p>An earlier headline,
 <code>gumbel_limit_continuum_real_normalized_airy1_final</code>
 (<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/FinalHeadline.lean"><code>Airy1Gumbel/FinalHeadline.lean</code></a>), follows the paper's
