@@ -4,6 +4,8 @@ Result numbers are those of arXiv:2611.23658v1.
 
 ## 0.3.0
 
+Zenodo: version DOI [10.5281/zenodo.24405700](https://doi.org/10.5281/zenodo.24405700); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+
 - Lemma 3.1 (the two-interval determinant formula) is now proved for the constructed
   Airy₁ process for two intervals of any equal length `T > 0`, under `Airy1FddPositive`
   and `GOELeftTail`: `Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length`, for
