@@ -18,6 +18,7 @@ Claim boundary (read first):
 ## Gates
 - Build: `lake exe cache get && lake build Airy1Gumbel Airy1GumbelContrib`.
 - Audit: `lake env lean AxiomCheck.lean > t.txt && python3 scripts/audit.py t.txt` (exact theorem inventory, approved axioms, no proof escapes); the same for contrib/.
+- Comparator: Challenge.lean (Mathlib-only statements of Theorem 1.1, with the objects defined in ChallengeDefs/Airy1Gumbel/), Solution.lean (proofs from the package), comparator.json.
 - Receipts: verify.sh and contrib/verify.sh, run through lean-pkg.
 
 ## Optional

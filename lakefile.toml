@@ -22,3 +22,18 @@ rev = "cfc55fc58714a59dc06e6e79edc6d1d95140d3c2"
 
 [[lean_lib]]
 name = "Airy1Gumbel"
+
+# Comparator tier (Palomar layout). `ChallengeDefs` restates, in Mathlib vocabulary and with no
+# proof, every object the compared statements use; it imports Mathlib only and is part of the
+# trusted statement. `Challenge` states each compared theorem (proof `sorry`); `Solution` proves
+# each from the package. None of the three is a default target or imported by `Airy1Gumbel`, so
+# verify.sh and its sorry count are unchanged.
+[[lean_lib]]
+name = "ChallengeDefs"
+globs = ["ChallengeDefs.+"]
+
+[[lean_lib]]
+name = "Challenge"
+
+[[lean_lib]]
+name = "Solution"

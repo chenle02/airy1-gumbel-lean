@@ -112,6 +112,24 @@ and that every theorem depends only on `propext`, `Classical.choice` and `Quot.s
 check from a fresh build, with two negative controls, and write the log that a
 [lean-pkg](https://github.com/lean-pkg/lean-pkg) receipt binds to one commit.
 
+### Comparator check of the headline
+
+[`Challenge.lean`](Challenge.lean) restates Theorem 1.1 in Mathlib vocabulary, in two forms
+(mixing assumed on the continuous version, or on the coordinate process); its objects are
+defined, without proofs and from Mathlib only, in
+[`ChallengeDefs/Airy1Gumbel/`](ChallengeDefs/Airy1Gumbel): the Airy function, the kernels of
+the Quastel-Remenik path integral, the entire Fredholm determinant, the distribution functions
+`airy1FinCdf`, the three named inputs and the normalization. The law and the continuous version
+are not constructed there: each statement asserts that an Airy₁ law and a version continuous on
+`[0, ∞)` exist, and that the Gumbel limit holds for every such law and version.
+[`Solution.lean`](Solution.lean) proves both statements from the package headlines, and
+[`comparator.json`](comparator.json) is the configuration the comparator checks (each Solution
+theorem has exactly its Challenge type and uses only the three standard axioms):
+
+```sh
+lake build ChallengeDefs Challenge Solution
+```
+
 To use the library from another Lake project:
 
 ```toml

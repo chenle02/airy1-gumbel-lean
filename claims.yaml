@@ -307,14 +307,14 @@ claims:
     kind: theorem
     summary: "The paper's main theorem (Theorem 1.1) for the continuous version of airy1Law: P((A(x) - a_T)/b_T <= z on [0, T]) -> exp(-e^{-z}), assuming only Airy1FddPositive, GOELeftTail and CubicStrongMixing; the mesoscopic step uses the two-point bound."
     file: Airy1Gumbel/FinalHeadlineTP.lean
-    status: internal
+    status: reusable
     keywords: [continuity, block-maxima, airy1, gumbel, main-theorem]
   - id: airy1-gumbel-lean/continuous-instance-headline-final2-coord
     decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord
     kind: theorem
     summary: Same normalized Gumbel limit with CubicStrongMixing stated on the coordinate process airy1Process h (a statement about the Airy_1 law alone), transferred to the continuous version by CubicStrongMixing.ofModification.
     file: Airy1Gumbel/FinalHeadlineTP.lean
-    status: internal
+    status: reusable
     keywords: [continuity, carrier-transfer, airy1, gumbel, main-theorem]
   - id: airy1-gumbel-lean/two-point-excess-sharp
     decl: Airy1Gumbel.twoPointExcess_airy1_sharp
