@@ -2,6 +2,28 @@
 
 Result numbers are those of arXiv:2611.23658v1.
 
+## 0.3.0
+
+- Lemma 3.1 (the two-interval determinant formula) is now proved for the constructed
+  Airy₁ process for two intervals of any equal length `T > 0`, under `Airy1FddPositive`
+  and `GOELeftTail`: `Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length`, for
+  `T > 0`, `r > 0`, `M > 0`, `x ≥ 0` and any weight `a ≥ 2T + r + 1`. The statement is
+  the trace-class form (3.3) of Remark 3.2, `det(I − K̃∪)` with the conjugated kernel of
+  (3.2); the determinant displayed in (3.1) has no separate Lean definition. Versions
+  0.1.0 and 0.2.0 had the law for two unit intervals only.
+- New results on the way, in `contrib/Airy1GumbelContrib/Mesh/TwoBlockMesh.lean`: the
+  conjugated kernel for equal lengths is square-integrable and its operator is trace
+  class (`AiryFdd.memLp_kcupKerT_of_length`, `AiryFdd.isTraceClass_kcupKerT_of_length`),
+  it is the unit-interval kernel at `T = 1` (`AiryFdd.kcupKerT_of_length_one`), and the
+  dyadic two-interval limit holds at any weight `a ≥ 2T + r + 1`
+  (`AiryFdd.tendsto_airy1FinCdf_cupSet_of_length`).
+- No statement of version 0.2.0 changed. The unit-interval statements
+  (`Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet`,
+  `AiryFdd.tendsto_airy1FinCdf_cupSet`) are the same and are now derived from the
+  equal-length ones. The headline theorem, its three inputs and the comparator
+  statements are the same.
+- `coverage.yaml`: the row for Lemma 3.1 is no longer a special case.
+
 ## 0.2.0
 
 Zenodo: version DOI [10.5281/zenodo.24403196](https://doi.org/10.5281/zenodo.24403196); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).

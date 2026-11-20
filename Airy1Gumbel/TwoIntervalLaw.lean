@@ -22,6 +22,11 @@ For the continuous version `Ã = airy1ContR h` under
 (`airy1Law_two_blocks_le_eq_fredholmDet`), with no kernel hypothesis left: the one-block fact
 `MeshHittingLimit M 1` is the theorem `meshHittingLimit` (`MeshHitting.lean`).
 
+The same law holds for two blocks of any equal length `T > 0`, `[x, x+T]` and
+`[x+T+r, x+2T+r]`, at any weight `a ≥ 2T + r + 1`
+(`airy1Law_two_blocks_le_eq_fredholmDet_of_length`): this is Lemma 3.1 of arXiv:2611.23658v1
+in the trace-class form of Remark 3.2. The unit-block statement is its case `T = 1`.
+
 Proof outline (as `BlockLaw.lean`, for two blocks).
 * The event is the intersection over `n` of the two-block mesh events at mesh level `n + 1`
   (`setOf_two_blocks_eq_iInter`; continuity of every path on `[0, ∞)`, nested meshes).
@@ -109,32 +114,97 @@ theorem airy1Law_twoMeshEvent (h : Airy1FddPositive) (hT : GOELeftTail) (x y M :
       · rw [hf t (Finset.mem_union_right _ ht)]; exact h' t (Finset.mem_union_right _ ht)
   rw [measureReal_def, measure_congr hae, ← measureReal_def, airy1Law_fdd]
 
-/-- **Two-block law.** Under `Airy1FddPositive` and `GOELeftTail`, for `x ≥ 0`,
-gap `r > 0`, level `M > 0` and weight `a ≥ r + 3`:
-`ℙ(Ã ≤ M on [x, x+1] and on [x+1+r, x+2+r]) = det(I − K̃∪)`, `K̃∪ = kcupKerT a M r`. -/
+/-- Lemma 3.1 of arXiv:2611.23658v1 in the form (3.3) of Remark 3.2:
+`det(I − K̃∪)`, where `K̃∪ = U_a K∪ U_a⁻¹` and
+`K∪ = (P_T P_r P_T − Λ P_r Λ) P_{−S} B₀` (with `S = 2T + r`) as in (3.2).
+Coverage of the displayed determinant `det(I − B₀ + Λ P_r Λ P_{−S} B₀)` in (3.1)
+uses the paper's interpretation of (3.1) as (3.3).
+The weight `a` may be any real satisfying `2 * T + r + 1 ≤ a`.
+The paper takes `x = 0` and `a = √(2M)`. -/
+theorem airy1Law_two_blocks_le_eq_fredholmDet_of_length (h : Airy1FddPositive) (hLeft : GOELeftTail)
+    {x M T r a : ℝ} (hx : 0 ≤ x) (hT : 0 < T) (hr : 0 < r)
+    (hM : 0 < M) (ha : 2 * T + r + 1 ≤ a) :
+    (airy1Law h).real {f | (∀ t ∈ Icc x (x + T), airy1ContR h t f ≤ M) ∧
+        ∀ t ∈ Icc (x + T + r) (x + T + r + T), airy1ContR h t f ≤ M}
+      = HilbertSchmidt.fredholmDet
+          (HilbertSchmidt.kernelOperator (AiryFdd.memLp_kcupKerT_of_length hT hr hM ha)) 1 := by
+  let y := x + T + r
+  have hy : 0 ≤ y := by dsimp [y]; linarith
+  change (airy1Law h).real {f | (∀ t ∈ Icc x (x + T), airy1ContR h t f ≤ M) ∧
+      ∀ t ∈ Icc y (y + T), airy1ContR h t f ≤ M} = _
+  have hset : {f | (∀ t ∈ Icc x (x + T), airy1ContR h t f ≤ M) ∧
+      ∀ t ∈ Icc y (y + T), airy1ContR h t f ≤ M} =
+      ⋂ n, (meshEvent h x T M (n + 1) ∩ meshEvent h y T M (n + 1)) := by
+    ext f
+    have hcx := forall_Icc_le_iff_forall_meshSet (g := fun t => airy1ContR h t f) (M := M)
+      hT ((continuousOn_airy1ContR h f).mono fun t ht => hx.trans ht.1)
+    have hcy := forall_Icc_le_iff_forall_meshSet (g := fun t => airy1ContR h t f) (M := M)
+      hT ((continuousOn_airy1ContR h f).mono fun t ht => hy.trans ht.1)
+    change ((∀ t ∈ Icc x (x + T), airy1ContR h t f ≤ M) ∧
+        ∀ t ∈ Icc y (y + T), airy1ContR h t f ≤ M) ↔
+      f ∈ ⋂ n, (meshEvent h x T M (n + 1) ∩ meshEvent h y T M (n + 1))
+    rw [hcx, hcy, mem_iInter]
+    constructor
+    · rintro ⟨h1, h2⟩ n
+      exact ⟨h1 (n + 1), h2 (n + 1)⟩
+    · intro hn
+      exact ⟨fun n t ht => (hn n).1 t (meshSet_subset_succ x T n ht),
+        fun n t ht => (hn n).2 t (meshSet_subset_succ y T n ht)⟩
+  have hmesh (n : ℕ) : (airy1Law h).real (meshEvent h x T M n ∩ meshEvent h y T M n) =
+      AiryFdd.airy1FinCdf (AiryFdd.meshSet x T n ∪ AiryFdd.meshSet y T n) (fun _ => M) := by
+    set I := AiryFdd.meshSet x T n ∪ AiryFdd.meshSet y T n
+    have hae : meshEvent h x T M n ∩ meshEvent h y T M n =ᵐ[airy1Law h]
+        {f : ℝ → ℝ | ∀ t ∈ I, f t ≤ (fun _ => M) t} := by
+      have hall : ∀ᵐ f ∂airy1Law h, ∀ t ∈ I, airy1ContR h t f = f t :=
+        (eventually_all_finset _).2 fun t _ => airy1ContR_ae_eq h hLeft t
+      filter_upwards [hall] with f hf
+      refine propext ?_
+      change ((∀ t ∈ AiryFdd.meshSet x T n, airy1ContR h t f ≤ M) ∧
+          ∀ t ∈ AiryFdd.meshSet y T n, airy1ContR h t f ≤ M) ↔ ∀ t ∈ I, f t ≤ M
+      constructor
+      · rintro ⟨h1, h2⟩ t ht
+        rw [← hf t ht]
+        rcases Finset.mem_union.1 ht with ht | ht
+        · exact h1 t ht
+        · exact h2 t ht
+      · intro h'
+        refine ⟨fun t ht => ?_, fun t ht => ?_⟩
+        · rw [hf t (Finset.mem_union_left _ ht)]; exact h' t (Finset.mem_union_left _ ht)
+        · rw [hf t (Finset.mem_union_right _ ht)]; exact h' t (Finset.mem_union_right _ ht)
+    rw [measureReal_def, measure_congr hae, ← measureReal_def, airy1Law_fdd]
+  rw [hset]
+  have hanti : Antitone fun n =>
+      meshEvent h x T M (n + 1) ∩ meshEvent h y T M (n + 1) :=
+    fun n m hnm => inter_subset_inter (antitone_meshEvent h x T M (Nat.succ_le_succ hnm))
+      (antitone_meshEvent h y T M (Nat.succ_le_succ hnm))
+  have hlim := tendsto_measure_iInter_atTop (μ := airy1Law h)
+    (fun n => ((measurableSet_meshEvent h x T M (n + 1)).inter
+      (measurableSet_meshEvent h y T M (n + 1))).nullMeasurableSet)
+    hanti ⟨0, measure_ne_top _ _⟩
+  have hlimR : Tendsto (fun n => (airy1Law h).real
+        (meshEvent h x T M (n + 1) ∩ meshEvent h y T M (n + 1))) atTop
+      (𝓝 ((airy1Law h).real
+        (⋂ n, (meshEvent h x T M (n + 1) ∩ meshEvent h y T M (n + 1))))) :=
+    (ENNReal.tendsto_toReal (measure_ne_top _ _)).comp hlim
+  simp_rw [hmesh] at hlimR
+  exact tendsto_nhds_unique hlimR
+    (AiryFdd.tendsto_airy1FinCdf_cupSet_of_length x hT hr hM ha (meshHittingLimit M hT))
+
+/-- The `T = 1` specialization of `airy1Law_two_blocks_le_eq_fredholmDet_of_length`,
+in the form (3.3) of Remark 3.2 of arXiv:2611.23658v1. Here `hT` supplies the
+`GOELeftTail` record. The binder named `hT` in the general-length theorem supplies
+the positivity hypothesis `0 < T`. -/
 theorem airy1Law_two_blocks_le_eq_fredholmDet (h : Airy1FddPositive) (hT : GOELeftTail)
     {x M r a : ℝ} (hx : 0 ≤ x) (hr : 0 < r) (hM : 0 < M) (ha : r + 3 ≤ a) :
     (airy1Law h).real {f | (∀ t ∈ Icc x (x + 1), airy1ContR h t f ≤ M) ∧
         ∀ t ∈ Icc (x + 1 + r) (x + 1 + r + 1), airy1ContR h t f ≤ M}
       = HilbertSchmidt.fredholmDet
           (HilbertSchmidt.kernelOperator (AiryTwoInt.memLp_kcupKerT hr hM ha)) 1 := by
-  rw [setOf_two_blocks_eq_iInter h hx (by linarith)]
-  have hanti : Antitone fun n =>
-      meshEvent h x 1 M (n + 1) ∩ meshEvent h (x + 1 + r) 1 M (n + 1) :=
-    fun n m hnm => inter_subset_inter (antitone_meshEvent h x 1 M (Nat.succ_le_succ hnm))
-      (antitone_meshEvent h (x + 1 + r) 1 M (Nat.succ_le_succ hnm))
-  have hlim := tendsto_measure_iInter_atTop (μ := airy1Law h)
-    (fun n => ((measurableSet_meshEvent h x 1 M (n + 1)).inter
-      (measurableSet_meshEvent h (x + 1 + r) 1 M (n + 1))).nullMeasurableSet)
-    hanti ⟨0, measure_ne_top _ _⟩
-  have hlimR : Tendsto (fun n => (airy1Law h).real
-        (meshEvent h x 1 M (n + 1) ∩ meshEvent h (x + 1 + r) 1 M (n + 1))) atTop
-      (𝓝 ((airy1Law h).real
-        (⋂ n, (meshEvent h x 1 M (n + 1) ∩ meshEvent h (x + 1 + r) 1 M (n + 1))))) :=
-    (ENNReal.tendsto_toReal (measure_ne_top _ _)).comp hlim
-  simp_rw [airy1Law_twoMeshEvent h hT] at hlimR
-  exact tendsto_nhds_unique hlimR
-    (AiryFdd.tendsto_airy1FinCdf_cupSet x hr hM ha (meshHittingLimit M one_pos))
+  have ha' : 2 * (1 : ℝ) + r + 1 ≤ a := by linarith
+  have hLaw := airy1Law_two_blocks_le_eq_fredholmDet_of_length h hT hx one_pos hr hM ha'
+  rw [AiryTwoInt.kernelOperator_congr (AiryFdd.kcupKerT_of_length_one a M r) _
+    (AiryTwoInt.memLp_kcupKerT hr hM ha)] at hLaw
+  exact hLaw
 
 /-- **`QRTwoIntervalLaw` on `Ã` is a theorem** (the paper's two-interval
 determinant formula at `T = 1`), under `Airy1FddPositive` and `GOELeftTail` only: for every level `u` and every

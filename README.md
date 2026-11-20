@@ -67,11 +67,26 @@ headline uses it.
 > - Proposition 1.2 is proved for the constructed process for every `T > 0` (since
 >   v0.2.0), under `Airy1FddPositive` and `GOELeftTail`; like the headline, it is
 >   conditional on those inputs.
-> - Lemma 3.1 is proved for two unit intervals, not for general equal lengths.
->   Remark 5.3 (the Ferrari–Liu derivation) is not covered.
+> - Lemma 3.1 is proved for the constructed process for two intervals of any equal
+>   length `T > 0` (since v0.3.0), under `Airy1FddPositive` and `GOELeftTail`. What is
+>   formalized is the trace-class form (3.3) of Remark 3.2, `det(I − K̃∪)` with the
+>   conjugated kernel. The determinant displayed in (3.1) has no separate Lean
+>   definition: the paper reads it through (3.3), and that reading is the paper's, not
+>   a Lean theorem.
+> - Remark 5.3 (the Ferrari–Liu derivation) is not covered.
 > - This repository does not certify the whole manuscript: it checks the main theorem
 >   along the route described above and the component results listed in
 >   [`claims.yaml`](claims.yaml) and [`contrib/claims.yaml`](contrib/claims.yaml).
+
+Since v0.3.0, Lemma 3.1 (the two-interval determinant formula) is proved for the
+constructed process for every equal length `T > 0`, under `Airy1FddPositive` and
+`GOELeftTail`:
+[`Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length`](Airy1Gumbel/TwoIntervalLaw.lean)
+states that, for `T > 0`, `r > 0`, `M > 0`, `x ≥ 0` and any weight `a ≥ 2T + r + 1`,
+`ℙ{Ã ≤ M on [x, x+T] and on [x+T+r, x+2T+r]} = det(I − K̃∪)`, where `K̃∪ = U_a K∪ U_a⁻¹`
+is the conjugated kernel of (3.2)–(3.3) in Remark 3.2. The paper's case is `x = 0`,
+`a = √(2M)`. Versions 0.1.0 and 0.2.0 had this law for two unit intervals only; that
+statement is unchanged and is now the case `T = 1`.
 
 Since v0.2.0, Proposition 1.2 (the two-term expansion of the tail of the maximum over a
 fixed interval) is proved for the constructed process for every length `T > 0`, under
@@ -152,7 +167,7 @@ To use the library from another Lake project:
 [[require]]
 name = "airy1-gumbel-lean"
 git = "https://github.com/chenle02/airy1-gumbel-lean"
-rev = "v0.2.0"
+rev = "v0.3.0"
 ```
 
 ## Trust and axioms

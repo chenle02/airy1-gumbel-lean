@@ -3,7 +3,7 @@ message: "If you use this software, please cite it by its release version or exa
 title: "airy1-gumbel-lean: Lean companion to Gumbel fluctuations of the maximum of the Airy_1 process"
 type: software
 license: Apache-2.0
-version: "0.2.0"
+version: "0.3.0"
 doi: "10.5281/zenodo.24398888"
 date-released: "2026-11-20"
 identifiers:
@@ -12,7 +12,7 @@ identifiers:
     description: "Concept DOI: all versions (resolves to the latest)"
   - type: doi
     value: "10.5281/zenodo.24403196"
-    description: "Version DOI: v0.2.0"
+    description: "Version DOI of the earlier release v0.2.0"
   - type: doi
     value: "10.5281/zenodo.24398889"
     description: "Version DOI of the earlier release v0.1.0"
@@ -30,9 +30,11 @@ abstract: >-
   step uses a two-time Fredholm determinant bound instead of the paper's
   association and covariance argument. The two-term tail expansion over a
   fixed interval (Proposition 1.2) is proved for the constructed process for
-  every positive length under the first two inputs. This checks the paper's
-  main theorem along that route and the listed component results; it does
-  not certify the whole manuscript.
+  every positive length under the first two inputs. The two-interval
+  determinant formula (Lemma 3.1, in the trace-class form of Remark 3.2) is
+  proved for every equal positive length under the same two inputs. This
+  checks the paper's main theorem along that route and the listed component
+  results; it does not certify the whole manuscript.
 keywords:
   - Lean 4
   - Airy process

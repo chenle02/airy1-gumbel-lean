@@ -411,7 +411,10 @@ view to upstreaming to mathlib. Authored by Le Chen.
   `ae_compKernel_mono`), so with the shared right factor `W_{2+r,a}`
   (`cupOp_eq`, `kernelOperator_kcupKerT_eq`) `det(I − cupOp) → det(I − K̃∪)`
   (`tendsto_fredholmDet_cupOp`); the union-mesh fdd identity `airy1FinCdf_cupSet`; combined
-  `tendsto_airy1FinCdf_cupSet`.
+  `tendsto_airy1FinCdf_cupSet`. The same limit for two blocks of any equal length `T > 0` at
+  any weight `a ≥ 2T + r + 1` is `tendsto_airy1FinCdf_cupSet_of_length` (kernel
+  `kcupKerT_of_length`, trace class by `isTraceClass_kcupKerT_of_length`); the unit-block
+  statement is derived from it.
 - `TwoTime/` (the Airy-specific two-time analysis: block-determinant form of the two-time
   CDF and its sharp trace-norm estimates; the generic block-operator determinant algebra it
   uses is in `FredholmDet/TraceClassAdd` and `FredholmDet/BlockDet`).

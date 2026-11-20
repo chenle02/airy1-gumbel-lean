@@ -771,3 +771,31 @@ claims:
     file: Airy1GumbelContrib/TwoTime/TwoTimeSharpE.lean
     status: internal
     keywords: [airy1, two-time, trace-norm, sharp]
+  - id: airy1-gumbel-lean-contrib/two-interval-kernel-length-one
+    decl: AiryFdd.kcupKerT_of_length_one
+    kind: theorem
+    summary: The equal-length two-interval kernel specializes to the original unit-interval kernel.
+    file: Airy1GumbelContrib/Mesh/TwoBlockMesh.lean
+    status: internal
+    keywords: [airy1, fredholm-determinant, two-interval]
+  - id: airy1-gumbel-lean-contrib/two-interval-kernel-square-integrable
+    decl: AiryFdd.memLp_kcupKerT_of_length
+    kind: theorem
+    summary: The conjugated kernel of arXiv:2611.23658v1 Remark 3.2 is square-integrable for equal positive lengths and any admissible weight.
+    file: Airy1GumbelContrib/Mesh/TwoBlockMesh.lean
+    status: internal
+    keywords: [airy1, fredholm-determinant, two-interval]
+  - id: airy1-gumbel-lean-contrib/two-interval-kernel-trace-class
+    decl: AiryFdd.isTraceClass_kcupKerT_of_length
+    kind: theorem
+    summary: The conjugated two-interval operator of arXiv:2611.23658v1 Remark 3.2 is trace class for equal positive lengths and any admissible weight.
+    file: Airy1GumbelContrib/Mesh/TwoBlockMesh.lean
+    status: internal
+    keywords: [airy1, fredholm-determinant, trace-class]
+  - id: airy1-gumbel-lean-contrib/two-interval-mesh-limit-equal-length
+    decl: AiryFdd.tendsto_airy1FinCdf_cupSet_of_length
+    kind: theorem
+    summary: Under the one-interval hitting limit the dyadic CDF on two equal positive lengths converges to the determinant in arXiv:2611.23658v1 Remark 3.2.
+    file: Airy1GumbelContrib/Mesh/TwoBlockMesh.lean
+    status: internal
+    keywords: [airy1, fredholm-determinant, dyadic-mesh]

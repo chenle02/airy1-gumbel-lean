@@ -38,6 +38,13 @@ admissible exactly when `r + 3 ≤ a` — at `a = √(2M)` this is the guard of 
   at any admissible weight `a ≥ r + 3`.
 * **Combined** (`tendsto_airy1FinCdf_cupSet`): under `MeshHittingLimit M 1`, `M > 0`,
   `r > 0`, `r + 3 ≤ a`: `F_{I_{n+1}(x) ∪ I_{n+1}(x+1+r)}(M, …, M) → det(I − kcupKerT a M r)`.
+* **Equal positive lengths.** The last two sections repeat the argument for two blocks
+  `[x, x + T]` and `[x + T + r, x + 2T + r]` of any length `T > 0`, at any weight
+  `a ≥ 2T + r + 1`: the conjugated kernel `kcupKerT_of_length` of (3.2)–(3.3) in Remark 3.2 of
+  arXiv:2611.23658v1 is square-integrable and its operator is trace class
+  (`memLp_kcupKerT_of_length`, `isTraceClass_kcupKerT_of_length`), it is the unit-block kernel
+  at `T = 1` (`kcupKerT_of_length_one`), and the dyadic limit is
+  `tendsto_airy1FinCdf_cupSet_of_length`, from which the unit-block limit is now derived.
 -/
 
 namespace AiryFdd
@@ -638,6 +645,560 @@ theorem airy1FinCdf_cupSet (x M r : ℝ) (hr : 0 < r) {m : ℕ} (hm : 1 ≤ m) (
   unfold cupOp
   exact airy1FinCdf_eq_fredholmDet_fddOpAt _ _ hfin hsp' _ _ _
 
+/-! ## The conjugated kernel for equal positive interval lengths -/
+
+open AiryTwoInt
+
+private noncomputable def lamKer_of_length (M T : ℝ) : ℝ × ℝ → ℝ :=
+  (Set.Iic M ×ˢ Set.Iic M).indicator
+    fun p => heatKernel T (p.1 - p.2) - heatKernel T (2 * M - p.1 - p.2)
+
+private theorem lamKer_of_length_eq_sub (M T : ℝ) (p : ℝ × ℝ) :
+    lamKer_of_length M T p = heatKerTwo T p - AiryConj.qMT M T p.1 p.2 := by
+  unfold lamKer_of_length heatKerTwo AiryConj.qMT
+  by_cases h : p.1 ≤ M ∧ p.2 ≤ M
+  · rw [Set.indicator_of_mem (Set.mem_prod.mpr h), ite_eq_left h]
+  · rw [Set.indicator_of_notMem (fun hp => h (Set.mem_prod.mp hp)), ite_eq_right h, sub_self]
+
+private theorem measurable_lamKer_of_length (M T : ℝ) :
+    Measurable (lamKer_of_length M T) := by
+  simp_rw [show lamKer_of_length M T =
+    fun p => heatKerTwo T p - AiryConj.qMT M T p.1 p.2 from
+      funext (lamKer_of_length_eq_sub M T)]
+  exact (measurable_heatKerTwo T).sub (AiryConj.measurable_qMT M T)
+
+private theorem lamKer_of_length_bounds {M T : ℝ} (hT : 0 < T) (p : ℝ × ℝ) :
+    (0 ≤ lamKer_of_length M T p ∧ lamKer_of_length M T p ≤ heatKerTwo T p) ∧
+    (0 ≤ AiryConj.qMT M T p.1 p.2 ∧ AiryConj.qMT M T p.1 p.2 ≤ heatKerTwo T p) := by
+  have hq0 := qMT_nonneg (M := M) hT p.1 p.2
+  have hq : AiryConj.qMT M T p.1 p.2 ≤ heatKerTwo T p := by
+    by_cases h : p.1 ≤ M ∧ p.2 ≤ M
+    · rw [AiryConj.qMT_eq_reflected h.1 h.2, AiryConj.heatKernel_reflected_eq hT]
+      exact mul_le_of_le_one_right (heatKernel_pos hT _).le
+        (Real.exp_le_one_iff.mpr (div_nonpos_of_nonpos_of_nonneg
+          (by nlinarith [mul_nonneg (sub_nonneg.mpr h.1) (sub_nonneg.mpr h.2)]) hT.le))
+    · rw [AiryConj.qMT_eq_free h]
+      rfl
+  rw [lamKer_of_length_eq_sub]
+  exact ⟨⟨sub_nonneg.mpr hq, sub_le_self _ hq0⟩, hq0, hq⟩
+
+private noncomputable def cupHitLimit_of_length (M T r : ℝ) : ℝ × ℝ → ℝ :=
+  fun p =>
+    AiryConj.compKernel (heatKerTwo T) (AiryConj.compKernel (heatKerTwo r) (heatKerTwo T)) p -
+      AiryConj.compKernel (lamKer_of_length M T)
+        (AiryConj.compKernel (heatKerTwo r) (lamKer_of_length M T)) p
+
+private theorem cupHitLimit_of_length_eq_sub {M T r : ℝ} (hT : 0 < T) (hr : 0 < r)
+    (p : ℝ × ℝ) :
+    cupHitLimit_of_length M T r p = heatKerTwo (2 * T + r) p -
+      AiryConj.compKernel (lamKer_of_length M T)
+        (AiryConj.compKernel (heatKerTwo r) (lamKer_of_length M T)) p := by
+  unfold cupHitLimit_of_length
+  rw [heatKerTwo_comp hr hT, heatKerTwo_comp hT (by linarith : 0 < r + T)]
+  rw [show T + (r + T) = 2 * T + r by ring]
+
+private theorem cupHitLimit_of_length_bounds {M T r : ℝ} (hT : 0 < T) (hr : 0 < r)
+    (p : ℝ × ℝ) :
+    0 ≤ cupHitLimit_of_length M T r p ∧
+      cupHitLimit_of_length M T r p ≤
+        AiryConj.compKernel (fun q => AiryConj.qMT M T q.1 q.2) (heatKerTwo (r + T)) p +
+        AiryConj.compKernel (heatKerTwo (r + T)) (fun q => AiryConj.qMT M T q.1 q.2) p := by
+  let Q : ℝ × ℝ → ℝ := fun q => AiryConj.qMT M T q.1 q.2
+  let L := lamKer_of_length M T
+  have hRm := measurable_heatKerTwo r
+  have hPm := measurable_heatKerTwo T
+  have hQm : Measurable Q := AiryConj.measurable_qMT M T
+  have hLm : Measurable L := measurable_lamKer_of_length M T
+  have hQ0 : ∀ z, 0 ≤ Q z := fun z => (lamKer_of_length_bounds hT z).2.1
+  have hL0 : ∀ z, 0 ≤ L z := fun z => (lamKer_of_length_bounds hT z).1.1
+  have hQb : ∀ z, |Q z| ≤ heatKernel T (z.1 - z.2) := fun z =>
+    (abs_of_nonneg (hQ0 z)).trans_le (lamKer_of_length_bounds hT z).2.2
+  have hLb : ∀ z, |L z| ≤ heatKernel T (z.1 - z.2) := fun z =>
+    (abs_of_nonneg (hL0 z)).trans_le (lamKer_of_length_bounds hT z).1.2
+  have hR := heatKerTwo_abs_le_self hr
+  have hP := heatKerTwo_abs_le_self hT
+  have hrt : 0 < r + T := by linarith
+  have hRL := abs_compKernel_le_heat hr hT hRm hLm hR hLb
+  have hPL : (fun z => heatKerTwo T z - L z) = Q := by
+    funext z
+    rw [show L z = heatKerTwo T z - Q z from lamKer_of_length_eq_sub M T z]
+    ring
+  have hInner : AiryConj.compKernel (heatKerTwo r) (heatKerTwo T) =
+      fun z => AiryConj.compKernel (heatKerTwo r) L z + AiryConj.compKernel (heatKerTwo r) Q z := by
+    funext z
+    have he := compKernel_sub_right z.1 z.2
+      (integrable_pair_mul_of_heatKernel_le hr hT hRm hPm
+        (fun x y => hR (x,y)) (fun x y => hP (x,y)) z.1 z.2)
+      (integrable_pair_mul_of_heatKernel_le hr hT hRm hLm
+        (fun x y => hR (x,y)) (fun x y => hLb (x,y)) z.1 z.2)
+    rw [hPL] at he
+    linarith
+  have hSplit : cupHitLimit_of_length M T r p =
+      AiryConj.compKernel Q (AiryConj.compKernel (heatKerTwo r) L) p +
+        AiryConj.compKernel (heatKerTwo (r + T)) Q p := by
+    have h1 := compKernel_sub_right p.1 p.2
+      (integrable_pair_mul_of_heatKernel_le hT hrt hPm (measurable_compKernel hRm hPm)
+        (fun x y => hP (x,y))
+        (fun x y => abs_compKernel_le_heat hr hT hRm hPm hR hP (x,y)) p.1 p.2)
+      (integrable_pair_mul_of_heatKernel_le hT hrt hPm (measurable_compKernel hRm hLm)
+        (fun x y => hP (x,y)) (fun x y => hRL (x,y)) p.1 p.2)
+    have he : (fun z => AiryConj.compKernel (heatKerTwo r) (heatKerTwo T) z -
+        AiryConj.compKernel (heatKerTwo r) L z) = AiryConj.compKernel (heatKerTwo r) Q := by
+      funext z
+      rw [congrFun hInner z]
+      ring
+    rw [he, ← compKernel_assoc_heat hT hr hT hPm hRm hQm hP hR hQb,
+      heatKerTwo_comp hT hr, add_comm T r] at h1
+    have h2 := compKernel_sub_left p.1 p.2
+      (integrable_pair_mul_of_heatKernel_le hT hrt hPm (measurable_compKernel hRm hLm)
+        (fun x y => hP (x,y)) (fun x y => hRL (x,y)) p.1 p.2)
+      (integrable_pair_mul_of_heatKernel_le hT hrt hLm (measurable_compKernel hRm hLm)
+        (fun x y => hLb (x,y)) (fun x y => hRL (x,y)) p.1 p.2)
+    rw [hPL] at h2
+    unfold cupHitLimit_of_length
+    change AiryConj.compKernel (heatKerTwo T) (AiryConj.compKernel (heatKerTwo r) (heatKerTwo T)) p -
+      AiryConj.compKernel L (AiryConj.compKernel (heatKerTwo r) L) p = _
+    linarith only [h1, h2]
+  have hRL0 : ∀ z, 0 ≤ AiryConj.compKernel (heatKerTwo r) L z :=
+    fun z => integral_nonneg fun w => mul_nonneg (heatKernel_pos hr _).le (hL0 (w,z.2))
+  have hRLb : ∀ z, AiryConj.compKernel (heatKerTwo r) L z ≤ heatKerTwo (r + T) z :=
+    fun z => (le_abs_self _).trans (hRL z)
+  rw [hSplit]
+  refine ⟨add_nonneg (integral_nonneg fun w => mul_nonneg (hQ0 (p.1,w)) (hRL0 (w,p.2)))
+    (integral_nonneg fun w => mul_nonneg (heatKernel_pos hrt _).le (hQ0 (w,p.2))), ?_⟩
+  apply add_le_add_left
+  exact integral_mono
+    (integrable_pair_mul_of_heatKernel_le hT hrt hQm (measurable_compKernel hRm hLm)
+      (fun x y => hQb (x,y)) (fun x y => hRL (x,y)) p.1 p.2)
+    (integrable_pair_mul_of_heatKernel_le hT hrt hQm (measurable_heatKerTwo (r + T))
+      (fun x y => hQb (x,y)) (fun x y => heatKerTwo_abs_le_self hrt (x,y)) p.1 p.2)
+    (fun w => mul_le_mul_of_nonneg_left (hRLb (w,p.2)) (hQ0 (p.1,w)))
+
+private theorem measurable_cupHitLimit_of_length (M T r : ℝ) :
+    Measurable (cupHitLimit_of_length M T r) :=
+  (measurable_compKernel (measurable_heatKerTwo T)
+    (measurable_compKernel (measurable_heatKerTwo r) (measurable_heatKerTwo T))).sub
+    (measurable_compKernel (measurable_lamKer_of_length M T)
+      (measurable_compKernel (measurable_heatKerTwo r) (measurable_lamKer_of_length M T)))
+
+private theorem memLp_cupV_of_length {M T r a : ℝ} (hT : 0 < T) (hr : 0 < r)
+    (hM : 0 < M) (ha : 2 * T + r + 1 ≤ a) :
+    MemLp (fddVKer (cupHitLimit_of_length M T r) a) 2 (volume.prod volume) := by
+  have hadm : T + 1 ≤ a := by linarith
+  have hrt : 0 < r + T := by linarith
+  let R := AiryConj.compKernel (uConj a (heatKerTwo (r + T))) (AiryConj.vKernel T a M)
+  have hR : MemLp R 2 (volume.prod volume) :=
+    memLp_compKernel_uConjHeat hrt a (AiryConj.measurable_vKernel T a M)
+      (AiryConj.vKernel_memLp hT hM hadm)
+  have hR_eq (x z : ℝ) :
+      R (x, z) =
+        Real.exp (-a * x) *
+          AiryConj.compKernel (heatKerTwo (r + T)) (fun q => AiryConj.qMT M T q.1 q.2) (x, z) *
+          Real.exp (-a * z) * AiryConj.phiWeight z := by
+    have he (w : ℝ) : Real.exp (a * w) * Real.exp (-a * w) = 1 := by
+      rw [← Real.exp_add, show a * w + -a * w = 0 by ring, Real.exp_zero]
+    unfold R AiryConj.compKernel
+    rw [← integral_const_mul, ← integral_mul_const, ← integral_mul_const]
+    apply integral_congr_ae
+    filter_upwards with w
+    unfold uConj AiryConj.vKernel
+    simp only
+    calc _ = (Real.exp (-a * x) * (heatKerTwo (r + T) (x, w) *
+        AiryConj.qMT M T w z) * Real.exp (-a * z) * AiryConj.phiWeight z) *
+        (Real.exp (a * w) * Real.exp (-a * w)) := by ring
+      _ = _ := by rw [he, mul_one]
+  refine ((memLp_uphiKer T a M (r + T) hT hM hrt hadm).add hR).of_le
+    (measurable_fddVKer (measurable_cupHitLimit_of_length M T r) a).aestronglyMeasurable ?_
+  filter_upwards with p
+  obtain ⟨x, z⟩ := p
+  obtain ⟨hD0, hD⟩ := cupHitLimit_of_length_bounds (M := M) hT hr (x, z)
+  have hV0 : 0 ≤ fddVKer (cupHitLimit_of_length M T r) a (x, z) := by
+    unfold fddVKer
+    exact mul_nonneg (mul_nonneg (mul_nonneg (Real.exp_pos _).le hD0) (Real.exp_pos _).le)
+      (AiryConj.phiWeight_nonneg z)
+  rw [Real.norm_eq_abs, abs_of_nonneg hV0, Pi.add_apply]
+  refine le_trans ?_ (le_abs_self _)
+  rw [uphiKer_eq, hR_eq]
+  unfold fddVKer
+  have h1 := mul_le_mul_of_nonneg_left hD (Real.exp_pos (-a * x)).le
+  have h2 := mul_le_mul_of_nonneg_right h1 (Real.exp_pos (-a * z)).le
+  have h3 := mul_le_mul_of_nonneg_right h2 (AiryConj.phiWeight_nonneg z)
+  simpa only [mul_add, add_mul] using h3
+
+/-- The kernel of `K̃∪ = U_a K∪ U_a⁻¹` in (3.2)–(3.3) of Remark 3.2 of
+arXiv:2611.23658v1, where `K∪ = (P_T P_r P_T − Λ P_r Λ) P_{−S} B₀` and
+`S = 2T + r`. -/
+noncomputable def kcupKerT_of_length (a M T r : ℝ) : ℝ × ℝ → ℝ :=
+  uConj a (AiryConj.compKernel (cupHitLimit_of_length M T r) (bAiryKer (2 * T + r)))
+
+/-- The kernel at length one agrees with the unit-interval kernel. -/
+theorem kcupKerT_of_length_one (a M r : ℝ) :
+    kcupKerT_of_length a M 1 r = AiryTwoInt.kcupKerT a M r := by
+  unfold kcupKerT_of_length AiryTwoInt.kcupKerT AiryTwoInt.kcupKer cupHitLimit_of_length
+  rw [show (2 : ℝ) * 1 = 2 by ring]
+  rfl
+
+private theorem kcupKerT_of_length_factor (a M T r : ℝ) :
+    kcupKerT_of_length a M T r =
+      AiryConj.compKernel (fddVKer (cupHitLimit_of_length M T r) a)
+        (AiryConj.wKernel (2 * T + r) a) := by
+  funext p
+  obtain ⟨x, y⟩ := p
+  unfold kcupKerT_of_length
+  rw [uConj_compKernel]
+  apply integral_congr_ae
+  filter_upwards with z
+  have he : Real.exp (a * z) * Real.exp (-a * z) = 1 := by
+    rw [← Real.exp_add, show a * z + -a * z = 0 by ring, Real.exp_zero]
+  have hφ := mul_inv_cancel₀ (AiryConj.phiWeight_pos z).ne'
+  unfold uConj fddVKer AiryConj.wKernel bAiryKer
+  simp only
+  calc _ = (Real.exp (-a * x) * cupHitLimit_of_length M T r (x, z) *
+      backwardAiry (2 * T + r) (z + y) * Real.exp (a * y)) *
+      (Real.exp (a * z) * Real.exp (-a * z)) := by ring
+    _ = _ := by
+      nth_rw 1 [he, mul_one]
+      symm
+      calc _ = (Real.exp (-a * x) * cupHitLimit_of_length M T r (x, z) *
+          backwardAiry (2 * T + r) (z + y) * Real.exp (a * y)) *
+          (AiryConj.phiWeight z * (AiryConj.phiWeight z)⁻¹) *
+          (Real.exp (a * z) * Real.exp (-a * z)) := by ring
+        _ = _ := by rw [hφ, he, mul_one, mul_one]
+
+/-- The kernel in Remark 3.2 is square-integrable for equal positive lengths. -/
+theorem memLp_kcupKerT_of_length {M T r a : ℝ} (hT : 0 < T) (hr : 0 < r)
+    (hM : 0 < M) (ha : 2 * T + r + 1 ≤ a) :
+    MemLp (kcupKerT_of_length a M T r) 2 (volume.prod volume) := by
+  rw [kcupKerT_of_length_factor]
+  exact memLp_compKernel (measurable_fddVKer (measurable_cupHitLimit_of_length M T r) a)
+    (AiryConj.continuous_wKernel _ _).measurable (memLp_cupV_of_length hT hr hM ha)
+    (AiryConj.memLp_wKernel (by linarith) ha)
+
+private theorem kernelOperator_kcupKerT_of_length_factor {M T r a : ℝ}
+    (hT : 0 < T) (hr : 0 < r) (hM : 0 < M) (ha : 2 * T + r + 1 ≤ a) :
+    kernelOperator (memLp_kcupKerT_of_length hT hr hM ha) =
+      kernelOperator (memLp_cupV_of_length hT hr hM ha) ∘L
+        kernelOperator (AiryConj.memLp_wKernel (show 0 < 2 * T + r by linarith) ha) := by
+  have hcomp : MemLp (AiryConj.compKernel (fddVKer (cupHitLimit_of_length M T r) a)
+      (AiryConj.wKernel (2 * T + r) a)) 2 (volume.prod volume) := by
+    rw [← kcupKerT_of_length_factor a M T r]
+    exact memLp_kcupKerT_of_length hT hr hM ha
+  rw [kernelOperator_congr (kcupKerT_of_length_factor a M T r) _ hcomp,
+    kernelOperator_compKernel _ _ hcomp]
+
+/-- The operator in Remark 3.2 is trace class for equal positive lengths. -/
+theorem isTraceClass_kcupKerT_of_length {M T r a : ℝ} (hT : 0 < T) (hr : 0 < r)
+    (hM : 0 < M) (ha : 2 * T + r + 1 ≤ a) :
+    IsTraceClass (kernelOperator (memLp_kcupKerT_of_length hT hr hM ha)) := by
+  rw [kernelOperator_kcupKerT_of_length_factor hT hr hM ha]
+  exact ⟨_, _, isHilbertSchmidt_kernelOperator _, isHilbertSchmidt_kernelOperator _, rfl⟩
+
+/-! ## The dyadic limit for equal positive interval lengths -/
+
+private theorem ae_tendsto_meshLamKer_of_length {M T : ℝ} (hK : MeshHittingLimit M T) :
+    ∀ᵐ p ∂(volume.prod volume : Measure (ℝ × ℝ)),
+      Tendsto (fun n => meshLamKer M T n p) atTop (𝓝 (lamKer_of_length M T p)) := by
+  filter_upwards [hK.tendsto_qMT] with p hp
+  have heq : (fun n => meshLamKer M T n p)
+      = fun n => heatKernel T (p.1 - p.2) - meshHitKer M T n p := by
+    funext n; rw [meshHitKer_eq_sub]; ring
+  rw [heq, lamKer_of_length_eq_sub]
+  exact tendsto_const_nhds.sub hp
+
+private theorem ae_lamKer_le_meshLamKer_of_length {M T : ℝ} (hK : MeshHittingLimit M T) (n : ℕ) :
+    ∀ᵐ p ∂(volume.prod volume : Measure (ℝ × ℝ)),
+      lamKer_of_length M T p ≤ meshLamKer M T n p := by
+  filter_upwards [hK.le_qMT n] with p hp
+  rw [meshHitKer_eq_sub] at hp
+  rw [lamKer_of_length_eq_sub]
+  show heatKernel T (p.1 - p.2) - AiryConj.qMT M T p.1 p.2 ≤ _
+  linarith
+
+private noncomputable def cupList_of_length (M T r : ℝ) (m : ℕ) : List (ℝ × ℝ) :=
+  List.replicate (2 ^ m - 2) (M, meshGap T m) ++
+    (M, meshGap T m + r) :: (M, meshGap T m) :: meshTail M T m
+
+private theorem cupList_pos_of_length {M T r : ℝ} (hT : 0 < T) (hr : 0 ≤ r) (m : ℕ) :
+    ∀ y ∈ cupList_of_length M T r m, 0 < y.2 := by
+  have hg := meshGap_pos hT m
+  intro y hy
+  simp only [cupList_of_length, List.mem_append, List.mem_replicate, List.mem_cons] at hy
+  rcases hy with ⟨-, rfl⟩ | rfl | rfl | hy
+  · exact hg
+  · show 0 < meshGap T m + r; linarith
+  · exact hg
+  · exact meshTail_pos hT m y hy
+
+private theorem replicate_append_meshTail_of_length {M T : ℝ} {m : ℕ} (hm : 1 ≤ m) :
+    List.replicate (2 ^ m - 2) (M, meshGap T m) ++ [(M, meshGap T m)] = meshTail M T m := by
+  obtain ⟨k, hk⟩ := two_pow_eq_add_two hm
+  rw [meshTail, hk, ← List.replicate_succ']
+  congr 1
+
+private theorem gapSum_cupList_of_length (M T r : ℝ) {m : ℕ} (hm : 1 ≤ m) :
+    gapSum (M, meshGap T m) (cupList_of_length M T r m) = 2 * T + r := by
+  have h1 := gapSum_meshTail M T m
+  rw [← replicate_append_meshTail_of_length hm, gapSum_append] at h1
+  rw [cupList_of_length, show List.replicate (2 ^ m - 2) (M, meshGap T m) ++
+      (M, meshGap T m + r) :: (M, meshGap T m) :: meshTail M T m
+      = (List.replicate (2 ^ m - 2) (M, meshGap T m) ++ [(M, meshGap T m + r)]) ++
+        (M, meshGap T m) :: meshTail M T m by simp,
+    gapSum_append, gapSum_append, gapSum_meshTail]
+  simp only [gapSum] at h1 ⊢
+  linarith
+
+private theorem lamKerN_cupList_of_length {M T r : ℝ} (hT : 0 < T) (hr : 0 < r) {m : ℕ} (hm : 1 ≤ m) :
+    lamKerN (M, meshGap T m) (cupList_of_length M T r m)
+      = AiryConj.compKernel (meshLamKer M T m)
+          (AiryConj.compKernel (AiryTwoInt.heatKerTwo r) (meshLamKer M T m)) := by
+  have hg := meshGap_pos hT m
+  have hrep : ∀ z ∈ List.replicate (2 ^ m - 2) (M, meshGap T m), 0 < z.2 := by
+    intro z hz; rw [(List.mem_replicate.1 hz).2]; exact hg
+  rw [cupList_of_length, show List.replicate (2 ^ m - 2) (M, meshGap T m) ++
+      (M, meshGap T m + r) :: (M, meshGap T m) :: meshTail M T m
+      = (List.replicate (2 ^ m - 2) (M, meshGap T m) ++ [(M, meshGap T m + r)]) ++
+        (M, meshGap T m) :: meshTail M T m by simp]
+  have hpre : ∀ z ∈ List.replicate (2 ^ m - 2) (M, meshGap T m) ++ [(M, meshGap T m + r)],
+      0 < z.2 := by
+    intro z hz
+    rcases List.mem_append.1 hz with hz | hz
+    · exact hrep z hz
+    · rw [List.mem_singleton.1 hz]; show 0 < meshGap T m + r; linarith
+  rw [lamKerN_append _ _ _ _ hg hpre hg (meshTail_pos hT m),
+    lamKerN_bump _ _ M hg hrep hg hr, replicate_append_meshTail_of_length hm]
+  change AiryConj.compKernel (AiryConj.compKernel (meshLamKer M T m) (AiryTwoInt.heatKerTwo r))
+      (meshLamKer M T m) = _
+  exact compKernel_assoc_heat hT hr hT (meshLamKer_props hT m).1
+    (AiryTwoInt.measurable_heatKerTwo r) (meshLamKer_props hT m).1
+    (abs_meshLamKer_le hT m) (fun p => AiryTwoInt.heatKerTwo_abs_le_self hr p)
+    (abs_meshLamKer_le hT m)
+
+private noncomputable def cupHitKer_of_length (M T r : ℝ) (m : ℕ) : ℝ × ℝ → ℝ :=
+  hitKerN (M, meshGap T m) (cupList_of_length M T r m)
+
+private theorem cupHitKer_of_length_eq {M T r : ℝ} (hT : 0 < T) (hr : 0 < r) {m : ℕ}
+    (hm : 1 ≤ m) (p : ℝ × ℝ) :
+    cupHitKer_of_length M T r m p = heatKerTwo (2 * T + r) p
+      - AiryConj.compKernel (meshLamKer M T m)
+          (AiryConj.compKernel (AiryTwoInt.heatKerTwo r) (meshLamKer M T m)) p := by
+  unfold cupHitKer_of_length hitKerN
+  rw [gapSum_cupList_of_length M T r hm, lamKerN_cupList_of_length hT hr hm]
+  rfl
+
+private theorem ae_cupHitKer_le_limit_of_length {M T r : ℝ} (hT : 0 < T) (hr : 0 < r)
+    (hK : MeshHittingLimit M T) {m : ℕ} (hm : 1 ≤ m) :
+    ∀ᵐ p ∂(volume.prod volume : Measure (ℝ × ℝ)),
+      cupHitKer_of_length M T r m p ≤ cupHitLimit_of_length M T r p := by
+  have hrt : 0 < r + T := by linarith
+  have hLamNonneg : ∀ p, 0 ≤ lamKer_of_length M T p :=
+    fun p => (lamKer_of_length_bounds hT p).1.1
+  have hLamAbs : ∀ p, |lamKer_of_length M T p| ≤ heatKernel T (p.1 - p.2) :=
+    fun p => (abs_of_nonneg (hLamNonneg p)).trans_le (lamKer_of_length_bounds hT p).1.2
+  have hMeshInner (m : ℕ) := abs_compKernel_le_heat hr hT
+    (measurable_heatKerTwo r) (meshLamKer_props (M := M) hT m).1
+    (heatKerTwo_abs_le_self hr) (abs_meshLamKer_le hT m)
+  have hLamInner := abs_compKernel_le_heat hr hT
+    (measurable_heatKerTwo r) (measurable_lamKer_of_length M T)
+    (heatKerTwo_abs_le_self hr) hLamAbs
+  have hinner : ∀ᵐ p ∂(volume.prod volume : Measure (ℝ × ℝ)),
+      AiryConj.compKernel (AiryTwoInt.heatKerTwo r) (lamKer_of_length M T) p
+        ≤ AiryConj.compKernel (AiryTwoInt.heatKerTwo r) (meshLamKer M T m) p :=
+    ae_compKernel_mono hr hT (AiryTwoInt.measurable_heatKerTwo r)
+      (AiryTwoInt.measurable_heatKerTwo r) (measurable_lamKer_of_length M T)
+      (meshLamKer_props hT m).1 (fun q => AiryTwoInt.heatKerTwo_abs_le_self hr q)
+      (fun q => AiryTwoInt.heatKerTwo_abs_le_self hr q) (hLamAbs)
+      (abs_meshLamKer_le hT m) (fun q => (heatKernel_pos hr _).le)
+      (hLamNonneg) (Eventually.of_forall fun _ => le_rfl)
+      (ae_lamKer_le_meshLamKer_of_length hK m)
+  have houter := ae_compKernel_mono hT hrt
+    (measurable_lamKer_of_length M T) (meshLamKer_props hT m).1
+    (AiryTwoInt.measurable_compKernel (AiryTwoInt.measurable_heatKerTwo r)
+      (measurable_lamKer_of_length M T))
+    (measurable_compKernel (measurable_heatKerTwo r) (meshLamKer_props hT m).1) (hLamAbs)
+    (abs_meshLamKer_le hT m) (hLamInner)
+    (hMeshInner m) (hLamNonneg)
+    (fun q => integral_nonneg fun w => mul_nonneg (heatKernel_pos hr _).le (hLamNonneg (w, q.2)))
+    (ae_lamKer_le_meshLamKer_of_length hK m) hinner
+  filter_upwards [houter] with p hp
+  rw [cupHitKer_of_length_eq hT hr hm, cupHitLimit_of_length_eq_sub hT hr]
+  linarith
+
+private theorem ae_tendsto_cupHitKer_of_length {M T r : ℝ} (hT : 0 < T) (hr : 0 < r)
+    (hK : MeshHittingLimit M T) :
+    ∀ᵐ p ∂(volume.prod volume : Measure (ℝ × ℝ)),
+      Tendsto (fun n => cupHitKer_of_length M T r (n + 1) p) atTop (𝓝 (cupHitLimit_of_length M T r p)) := by
+  have hrt : 0 < r + T := by linarith
+  have hLamNonneg : ∀ p, 0 ≤ lamKer_of_length M T p :=
+    fun p => (lamKer_of_length_bounds hT p).1.1
+  have hLamAbs : ∀ p, |lamKer_of_length M T p| ≤ heatKernel T (p.1 - p.2) :=
+    fun p => (abs_of_nonneg (hLamNonneg p)).trans_le (lamKer_of_length_bounds hT p).1.2
+  have hMeshInner (m : ℕ) := abs_compKernel_le_heat hr hT
+    (measurable_heatKerTwo r) (meshLamKer_props (M := M) hT m).1
+    (heatKerTwo_abs_le_self hr) (abs_meshLamKer_le hT m)
+  have hΛ : ∀ᵐ p ∂(volume.prod volume : Measure (ℝ × ℝ)),
+      Tendsto (fun n => meshLamKer M T (n + 1) p) atTop (𝓝 (lamKer_of_length M T p)) := by
+    filter_upwards [ae_tendsto_meshLamKer_of_length hK] with p hp
+    exact hp.comp (tendsto_add_atTop_nat 1)
+  have hinner := ae_tendsto_compKernel hr hT
+    (A := fun _ => AiryTwoInt.heatKerTwo r) (A₀ := AiryTwoInt.heatKerTwo r)
+    (B := fun n => meshLamKer M T (n + 1)) (B₀ := lamKer_of_length M T)
+    (fun _ => AiryTwoInt.measurable_heatKerTwo r) (fun n => (meshLamKer_props hT _).1)
+    (fun _ q => AiryTwoInt.heatKerTwo_abs_le_self hr q) (fun n => abs_meshLamKer_le hT _)
+    (Eventually.of_forall fun _ => tendsto_const_nhds) hΛ
+  have houter := ae_tendsto_compKernel hT hrt
+    (A := fun n => meshLamKer M T (n + 1)) (A₀ := lamKer_of_length M T)
+    (B := fun n => AiryConj.compKernel (AiryTwoInt.heatKerTwo r) (meshLamKer M T (n + 1)))
+    (B₀ := AiryConj.compKernel (AiryTwoInt.heatKerTwo r) (lamKer_of_length M T))
+    (fun n => (meshLamKer_props hT _).1)
+    (fun n => measurable_compKernel (measurable_heatKerTwo r) (meshLamKer_props hT n.succ).1)
+    (fun n => abs_meshLamKer_le hT _) (fun n => hMeshInner n.succ)
+    hΛ hinner
+  filter_upwards [houter] with p hp
+  have heq : (fun n => cupHitKer_of_length M T r (n + 1) p) = fun n => heatKerTwo (2 * T + r) p
+      - AiryConj.compKernel (meshLamKer M T (n + 1))
+          (AiryConj.compKernel (AiryTwoInt.heatKerTwo r) (meshLamKer M T (n + 1))) p := by
+    funext n; exact cupHitKer_of_length_eq hT hr (by omega) p
+  rw [heq, cupHitLimit_of_length_eq_sub hT hr]
+  exact tendsto_const_nhds.sub hp
+
+private theorem cupAdm_of_length {M T r a : ℝ} (ha : 2 * T + r + 1 ≤ a) {m : ℕ} (hm : 1 ≤ m) :
+    gapSum (M, meshGap T m) (cupList_of_length M T r m) + 1 ≤ a := by
+  rw [gapSum_cupList_of_length M T r hm]; linarith
+
+private noncomputable def cupOp_of_length (M T r : ℝ) (m : ℕ) (hT : 0 < T)
+    (hr : 0 < r) (a : ℝ) (ha : 2 * T + r + 1 ≤ a) (hm : 1 ≤ m) :
+    Lp ℝ 2 (volume : Measure ℝ) →L[ℝ] Lp ℝ 2 (volume : Measure ℝ) :=
+  fddOpAt (M, meshGap T m) (cupList_of_length M T r m) (meshGap_pos hT m) (cupList_pos_of_length hT hr.le m) a
+    (cupAdm_of_length ha hm)
+
+private theorem cupOp_of_length_factor (M T r : ℝ) (m : ℕ) (hT : 0 < T) (hr : 0 < r)
+    (a : ℝ) (ha : 2 * T + r + 1 ≤ a) (hm : 1 ≤ m) :
+    cupOp_of_length M T r m hT hr a ha hm
+      = kernelOperator (memLp_fddVKer (M, meshGap T m) (cupList_of_length M T r m) (meshGap_pos hT m)
+          (cupList_pos_of_length hT hr.le m) (a := a) (show 0 < a by linarith)) ∘L
+        kernelOperator (AiryConj.memLp_wKernel (show 0 < 2 * T + r by linarith) ha) := by
+  unfold cupOp_of_length fddOpAt
+  congr 1
+  exact AiryTwoInt.kernelOperator_congr (by rw [gapSum_cupList_of_length M T r hm]) _ _
+
+private theorem tendsto_integral_sq_cupVKer_of_length {M T r a : ℝ} (hT : 0 < T)
+    (hr : 0 < r) (hM : 0 < M) (ha : 2 * T + r + 1 ≤ a) (hK : MeshHittingLimit M T) :
+    Tendsto (fun n => ∫ p, (fddVKer (cupHitKer_of_length M T r (n + 1)) a p
+        - fddVKer (cupHitLimit_of_length M T r) a p) ^ 2 ∂(volume.prod volume)) atTop (𝓝 0) := by
+  have hV := memLp_cupV_of_length hT hr hM ha
+  have hint : Integrable (fun p => fddVKer (cupHitLimit_of_length M T r) a p ^ 2) (volume.prod volume) :=
+    hV.integrable_sq
+  have hlim := tendsto_integral_filter_of_dominated_convergence (μ := volume.prod volume)
+    (l := atTop) (f := fun _ => (0 : ℝ)) (fun p => fddVKer (cupHitLimit_of_length M T r) a p ^ 2)
+    (F := fun n p => (fddVKer (cupHitKer_of_length M T r (n + 1)) a p -
+      fddVKer (cupHitLimit_of_length M T r) a p) ^ 2)
+    (Eventually.of_forall fun n =>
+      (((measurable_fddVKer (measurable_hitKerN (meshGap_pos hT _)
+        (cupList_pos_of_length hT hr.le _)) _).sub
+        (measurable_fddVKer (measurable_cupHitLimit_of_length M T r) a)).pow_const 2).aestronglyMeasurable)
+    (Eventually.of_forall fun n => by
+      filter_upwards [ae_cupHitKer_le_limit_of_length hT hr hK (m := n + 1) (by omega)] with p hp
+      rw [Real.norm_of_nonneg (sq_nonneg _), fddVKer_eq_mul, fddVKer_eq_mul]
+      exact sq_mul_sub_le_sq_mul _ _ _
+        (hitKerN_nonneg (meshGap_pos hT _) (cupList_pos_of_length hT hr.le _) p) hp)
+    hint
+    (by
+      filter_upwards [ae_tendsto_cupHitKer_of_length hT hr hK] with p hp
+      have h1 : Tendsto (fun n => fddVKer (cupHitKer_of_length M T r (n + 1)) a p) atTop
+          (𝓝 (fddVKer (cupHitLimit_of_length M T r) a p)) := by
+        rw [fddVKer_eq_mul]
+        simp_rw [fddVKer_eq_mul]
+        exact hp.const_mul _
+      simpa using (h1.sub_const (fddVKer (cupHitLimit_of_length M T r) a p)).pow 2)
+  simpa using hlim
+
+private theorem meshGap_mul_two_pow_of_length (T : ℝ) (m : ℕ) : (2 : ℝ) ^ m * meshGap T m = T := by
+  unfold meshGap; field_simp
+
+private theorem sort_cupSet_of_length (x T r : ℝ) (hT : 0 < T) (hr : 0 < r) (m : ℕ) :
+    (meshSet x T m ∪ meshSet (x + T + r) T m).sort (· ≤ ·)
+      = meshTimes x (meshGap T m) (2 ^ m) ++ meshTimes (x + T + r) (meshGap T m) (2 ^ m) := by
+  have hg := meshGap_pos hT m
+  have hlt : (meshTimes x (meshGap T m) (2 ^ m)
+      ++ meshTimes (x + T + r) (meshGap T m) (2 ^ m)).Pairwise (· < ·) := by
+    refine List.pairwise_append.2 ⟨meshTimes_pairwise_lt hg _ _, meshTimes_pairwise_lt hg _ _,
+      fun a ha b hb => ?_⟩
+    have h1 := lt_of_mem_meshTimes hg ha
+    have h2 := le_of_mem_meshTimes hg.le hb
+    have h3 := meshGap_mul_two_pow_of_length T m
+    push_cast at h1
+    linarith
+  have hnd := hlt.imp fun h => h.ne
+  have hle := hlt.imp fun h => h.le
+  refine List.Perm.eq_of_pairwise' (r := (· ≤ ·)) (Finset.pairwise_sort _ _) hle ?_
+  refine List.perm_of_nodup_nodup_toFinset_eq (Finset.sort_nodup _ _) hnd ?_
+  rw [Finset.sort_toFinset, List.toFinset_append]
+  rfl
+
+private theorem airy1FinCdf_cupSet_of_length (x M T r : ℝ) (hT : 0 < T) (hr : 0 < r)
+    {m : ℕ} (hm : 1 ≤ m) (a : ℝ) (ha : 2 * T + r + 1 ≤ a) :
+    airy1FinCdf (meshSet x T m ∪ meshSet (x + T + r) T m) (fun _ => M)
+      = fredholmDet (cupOp_of_length M T r m hT hr a ha hm) 1 := by
+  obtain ⟨k, hk⟩ := two_pow_eq_add_two hm
+  set g := meshGap T m with hg_def
+  have hg := meshGap_pos hT m
+  set I := meshSet x T m ∪ meshSet (x + T + r) T m with hI
+  set lev := levelFn I (fun _ => M) with hlev
+  have hlevM : ∀ t ∈ I, lev t = M := fun t ht => by
+    simp only [hlev, levelFn, ht, ↓reduceDIte]
+  have hmem1 : ∀ t ∈ meshTimes x g (k + 1 + 1), t ∈ I := fun t ht => by
+    rw [hI, Finset.mem_union]; left
+    unfold meshSet; rw [List.mem_toFinset, hk]; exact ht
+  have hmem2 : ∀ t ∈ meshTimes (x + T + r) g (k + 1 + 1), t ∈ I := fun t ht => by
+    rw [hI, Finset.mem_union]; right
+    unfold meshSet; rw [List.mem_toFinset, hk]; exact ht
+  have h2g : ((k : ℝ) + 2) * g = T := by
+    have := meshGap_mul_two_pow_of_length T m
+    have hk' : (2 : ℝ) ^ m = k + 2 := by exact_mod_cast hk
+    rw [hk'] at this; linarith
+  have happ := fddEntries_meshTimes_append (M := M) (r := r) lev (x + T + r)
+    (meshTimes (x + T + r + g) g (k + 1)) (k + 1) x (fun t ht => hlevM t (hmem1 t ht))
+    (by push_cast; linarith)
+  obtain ⟨e₂, L₂, hEL, hsp⟩ := fddEntries_meshTimes (M := M) (g := g) lev (k + 1) (x + T + r)
+    (fun t ht => hlevM t (hmem2 t ht))
+  have hfin : finEntries I (fun _ => M)
+      = (M, g) :: (List.replicate k (M, g) ++ (M, g + r) :: e₂ :: L₂) := by
+    unfold finEntries
+    rw [← hlev, sort_cupSet_of_length x T r hT hr m, hk]
+    show fddEntries lev (meshTimes x g (k + 1 + 1) ++ meshTimes (x + T + r) g (k + 1 + 1)) = _
+    rw [show meshTimes (x + T + r) g (k + 1 + 1)
+        = (x + T + r) :: meshTimes (x + T + r + g) g (k + 1) from rfl, happ,
+      show (x + T + r) :: meshTimes (x + T + r + g) g (k + 1)
+        = meshTimes (x + T + r) g (k + 1 + 1) from rfl, hEL, List.replicate_succ,
+      List.cons_append]
+  have hcup : cupList_of_length M T r m
+      = List.replicate k (M, g) ++ (M, g + r) :: (M, g) :: List.replicate (k + 1) (M, g) := by
+    rw [cupList_of_length, meshTail, hk]
+    rfl
+  have hsp' : SamePad (M, g) (List.replicate k (M, g) ++ (M, g + r) :: e₂ :: L₂)
+      (M, g) (cupList_of_length M T r m) := by
+    rw [hcup]
+    exact samePad_append _ _ _ _ _ _ ⟨rfl, hsp⟩
+  unfold cupOp_of_length
+  exact airy1FinCdf_eq_fredholmDet_fddOpAt _ _ hfin hsp' _ _ _
+
+/-- The dyadic two-interval CDF converges to the determinant in Remark 3.2 of
+arXiv:2611.23658v1 for every equal positive interval length. -/
+theorem tendsto_airy1FinCdf_cupSet_of_length (x : ℝ) {M T r a : ℝ} (hT : 0 < T)
+    (hr : 0 < r) (hM : 0 < M) (ha : 2 * T + r + 1 ≤ a) (hK : MeshHittingLimit M T) :
+    Tendsto (fun n =>
+      airy1FinCdf (meshSet x T (n + 1) ∪ meshSet (x + T + r) T (n + 1)) (fun _ => M))
+      atTop (𝓝 (fredholmDet (kernelOperator (memLp_kcupKerT_of_length hT hr hM ha)) 1)) := by
+  have heq : (fun n => airy1FinCdf (meshSet x T (n + 1) ∪ meshSet (x + T + r) T (n + 1))
+      (fun _ => M)) = fun n => fredholmDet (cupOp_of_length M T r (n + 1) hT hr a ha (by omega)) 1 := by
+    funext n
+    exact airy1FinCdf_cupSet_of_length x M T r hT hr (by omega) a ha
+  rw [heq]
+  simp_rw [cupOp_of_length_factor]
+  rw [kernelOperator_kcupKerT_of_length_factor hT hr hM ha]
+  exact tendsto_fredholmDet_kernelOperator_comp _ _ _
+    (tendsto_integral_sq_cupVKer_of_length hT hr hM ha hK) 1
+
 /-- **Combined.** Under the one-block dyadic hitting-kernel limit
 `MeshHittingLimit M 1`, `M > 0`, `r > 0`, `r + 3 ≤ a`, for every base point `x`:
 `F_{I_{n+1}(x) ∪ I_{n+1}(x+1+r)}(M, …, M) → det(I − K̃∪)`, `K̃∪ = kcupKerT a M r`. -/
@@ -646,11 +1207,10 @@ theorem tendsto_airy1FinCdf_cupSet (x : ℝ) {M r a : ℝ} (hr : 0 < r) (hM : 0 
     Tendsto (fun n => airy1FinCdf (meshSet x 1 (n + 1) ∪ meshSet (x + 1 + r) 1 (n + 1))
         (fun _ => M)) atTop
       (𝓝 (fredholmDet (kernelOperator (AiryTwoInt.memLp_kcupKerT hr hM ha)) 1)) := by
-  have heq : (fun n => airy1FinCdf (meshSet x 1 (n + 1) ∪ meshSet (x + 1 + r) 1 (n + 1))
-      (fun _ => M)) = fun n => fredholmDet (cupOp M r (n + 1) hr a ha (by omega)) 1 := by
-    funext n
-    exact airy1FinCdf_cupSet x M r hr (by omega) a ha
-  rw [heq]
-  exact tendsto_fredholmDet_cupOp hr hM ha hK
+  have ha' : 2 * (1 : ℝ) + r + 1 ≤ a := by linarith
+  have h := tendsto_airy1FinCdf_cupSet_of_length x one_pos hr hM ha' hK
+  rw [kernelOperator_congr (kcupKerT_of_length_one a M r) _
+    (AiryTwoInt.memLp_kcupKerT hr hM ha)] at h
+  exact h
 
 end AiryFdd

@@ -386,3 +386,10 @@ claims:
     file: Airy1Gumbel/BlockLawUnconditional.lean
     status: internal
     keywords: [airy1, interval-maximum, sharp-tail, asymptotics]
+  - id: airy1-gumbel-lean/two-interval-law-equal-length
+    decl: Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length
+    kind: theorem
+    summary: "arXiv:2611.23658v1 Lemma 3.1 in the form of Remark 3.2. Under Airy1FddPositive and GOELeftTail, for T > 0, r > 0, M > 0, x >= 0 and a >= 2*T+r+1, the Airy1 hitting law on [x,x+T] and [x+T+r,x+2*T+r] equals the conjugated two-interval Fredholm determinant."
+    file: Airy1Gumbel/TwoIntervalLaw.lean
+    status: internal
+    keywords: [airy1, fredholm-determinant, two-interval]

@@ -623,6 +623,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.isTraceClass_fddOpLt
 #print axioms AiryFdd.isTraceClass_goeOp
 #print axioms AiryFdd.isTraceClass_k21Op
+#print axioms AiryFdd.isTraceClass_kcupKerT_of_length
 #print axioms AiryFdd.isTraceClass_qOp
 #print axioms AiryFdd.isTraceClass_schurOp
 #print axioms AiryFdd.isTraceClass_twoTimeBlockOp
@@ -639,6 +640,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.kapTP_sq
 #print axioms AiryFdd.kbBudget_nonneg
 #print axioms AiryFdd.kbKer_sq_eq
+#print axioms AiryFdd.kcupKerT_of_length_one
 #print axioms AiryFdd.kernelOperator_blkKer_ne_zero
 #print axioms AiryFdd.kernelOperator_comp_mulOp
 #print axioms AiryFdd.kernelOperator_fddVKer_two_level
@@ -757,6 +759,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.memLp_kaKer
 #print axioms AiryFdd.memLp_kaKerT
 #print axioms AiryFdd.memLp_kbKer
+#print axioms AiryFdd.memLp_kcupKerT_of_length
 #print axioms AiryFdd.memLp_mFun_mul_sKer
 #print axioms AiryFdd.memLp_mul_fst
 #print axioms AiryFdd.memLp_mul_of_bound
@@ -875,6 +878,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.tauS_le_one
 #print axioms AiryFdd.tauS_pos
 #print axioms AiryFdd.tendsto_airy1FinCdf_cupSet
+#print axioms AiryFdd.tendsto_airy1FinCdf_cupSet_of_length
 #print axioms AiryFdd.tendsto_airy1FinCdf_erase
 #print axioms AiryFdd.tendsto_airy1FinCdf_lim
 #print axioms AiryFdd.tendsto_airy1FinCdf_meshSet

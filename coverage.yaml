@@ -45,13 +45,13 @@ rows:
       - "Airy1FddPositive and GOELeftTail, for the unit-block and two-interval laws of the constructed process"
   - paper: {number: "Lemma 3.1", title: "Two-interval determinant formula"}
     class: inputs-supplied
-    conclusion: special-case
-    conclusion_scope: "Proved for two intervals of length 1, the case Proposition 1.4 uses; general equal lengths T > 0 are not covered."
     claims:
+      - airy1-gumbel-lean/two-interval-law-equal-length
       - airy1-gumbel-lean/two-block-law
       - airy1-gumbel-lean/qr-two-interval-law-theorem
     inputs:
-      - "Airy1FddPositive and GOELeftTail"
+      - "Airy1FddPositive and GOELeftTail, for the two-interval hitting law of the constructed process"
+    note: "Proved for every T > 0, r > 0, M > 0 at any weight a >= 2T + r + 1 (two-interval-law-equal-length), in the trace-class form (3.3) of Remark 3.2: det(I - K~), K~ the conjugated kernel of (3.2). The determinant displayed in (3.1) has no separate Lean definition; the paper reads it through (3.3). Versions 0.1.0 and 0.2.0 had T = 1 only."
   - paper: {number: "Lemma 4.1", title: "Block modulus"}
     class: outside
     note: "The Lean proof does not use this lemma: its mesoscopic step goes through a high-level upcrossing bound."

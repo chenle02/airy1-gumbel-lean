@@ -7,6 +7,7 @@ Claim boundary (read first):
 - Its hypotheses: `Airy1FddPositive` (finite-dimensional Airy_1 laws), `GOELeftTail` (cubic one-point left tail), `CubicStrongMixing` (cubic strong mixing). These are assumptions, not theorems.
 - The mesoscopic step uses a two-time Fredholm determinant bound, not the paper's association and covariance argument; the paper's Lemmas 4.1-4.2 and Remark 5.3 are not formalized, and Proposition 4.3 only in the specialisation used in Section 5.2 (along the two-point route).
 - Proposition 1.2 (two-term tail expansion over a fixed interval) is proved for the constructed process for every T > 0, under `Airy1FddPositive` and `GOELeftTail`: `Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO` in Airy1Gumbel/BlockLawUnconditional.lean (since v0.2.0).
+- Lemma 3.1 (two-interval determinant formula) is proved for the constructed process for every equal length T > 0, in the trace-class form (3.3) of Remark 3.2, under `Airy1FddPositive` and `GOELeftTail`: `Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length` in Airy1Gumbel/TwoIntervalLaw.lean (since v0.3.0). The determinant displayed in (3.1) has no separate Lean definition.
 - Axioms: `propext`, `Classical.choice`, `Quot.sound` only; no `sorry`.
 - The correspondence between the Lean statements and the paper was checked by AI-assisted review, not by an independent human referee.
 
