@@ -1,0 +1,8 @@
+# SPDX-FileCopyrightText: 2026 Le Chen
+# SPDX-License-Identifier: Apache-2.0
+# Public on purpose: the arXiv identifiers of the papers this package cites.
+# 2611.23658 is the companion's paper (Chen-Pu, Gumbel fluctuations of the maximum of the Airy_1 process),
+# 2607.17113 is Chen-Pu (two-time spatial decorrelation, source of CubicStrongMixing),
+# 0704.3636 is Baik-Buckingham-DiFranco (source of GOELeftTail),
+# 2406.11826 is the source of the local-modulus lemma cited in Airy1Gumbel/ExternalInputs.lean.
+allow: arXiv:\s*(2611\.23658|2607\.17113|0704\.3636|2406\.11826)(v\d+)?
