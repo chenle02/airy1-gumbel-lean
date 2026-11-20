@@ -1,5 +1,7 @@
 # airy1-gumbel-lean
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24398888.svg)](https://doi.org/10.5281/zenodo.24398888)
+
 Lean 4 companion to Le Chen and Fei Pu, *Gumbel Fluctuations of the Maximum of the
 Airy₁ Process* ([arXiv 2611.23658](https://arxiv.org/abs/2611.23658)): a kernel-checked
 proof that the maximum of a constructed Airy₁ process over `[0, T]`, centred and scaled

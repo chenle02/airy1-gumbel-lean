@@ -4,6 +4,15 @@ title: "airy1-gumbel-lean: Lean companion to Gumbel fluctuations of the maximum 
 type: software
 license: Apache-2.0
 version: "0.1.0"
+doi: "10.5281/zenodo.24398888"
+date-released: "2026-11-20"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.24398888"
+    description: "Concept DOI: all versions (resolves to the latest)"
+  - type: doi
+    value: "10.5281/zenodo.24398889"
+    description: "Version DOI: v0.1.0"
 repository-code: "https://github.com/chenle02/airy1-gumbel-lean"
 authors:
   - family-names: "Chen"
