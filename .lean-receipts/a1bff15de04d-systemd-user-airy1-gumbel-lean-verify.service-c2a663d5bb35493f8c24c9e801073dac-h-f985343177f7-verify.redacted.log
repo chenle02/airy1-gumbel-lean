@@ -1,0 +1,2005 @@
+commit: a1bff15de04df8333f7a00864c8a8404a88b9d35
+lean-toolchain: leanprover/lean4:v4.35.0
+checker: verify.sh (lake build Airy1Gumbel Airy1GumbelContrib; scripts/audit.py exact theorem inventory over AxiomCheck.lean #print axioms; negative controls)
+lean-pkg-build: begin
+⚠ [4048/4193] Built Airy1GumbelContrib.FredholmDet.Hadamard (8.4s)
+warning: Airy1GumbelContrib/FredholmDet/Hadamard.lean: imports `Mathlib.Analysis.InnerProductSpace.GramSchmidtOrtho` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/Hadamard.lean: imports `Mathlib.Analysis.InnerProductSpace.Projection.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/Hadamard.lean: imports `Mathlib.Analysis.SpecialFunctions.Exponential` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/Hadamard.lean: imports `Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4049/4193] Built Airy1GumbelContrib.Airy.Airy (8.6s)
+warning: Airy1GumbelContrib/Airy/Airy.lean: imports `Mathlib.Analysis.SpecialFunctions.RegularizedHypergeometric` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/Airy.lean: imports `Mathlib.Analysis.SpecialFunctions.Complex.Analytic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4050/4193] Built Airy1GumbelContrib.Gumbel.Gumbel (8.4s)
+warning: Airy1GumbelContrib/Gumbel/Gumbel.lean: imports `Mathlib.Probability.CDF` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Gumbel/Gumbel.lean: imports `Mathlib.Analysis.SpecialFunctions.ImproperIntegrals` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4051/4193] Built Airy1GumbelContrib.HilbertSchmidt.HilbertSchmidt (9.0s)
+warning: Airy1GumbelContrib/HilbertSchmidt/HilbertSchmidt.lean: imports `Mathlib.Analysis.InnerProductSpace.Adjoint` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/HilbertSchmidt/HilbertSchmidt.lean: imports `Mathlib.Analysis.InnerProductSpace.l2Space` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4052/4193] Built Airy1Gumbel.Blocking (9.7s)
+warning: Airy1Gumbel/Blocking.lean: imports `Mathlib.Analysis.SpecialFunctions.Complex.LogBounds` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Blocking.lean: imports `Mathlib.Tactic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4053/4193] Built Airy1Gumbel.TwoSidedBM (9.6s)
+warning: Airy1Gumbel/TwoSidedBM.lean: imports `Mathlib.Probability.Process.FiniteDimensionalLaws` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/TwoSidedBM.lean:127:20: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:129:20: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:378:16: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:379:16: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:386:14: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:390:16: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:391:16: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:550:8: `dif_pos` has been deprecated: Use `dite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  d̵i̵f̵_̵p̵o̵s̵d̲i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:565:14: `dif_pos` has been deprecated: Use `dite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  d̵i̵f̵_̵p̵o̵s̵d̲i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:571:14: `dif_neg` has been deprecated: Use `dite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  d̵i̵f̵_̵n̵e̵g̵d̲i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:582:14: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:589:14: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:611:12: `dif_pos` has been deprecated: Use `dite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  d̵i̵f̵_̵p̵o̵s̵d̲i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:631:10: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:641:10: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+⚠ [4054/4193] Built Airy1GumbelContrib.Gaussian.MillsRatio (9.6s)
+warning: Airy1GumbelContrib/Gaussian/MillsRatio.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Gaussian/MillsRatio.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Gaussian/MillsRatio.lean: imports `Mathlib.Analysis.Asymptotics.AsymptoticEquivalent` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Gaussian/MillsRatio.lean: imports `Mathlib.MeasureTheory.Integral.IntegralEqImproper` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Gaussian/MillsRatio.lean: imports `Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4055/4193] Built Airy1Gumbel.Newman (9.9s)
+warning: Airy1Gumbel/Newman.lean: imports `Mathlib.Probability.Moments.Covariance` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Newman.lean: imports `Mathlib.MeasureTheory.Integral.DominatedConvergence` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Newman.lean: imports `Mathlib.MeasureTheory.Function.LpSpace.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Newman.lean: imports `Mathlib.Topology.MetricSpace.Lipschitz` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Newman.lean: imports `Mathlib.Analysis.SpecialFunctions.NonIntegrable` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4056/4193] Built Airy1GumbelContrib.FredholmDet.MatrixPlemelj (10s)
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.Matrix.Normed` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.Calculus.SmoothSeries` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.Calculus.Deriv.Polynomial` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.Calculus.Deriv.Shift` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.Calculus.MeanValue` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.SpecialFunctions.Exponential` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4057/4193] Built Airy1Gumbel.Normalization (10s)
+warning: Airy1Gumbel/Normalization.lean: imports `Mathlib.Tactic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Normalization.lean: imports `Mathlib.Analysis.SpecialFunctions.Log.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Normalization.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Normalization.lean: imports `Mathlib.Analysis.SpecialFunctions.Exp` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4058/4193] Built Airy1GumbelContrib.Airy.BesselK13 (5.2s)
+warning: Airy1GumbelContrib/Airy/BesselK13.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/BesselK13.lean: imports `Mathlib.Analysis.SpecialFunctions.Trigonometric.Series` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4059/4193] Built Airy1Gumbel.Groeneboom (6.5s)
+warning: Airy1Gumbel/Groeneboom.lean:131:22: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/Groeneboom.lean:147:22: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+⚠ [4060/4193] Built Airy1GumbelContrib.HilbertSchmidt.KernelHS (8.7s)
+warning: Airy1GumbelContrib/HilbertSchmidt/KernelHS.lean: imports `Mathlib.MeasureTheory.Function.L2Space` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/HilbertSchmidt/KernelHS.lean: imports `Mathlib.MeasureTheory.Integral.MeanInequalities` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/HilbertSchmidt/KernelHS.lean: imports `Mathlib.MeasureTheory.Integral.Prod` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4061/4193] Built Airy1GumbelContrib.Airy.AiryODE (9.6s)
+warning: Airy1GumbelContrib/Airy/AiryODE.lean: imports `Mathlib.Analysis.Calculus.UniformLimitsDeriv` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryODE.lean: imports `Mathlib.Analysis.SpecialFunctions.Gamma.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryODE.lean: imports `Mathlib.Analysis.SpecificLimits.Normed` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4062/4193] Built Airy1Gumbel.BlockExtremes (9.1s)
+warning: Airy1Gumbel/BlockExtremes.lean: imports `Mathlib.MeasureTheory.Measure.Typeclasses.Probability` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/BlockExtremes.lean: imports `Mathlib.MeasureTheory.Constructions.BorelSpace.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/BlockExtremes.lean: imports `Mathlib.Analysis.SpecificLimits.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/BlockExtremes.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Continuity` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/BlockExtremes.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4063/4193] Built Airy1GumbelContrib.Airy.AiryReal (2.9s)
+warning: Airy1GumbelContrib/Airy/AiryReal.lean: imports `Mathlib.Analysis.Complex.RealDeriv` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4064/4193] Built Airy1GumbelContrib.TraceClass.TraceClass (4.3s)
+warning: Airy1GumbelContrib/TraceClass/TraceClass.lean: imports `Mathlib.Analysis.Normed.Operator.Compact.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/TraceClass/TraceClass.lean: imports `Mathlib.Analysis.Normed.Operator.Compact.FiniteDimension` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4065/4193] Built Airy1Gumbel.Assembly (6.8s)
+warning: Airy1Gumbel/Assembly.lean: imports `Mathlib.MeasureTheory.Constructions.BorelSpace.Order` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Assembly.lean: imports `Mathlib.Tactic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Assembly.lean:157:30: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/Assembly.lean:164:10: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/Assembly.lean:164:44: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/Assembly.lean:165:10: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/Assembly.lean:165:20: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+⚠ [4066/4193] Built Airy1GumbelContrib.TraceClass.FredholmTwo (6.6s)
+warning: Airy1GumbelContrib/TraceClass/FredholmTwo.lean: imports `Mathlib.Analysis.Analytic.OfScalars` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/TraceClass/FredholmTwo.lean: imports `Mathlib.Analysis.SpecialFunctions.Exponential` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/TraceClass/FredholmTwo.lean: imports `Mathlib.Analysis.Calculus.FDeriv.Analytic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4067/4193] Built Airy1GumbelContrib.AiryKernel.TraceProduct (6.7s)
+warning: Airy1GumbelContrib/AiryKernel/TraceProduct.lean: imports `Mathlib.MeasureTheory.Integral.DominatedConvergence` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/AiryKernel/TraceProduct.lean: imports `Mathlib.MeasureTheory.Measure.SeparableMeasure` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/AiryKernel/TraceProduct.lean:161:2: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+warning: Airy1GumbelContrib/AiryKernel/TraceProduct.lean:193:2: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+⚠ [4068/4193] Built Airy1GumbelContrib.Airy.AiryBessel (8.2s)
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean: imports `Mathlib.Analysis.SpecialFunctions.Gamma.Beta` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean: imports `Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean: imports `Mathlib.Analysis.Calculus.ParametricIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean: imports `Mathlib.Analysis.ODE.Gronwall` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean: imports `Mathlib.MeasureTheory.Integral.IntegralEqImproper` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean:773:8: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean:796:14: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean:806:14: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+✔ [4069/4193] Built Airy1Gumbel.GumbelLimit (4.6s)
+✔ [4070/4193] Built Airy1GumbelContrib.Airy.AiryUniqueness (6.4s)
+✔ [4071/4193] Built Airy1GumbelContrib.TraceClass.FredholmOne (11s)
+⚠ [4072/4193] Built Airy1GumbelContrib.Airy.AiryAsymptotics (11s)
+warning: Airy1GumbelContrib/Airy/AiryAsymptotics.lean: imports `Mathlib.Analysis.SpecialFunctions.Integrals.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryAsymptotics.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4073/4193] Built Airy1GumbelContrib.Airy.AiryContour (11s)
+warning: Airy1GumbelContrib/Airy/AiryContour.lean: imports `Mathlib.Analysis.Complex.TaylorSeries` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryContour.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryContour.lean: imports `Mathlib.MeasureTheory.Integral.Gamma` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [4074/4193] Built Airy1GumbelContrib.FredholmDet.EntireDet (4.4s)
+⚠ [4075/4193] Built Airy1Gumbel.ContinuumMax (13s)
+warning: Airy1Gumbel/ContinuumMax.lean: imports `Mathlib.Order.ConditionallyCompleteLattice.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/ContinuumMax.lean: imports `Mathlib.Topology.Compactness.Compact` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/ContinuumMax.lean: imports `Mathlib.Topology.Order.Compact` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [4076/4193] Built Airy1GumbelContrib.Airy.AiryIdentity (4.0s)
+⚠ [4077/4193] Built Airy1GumbelContrib.FredholmDet.DiskAgreement (5.7s)
+warning: Airy1GumbelContrib/FredholmDet/DiskAgreement.lean: imports `Mathlib.Analysis.Normed.Group.Tannery` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/DiskAgreement.lean: imports `Mathlib.Analysis.Analytic.Uniqueness` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4078/4193] Built Airy1GumbelContrib.FredholmDet.TraceNorm (10s)
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean: imports `Mathlib.Analysis.InnerProductSpace.ProdL2` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean:117:8: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+
+Hint: Replace the deprecated name:
+  C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵s̵m̵u̵l̵_̵a̵p̵p̵l̵y̵s̲m̲u̲l̲_̲a̲p̲p̲l̲y̲
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean:315:20: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+
+Hint: Replace the deprecated name:
+  C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵s̵m̵u̵l̵_̵a̵p̵p̵l̵y̵s̲m̲u̲l̲_̲a̲p̲p̲l̲y̲
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean:320:8: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+
+Hint: Replace the deprecated name:
+  C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵s̵m̵u̵l̵_̵a̵p̵p̵l̵y̵s̲m̲u̲l̲_̲a̲p̲p̲l̲y̲
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean:459:50: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+
+Hint: Replace the deprecated name:
+  C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵a̲d̲d̲_̲a̲p̲p̲l̲y̲
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean:717:34: `ofReal_norm_eq_enorm` has been deprecated: Use `ofReal_norm` instead
+
+Hint: Replace the deprecated name:
+  ofReal_norm_̵e̵q̵_̵e̵n̵o̵r̵m̵
+⚠ [4079/4193] Built Airy1GumbelContrib.Airy.AiryLaplace (7.3s)
+warning: Airy1GumbelContrib/Airy/AiryLaplace.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [4080/4193] Built Airy1GumbelContrib.FredholmDet.RankOneWitness (3.5s)
+✔ [4081/4193] Built Airy1GumbelContrib.FredholmDet.DetIsometry (4.2s)
+✔ [4082/4193] Built Airy1GumbelContrib.Airy.AiryLeading (9.7s)
+⚠ [4083/4193] Built Airy1GumbelContrib.FredholmDet.TraceClassAdd (4.9s)
+warning: Airy1GumbelContrib/FredholmDet/TraceClassAdd.lean: imports `Mathlib.SetTheory.Cardinal.Arithmetic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [4084/4193] Built Airy1GumbelContrib.Airy.AiryLaplaceFull (7.6s)
+⚠ [4085/4193] Built Airy1GumbelContrib.FredholmDet.SimonBound (10s)
+warning: Airy1GumbelContrib/FredholmDet/SimonBound.lean:342:8: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+
+Hint: Replace the deprecated name:
+  C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵a̲d̲d̲_̲a̲p̲p̲l̲y̲
+⚠ [4086/4193] Built Airy1GumbelContrib.AiryKernel.AiryKernel (10s)
+warning: Airy1GumbelContrib/AiryKernel/AiryKernel.lean: imports `Mathlib.MeasureTheory.Integral.IntegralEqImproper` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/AiryKernel/AiryKernel.lean: imports `Mathlib.Analysis.SpecialFunctions.ImproperIntegrals` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4087/4193] Built Airy1GumbelContrib.Airy.AiryFourier (10s)
+warning: Airy1GumbelContrib/Airy/AiryFourier.lean: imports `Mathlib.Analysis.Distribution.TemperedDistribution` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [4088/4193] Built Airy1GumbelContrib.FredholmDet.Multiplicativity (11s)
+⚠ [4089/4193] Built Airy1GumbelContrib.Airy.AiryTransform (4.3s)
+warning: Airy1GumbelContrib/Airy/AiryTransform.lean: imports `Mathlib.Analysis.Distribution.FourierMultiplier` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4090/4193] Built Airy1GumbelContrib.AiryKernel.BackwardAiry (17s)
+warning: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean:1867:4: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean:2169:10: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean:2176:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+info: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean:2372:39: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+✔ [4091/4193] Built Airy1GumbelContrib.Airy.AiryTransformL2 (3.5s)
+✔ [4092/4193] Built Airy1GumbelContrib.AiryKernel.Conjugates (3.3s)
+✔ [4093/4193] Built Airy1GumbelContrib.AiryKernel.Conjugate2to2 (4.9s)
+⚠ [4094/4193] Built Airy1GumbelContrib.AiryKernel.GaussianSaddle (7.7s)
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:127:37: Variable name `d` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _d
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:128:37: Variable name `d` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _d
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:137:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:136:4: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+info: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:205:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:254:10: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:204:4: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:253:10: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+info: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:331:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:330:4: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:650:47: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:677:23: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:677:35: Unused tactic linter: `rfl` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:677:52: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:680:23: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:680:35: Unused tactic linter: `rfl` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:686:25: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:686:37: Unused tactic linter: `rfl` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:697:23: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:697:35: Unused tactic linter: `rfl` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:677:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:680:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:686:25: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:697:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:707:23: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:707:35: Unused tactic linter: `rfl` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:707:52: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:707:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:823:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:816:35: Variable name `hM` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [4095/4193] Built Airy1GumbelContrib.AiryKernel.ConjugateW (11s)
+⚠ [4096/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalSumEst (5.3s)
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalSumEst.lean:237:57: Variable name `hχ0` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hχ0
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [4097/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalOps (8.0s)
+✔ [4098/4193] Built Airy1GumbelContrib.Fdd.GaussTools (3.4s)
+⚠ [4099/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalTrace (4.2s)
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalTrace.lean:497:5: Variable name `hQα` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hQα
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [4100/4193] Built Airy1GumbelContrib.Fdd.FddKernel (2.7s)
+✔ [4101/4193] Built Airy1GumbelContrib.Fdd.FddVBound (10s)
+✔ [4102/4193] Built Airy1GumbelContrib.AiryKernel.ConjugateV (35s)
+⚠ [4103/4193] Built Airy1GumbelContrib.TwoInterval.SectorRR (20s)
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:837:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:846:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1005:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1044:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1192:10: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1603:2: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1725:59: Variable name `hCa` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCa
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1726:5: Variable name `hφnn` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hφnn
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:2598:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:3038:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/TwoInterval/SectorRR.lean:3157:54: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [4104/4193] Built Airy1GumbelContrib.AiryKernel.TraceExpansion (15s)
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:284:33: Variable name `hT` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hT
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:323:35: Variable name `hT` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hT
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:657:15: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:673:15: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:871:19: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:894:19: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1088:15: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1106:15: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1220:15: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+info: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1394:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1548:31: Variable name `hT` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hT
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1771:17: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1796:17: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1807:17: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1987:12: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1988:12: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+⚠ [4105/4193] Built Airy1GumbelContrib.AiryKernel.ConjugateUPhi (16s)
+warning: Airy1GumbelContrib/AiryKernel/ConjugateUPhi.lean: imports `Mathlib.Analysis.Real.Pi.Bounds` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/AiryKernel/ConjugateUPhi.lean:1080:47: Variable name `haeq` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _haeq
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [4106/4193] Built Airy1GumbelContrib.TwoInterval.FRExponents (19s)
+warning: Airy1GumbelContrib/TwoInterval/FRExponents.lean: imports `Mathlib.MeasureTheory.Integral.Prod` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/TwoInterval/FRExponents.lean: imports `Mathlib.Analysis.SpecialFunctions.ImproperIntegrals` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+info: Airy1GumbelContrib/TwoInterval/FRExponents.lean:764:40: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/FRExponents.lean:832:12: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/FRExponents.lean:1493:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/FRExponents.lean:1713:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+✔ [4107/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalMembership (7.8s)
+✔ [4108/4193] Built Airy1GumbelContrib.AiryKernel.TailAsymptotic (34s)
+✔ [4109/4193] Built Airy1GumbelContrib.AiryKernel.Touching (4.6s)
+⚠ [4110/4193] Built Airy1Gumbel.ExternalInputs (5.3s)
+warning: Airy1Gumbel/ExternalInputs.lean: imports `Mathlib.MeasureTheory.Measure.Typeclasses.Probability` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/ExternalInputs.lean: imports `Mathlib.Probability.Moments.Covariance` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/ExternalInputs.lean: imports `Mathlib.Topology.MetricSpace.Lipschitz` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/ExternalInputs.lean:140:0: Definition `Airy1Gumbel.pastSigma` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+warning: Airy1Gumbel/ExternalInputs.lean:147:0: Definition `Airy1Gumbel.futureSigma` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+⚠ [4111/4193] Built Airy1GumbelContrib.TwoInterval.SectorFR (32s)
+warning: Airy1GumbelContrib/TwoInterval/SectorFR.lean: imports `Mathlib.MeasureTheory.Integral.Prod` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+info: Airy1GumbelContrib/TwoInterval/SectorFR.lean:1375:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorFR.lean:1595:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+⚠ [4112/4193] Built Airy1GumbelContrib.TwoInterval.SectorFF (36s)
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:367:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:564:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:610:15: This simp argument is unused:
+  Function.uncurry_apply_pair
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:621:15: This simp argument is unused:
+  Function.uncurry_apply_pair
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1080:63: Variable name `hCa` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCa
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1109:64: Variable name `hCa` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCa
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1266:26: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1414:31: Variable name `M` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _M
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1414:52: Variable name `hCa` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCa
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1416:14: Variable name `hCm` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCm
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1642:33: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1804:38: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1834:38: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1934:31: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2053:30: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2084:30: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2116:55: Variable name `hC₁` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hC₁
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2116:70: Variable name `hCa` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCa
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2117:5: Variable name `hCm` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCm
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2298:32: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2416:28: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2416:28: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2645:32: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:3018:28: Variable name `ht` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _ht
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:3449:40: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:3515:12: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:3805:5: Variable name `hα` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hα
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:3959:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:4011:14: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:4009:14: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:4010:14: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+✔ [4113/4193] Built Airy1GumbelContrib.AiryKernel.TraceWeight (6.7s)
+⚠ [4114/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalDetRem (34s)
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:550:36: Variable name `hM1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:550:50: Variable name `hr1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:550:64: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:551:7: Variable name `haeq` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _haeq
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:619:36: Variable name `hM1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:619:50: Variable name `hr1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:619:64: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:620:7: Variable name `haeq` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _haeq
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:733:50: Variable name `hM1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:733:64: Variable name `hr1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:733:78: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:734:7: Variable name `haeq` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _haeq
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:971:32: Variable name `hC0` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hC0
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:995:46: Variable name `hM1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:995:60: Variable name `hr1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:995:74: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:996:7: Variable name `haeq` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _haeq
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1261:39: Variable name `hM0` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM0
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1261:54: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1262:7: Variable name `hrM` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hrM
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1262:39: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1339:39: Variable name `hM0` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM0
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1339:54: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1340:7: Variable name `hrM` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hrM
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1340:39: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [4115/4193] Built Airy1Gumbel.MesoscopicInputs (3.5s)
+warning: Airy1Gumbel/MesoscopicInputs.lean: imports `Mathlib.Probability.IdentDistrib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [4116/4193] Built Airy1GumbelContrib.Fdd.FddOp (3.9s)
+✔ [4117/4193] Built Airy1Gumbel.SharpTail (5.6s)
+✔ [4118/4193] Built Airy1GumbelContrib.TwoInterval.SectorRF (6.1s)
+✔ [4119/4193] Built Airy1GumbelContrib.Fdd.FddShift (3.9s)
+✔ [4120/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalShift (6.9s)
+✔ [4121/4193] Built Airy1GumbelContrib.Fdd.FddGOE (8.4s)
+✔ [4122/4193] Built Airy1Gumbel.Touching (7.1s)
+✔ [4123/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalTraceBound (7.1s)
+✔ [4124/4193] Built Airy1GumbelContrib.Fdd.FddCont (9.2s)
+✔ [4125/4193] Built Airy1GumbelContrib.FredholmDet.KernelDet (17s)
+✔ [4126/4193] Built Airy1Gumbel.Separated (6.5s)
+✔ [4127/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalTraceSign (7.3s)
+✔ [4128/4193] Built Airy1GumbelContrib.FredholmDet.TracePowDet (2.9s)
+✔ [4129/4193] Built Airy1Gumbel.Mixing (4.1s)
+✔ [4130/4193] Built Airy1Gumbel.MixingRecord (5.5s)
+✔ [4131/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalN3 (9.0s)
+✔ [4132/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalPlemelj (10s)
+✔ [4133/4193] Built Airy1Gumbel.MesoscopicSpec (4.2s)
+✔ [4134/4193] Built Airy1GumbelContrib.FredholmDet.BlockDet (13s)
+✔ [4135/4193] Built Airy1GumbelContrib.TwoTime.BlockDetGOE (6.7s)
+✔ [4136/4193] Built Airy1Gumbel.MesoscopicCover (7.6s)
+✔ [4137/4193] Built Airy1Gumbel.MesoscopicPair (7.8s)
+✔ [4138/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeSplit (9.2s)
+⚠ [4139/4193] Built Airy1Gumbel.Upcrossing (8.3s)
+warning: Airy1Gumbel/Upcrossing.lean: imports `Mathlib.Probability.Distributions.Gaussian.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Upcrossing.lean:123:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: Airy1Gumbel/Upcrossing.lean:211:2: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: Airy1Gumbel/Upcrossing.lean:382:51: Variable name `hk` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hk
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+✔ [4140/4193] Built Airy1Gumbel.MesoscopicSum (22s)
+✔ [4141/4193] Built Airy1Gumbel.MesoscopicRecord (3.1s)
+✔ [4142/4193] Built Airy1Gumbel.MesoscopicTP (14s)
+✔ [4143/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalN2 (50s)
+✔ [4144/4193] Built Airy1GumbelContrib.Fdd.FddIndep (3.9s)
+✔ [4145/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeBlock (4.5s)
+✔ [4146/4193] Built Airy1GumbelContrib.Mesh.MeshLimit (5.5s)
+✔ [4147/4193] Built Airy1GumbelContrib.SmallWeight.FddSmallWeight (7.2s)
+✔ [4148/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeBridge (7.7s)
+✔ [4149/4193] Built Airy1GumbelContrib.Fdd.FddDrop (8.7s)
+✔ [4150/4193] Built Airy1GumbelContrib.TwoInterval.TwoIntervalSign (15s)
+⚠ [4151/4193] Built Airy1GumbelContrib.Mesh.Skeleton (6.2s)
+warning: Airy1GumbelContrib/Mesh/Skeleton.lean: imports `Mathlib.Probability.BrownianMotion.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [4152/4193] Built Airy1GumbelContrib.Mesh.TwoBlockMesh (7.6s)
+⚠ [4153/4193] Built Airy1Gumbel.FddRecord (6.7s)
+warning: Airy1Gumbel/FddRecord.lean: imports `Mathlib.Probability.CDF` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [4154/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeL2 (7.6s)
+✔ [4155/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeSchur (11s)
+✔ [4156/4193] Built Airy1GumbelContrib.Mesh.Reflection (8.4s)
+✔ [4157/4193] Built Airy1Gumbel.Airy1Process (5.4s)
+✔ [4158/4193] Built Airy1Gumbel.QRRecordSanity (10s)
+✔ [4159/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeKernel (6.4s)
+✔ [4160/4193] Built Airy1Gumbel.MeshHitting (3.1s)
+✔ [4161/4193] Built Airy1GumbelContrib.SmallWeight.TwoTimeDefect (17s)
+✔ [4162/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeQNorm (4.6s)
+✔ [4163/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeNonvanishing (4.6s)
+✔ [4164/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeEst (7.5s)
+✔ [4165/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeOpNonvanishing (3.0s)
+✔ [4166/4193] Built Airy1GumbelContrib.SmallWeight.TwoTimeDefectRev (11s)
+⚠ [4167/4193] Built Airy1Gumbel.TruncatedMoment (5.0s)
+warning: Airy1Gumbel/TruncatedMoment.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Integral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/TruncatedMoment.lean: imports `Mathlib.MeasureTheory.Integral.Gamma` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/TruncatedMoment.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/TruncatedMoment.lean: imports `Mathlib.Probability.Process.Kolmogorov` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [4168/4193] Built Airy1Gumbel.GOELeftTail (3.1s)
+✔ [4169/4193] Built Airy1Gumbel.ContinuousVersion (4.3s)
+✔ [4170/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeSharp (16s)
+✔ [4171/4193] Built Airy1GumbelContrib.SmallWeight.SmallWeightDefect (12s)
+✔ [4172/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeSharpSqrt (8.4s)
+✔ [4173/4193] Built Airy1Gumbel.LowerBound (7.7s)
+⚠ [4174/4193] Built Airy1Gumbel.ContinuousInstance (3.3s)
+warning: Airy1Gumbel/ContinuousInstance.lean: imports `Mathlib.Analysis.Real.Cardinality` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+✔ [4175/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeSharpD (4.0s)
+✔ [4176/4193] Built Airy1Gumbel.UpcrossingRecord (2.9s)
+✔ [4177/4193] Built Airy1Gumbel.TwoPointBound (3.5s)
+✔ [4178/4193] Built Airy1GumbelContrib.TwoTime.TwoTimeSharpE (3.3s)
+✔ [4179/4193] Built Airy1GumbelContrib (2.3s)
+✔ [4181/4193] Built Airy1Gumbel.BlockLaw (3.4s)
+✔ [4182/4193] Built Airy1Gumbel.TwoPointSharp (3.3s)
+✔ [4183/4193] Built Airy1Gumbel.BlockLawUnconditional (2.8s)
+✔ [4184/4193] Built Airy1Gumbel.TwoIntervalLaw (2.0s)
+✔ [4185/4193] Built Airy1Gumbel.TwoPointSharpSqrt (3.1s)
+✔ [4186/4193] Built Airy1Gumbel.UpcrossingTheorem (2.8s)
+✔ [4187/4193] Built Airy1Gumbel.TwoPointSharpD (3.3s)
+✔ [4188/4193] Built Airy1Gumbel.FinalHeadline (2.5s)
+✔ [4189/4193] Built Airy1Gumbel.TwoPointSharpE (3.1s)
+✔ [4190/4193] Built Airy1Gumbel.CarrierTransfer (2.6s)
+✔ [4191/4193] Built Airy1Gumbel.FinalHeadlineTP (2.4s)
+✔ [4192/4193] Built Airy1Gumbel (2.3s)
+Build completed successfully (4193 jobs).
+lean-pkg-build: end
+PASS: 696 exact theorem names; approved axioms only
+positive-audit: exit 0
+axiom-transcript: begin
+'Airy1Gumbel.measureReal_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measureReal_univ' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measureReal_mono' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measureReal_compl' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measureReal_union_add_inter' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measureReal_inter_add_sdiff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measureReal_biUnion_finset_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measureReal_inter_ge_sub_compl' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.abs_measureReal_inter_sub_le_compl' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.biUnion_finset_insert' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_biUnion_finset' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pair_sum_insert' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sum_measureReal_sub_pair_le_biUnion' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableExc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Exc_inter' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Safe_eq_compl_biUnion' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSafe' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Exc_real_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Exc_inter_real_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Icc_eq_Ico_succ_right_nat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sum_Icc_eq_sum_range_nat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sum_range_triangle' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sum_Ico_pair_sub_eq_sum_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.coreBlock_subset_range' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.coreBlock_card' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.coreBlock_separated' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.safe_Ico_bounds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.safe_coreBlock_bounds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.oneTail_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pairTail_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.summable_alpha_add' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_L13_div_N' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eventually_qN_add_le_div' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mN_le_qN_eventually' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sum_Icc_le_four_piece' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.far_piece_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.D_eventually_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_log_rpow_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_log_rpow_neg_one_third' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.rpow_neg_one_third' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelU_tendsto_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1BlockExtremes.tail_normalized' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_qN_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tsum_alpha_tail_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mixing_tail_of_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_log_one_add_div' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.log_succ_sub_log' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_log_ratio_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_log_ratio_rpow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.rpow_two_thirds_sub_one_bounds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.one_sub_rpow_neg_third_bounds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelB_succ_ratio' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelA_diff_main_tendsto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelA_diff_corr_tendsto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelA_succ_diff_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelA_succ_diff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_of_two_scale' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_of_two_scale' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.abs_prod_sub_prod_le_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_of_core_bounds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Safe_union' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Safe_biUnion' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Safe_range_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.coreBlock_disjoint' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.card_coreUnion' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.card_discarded_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_nat_div_div' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_oneTailExc_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_qN_div_N' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_qN_mul_p_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_ell_p' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_alpha_qN' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.hcore_eventually' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.iInter_range_succ' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.decouple_telescope_aux' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.decouple_telescope' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.piece1_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.hproduct_eventually' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1BlockExtremes.gumbel_limit' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyKappa_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyGamma_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyCStar_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyGamma_rpow_three_halves' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyKappa_mul_airyGamma_rpow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.log_airyKappa' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.log_airyGamma' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.log_airyCStar' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.log_const' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyH_const_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.log_nat_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.one_add_pos_of_abs_le_half' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sqrt_diff_mul' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.four_mul_denom_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.rpow_three_halves_eq_mul_sqrt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.rpow_three_halves_one_add' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.abs_airyCorrC_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_L_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_logL_div_L' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_logL_sq_div_L' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_one_div_L' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_epsN' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.epsN_eventually_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelA_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelA_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelB_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.kappa_gumbelA_rpow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.log_gumbelA' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.three_halves_aux_div' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.L_mul_epsN' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyH_gumbelA_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyH_gumbelA' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelU_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.deltaN_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_deltaN' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyH_gumbelU_diff_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_main_term_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_normalization' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelAR_natCast' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelBR_natCast' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelUR_natCast' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelBR_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.mem_unit_block' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.block_bddAbove' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.le_block_sup' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.block_sup_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.continuum_event_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.normalized_event_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.tendsto_nat_floor_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_nat_pred_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.continuous_gumbelCDF' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_gumbelCDF_gt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_gumbelCDF_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_tendsto' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.gumbelB_ratio_inv' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelA_diff_succ_ratio' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelB_succ_ratio_floor' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelB_ratio_inv_floor' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelA_succ_diff_floor' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelB_inv_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelBR_squeeze' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelAR_main_sub_div_tendsto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelAR_corr_step1_tendsto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelAR_corr_step2_tendsto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelAR_corr_sub_div_tendsto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelAR_sub_div_tendsto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelUR_eventually_le_gumbelU_succ' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelU_floor_eventually_le_gumbelUR' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelU_succ_w₂' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbelU_w₁_succ' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.normalized_event_eq_real' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.measurable_twoSidedBM' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_twoSidedBMAux' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_twoSidedBM_uncurry' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.continuous_twoSidedBMAux' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.brownian_zero_ae' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.twoSidedBMMeasure_fst_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.twoSidedBMMeasure_snd_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.twoSidedBM_ae_eq_aux' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.continuous_twoSidedBM' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.twoSidedBM_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.nndist_toNNReal_add_toNNReal_neg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.hasLaw_twoSidedBMAux_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.hasLaw_twoSidedBM_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.iIndepFun_fst_prod' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.iIndepFun_snd_prod' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.iIndepFun_brownian_incr_antitone' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.iIndepFun_pair_of_indep' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.hasIndepIncrements_twoSidedBMAux' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.hasIndepIncrements_twoSidedBM' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sub_eq_sum_Ico_incr' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.map_restrict_eq_of_indep_incr' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.map_restrict_twoSidedBM_shift_incr' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.map_twoSidedBM_shift_incr' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomIntegrand_self' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboom_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sqrt_two_mul_le_groeneboomS' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomS_zero_ae' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.hasLaw_twoSidedBM_eval' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.hasLaw_sqrt_two_mul_twoSidedBM' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ae_fst_prod' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ae_snd_prod' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.brownian_div_atTop_fst' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.brownian_div_atTop_snd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_real_toNNReal_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.aux_div_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.aux_div_atBot' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.twoSidedBM_div_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.twoSidedBM_div_atBot' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomGoodEvent_ae' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.continuous_groeneboomIntegrand' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomIntegrand_ratio' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomIntegrand_neg_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomIntegrand_neg_atBot' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboom_exists_neg_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboom_bddAbove' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomU_attained' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.csSup_range_eq_csSup_ratCast_range' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomSup_eq_supQ_of_continuous' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomU_eq_sup_shiftIncr' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_shiftIncr' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_groeneboomSupQ' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_groeneboomSupQ_comp_shiftIncr' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomU_ae_eq_supQ' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.aemeasurable_groeneboomU' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_twoSidedBM_path' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomSupQ_path_ae_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboom_stationary' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.shiftIncr_eq_pathShift' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pathShift_comp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.shiftIncr_add' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_pathShift' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_groeneboomShiftVec' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboom_stationary_fdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomSupQ_stationary_fdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboom_stationary_pair' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomAbsSup_bddAbove' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomAbsSup_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomIntegrand_le_majorant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboom_majorant_neg_atTop' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboom_majorant_neg_atBot' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboom_neg_bound_uniform' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomU_eq_compactSup' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomIntegrand_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomCompactSup_attained' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomCompactSup_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomCompactSup_continuous' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomU_continuousOn_of_good' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomU_continuous_of_good' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.groeneboomU_continuous_ae' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyKappa_eq_kappaC' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyCStar_eq_Cstar' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exp_neg_airyH_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sharp_tail_of_QRUnitBlockLaw' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1BlockExtremes.gumbel_limit_of_QR' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_QR' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized_of_QR' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_tendsto_of_QR' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_of_QR' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized_of_QR' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.pair_adjacent_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRTwoBlockLaw.of_continuum' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pair_adjacent_isEquivalent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pair_adjacent_isBigO' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.touching_of_QR' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1BlockExtremes.gumbel_limit_of_QR₂' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_QR₂' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized_of_QR₂' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_tendsto_of_QR₂' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_of_QR₂' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized_of_QR₂' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.eventually_hsNorm_airyTildeOp_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eventually_fredholmDet_airyTildeOp_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRUnitBlockLaw.law_detOne' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRUnitBlockLaw.iff_law_detOne' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRUnitBlockLaw.detOne_form' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRUnitBlockLaw.iff_detOne_form' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.detOneAiryTilde_two_eq_weight_four' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eventually_detOneAiryTilde_two_eq_weight_four' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRTwoBlockLaw.law_detOne' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRTwoBlockLaw.iff_law_detOne' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRTwoBlockLaw.detOne_form' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRTwoBlockLaw.iff_detOne_form' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pos_of_le_sqrt_two_mul' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sum_Icc_two_le_sum_Icc_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.detKCup_eq_detOneKCup' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eventually_detKCup_eq_detOneKCup' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRTwoIntervalLaw.law_detOne' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.QRTwoIntervalLaw.iff_law_detOne' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.prob_Y0_le_eq_detOne_k1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.joint_exceed_eq_detComb' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.separated_pair_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.rhoM_eq_Cstar_mul_profile' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.separated_sum_tendsto_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.separated_of_QR' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1BlockExtremes.gumbel_limit_of_QR₃' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_QR₃' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized_of_QR₃' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_tendsto_of_QR₃' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_of_QR₃' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized_of_QR₃' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.mixing_tail_of_alpha_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pair_mix_of_decouple' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1BlockExtremes.gumbel_limit_of_QR₃'' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_QR₃'' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized_of_QR₃'' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_tendsto_of_QR₃'' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_of_QR₃'' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized_of_QR₃'' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.comap_le_pastSigma' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.comap_le_futureSigma' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_pastSigma_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_futureSigma_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_setOf_forall_mem_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ratBlocks_countable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.forall_le_of_forall_rat_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.blockEvent_ae_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_pastSigma_ratBlocks' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_futureSigma_ratBlocks' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.abs_sub_mul_le_one_of_unit' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.CubicStrongMixing.mixCY_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.CubicStrongMixing.alphaY_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.CubicStrongMixing.alphaY_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.CubicStrongMixing.one_le_alphaY_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.decouple_of_CubicStrongMixing' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pastSigma_const' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.cubicStrongMixing_const_nonempty' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.not_cubicStrongMixing_of_frozen' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1BlockExtremes.gumbel_limit_of_QR₄' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_QR₄' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized_of_QR₄' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_tendsto_of_QR₄' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_of_QR₄' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized_of_QR₄' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.abs_truncAt_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.abs_truncAt_le_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.truncAt_of_abs_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.monotone_truncAt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lipschitzWith_truncAt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eventually_truncAt_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.norm_le_add_of_lipschitzWith' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.memLp_two_comp_lipschitz' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_integral_comp_truncAt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.cov_nonneg_of_monotone_lipschitz' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.monotone_const_mul_add_of_lipschitz' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.monotone_const_mul_sub_of_lipschitz' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lipschitzWith_const_mul_add_smul' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.newman_lemma3' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.covariance_comp_monotone_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.not_memLp_two_inv_indicator' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.CubicCovarianceDecay.theta_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.CubicCovarianceDecay.memLp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.PairStationary.cov_shift' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ProcessAssociated.pair_pqd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.newman_pair' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pairStationary_const' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.cubicCovarianceDecay_const_nonempty' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.localModulusEstimate_const_nonempty' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.processAssociated_const_nonempty' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.fredholmDetOne_one_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrUnitBlockLaw_rhs_summable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoBlockLaw_rhs_summable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eventually_abs_piT_sub_traceLead_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eventually_piT_joint_consistent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrUnitBlockLaw_rhs_mem_Ioo' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoBlockLaw_rhs_mem_Ioo' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrRecords_joint_consistent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoInterval_guard' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoInterval_two_admissible' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.detOneKCup_pos_of_guard' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.detKCup_pos_eventually' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoInterval_kcup_small_uniform' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoInterval_plemeljSummable_uniform' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoInterval_implied_joint_abs_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoInterval_implied_joint_ge_assoc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoInterval_implied_joint_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoInterval_implied_joint_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gridPt_floor_mem_close' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gt_sub_one_or_mem_oscEvent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_grid_of_block_gt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.modulus_threshold_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.cover_of_LocalModulusEstimate' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampInd_monotone' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampInd_lipschitzWith' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampInd_measurable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampInd_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampInd_le_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampInd_mem_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.abs_clampInd_le_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampInd_eq_one_of_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampInd_eq_zero_of_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.indicator_lt_le_clampInd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampInd_le_indicator' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.StationaryRealProcess.measureReal_gt_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.StationaryRealProcess.integral_clampInd_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.grid_pair_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.ae_A_zero_le_Y_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.one_point_le_block' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mesoscopic_of_records' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized_of_QR₅' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1BlockExtremes.gumbel_limit_of_QR₅' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_QR₅' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized_of_QR₅' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_tendsto_of_QR₅' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_of_QR₅' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.airyKappa_mul_rpow_three_halves' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.one_half_lt_cube_of_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mesoTheta_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mesoTheta_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mesoTheta_mul_cube_sub' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mesoTheta_margin_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_airyH_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_airyH_ge' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_sub_two_le_sqrt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_rpow_third_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_exponent_grid' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_exponent_modulus' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_exponent_cov' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_tendsto_zero_of_le_pow_exp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.MesoscopicBounds.block_pair_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_envelope_tendsto_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mesoscopic_of_bounds' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1FddPositive_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_orthant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ext_of_orthant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eq_of_orthant_real' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_measureReal_orthant_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.HasBoxCdfLaw.tendsto_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.not_hasBoxCdfLaw_airy1FinCdf_neg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.not_exists_law_airy1FinCdf_neg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.not_hasBoxCdfLaw_const_two' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1FinCdf_law_empty' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isProbabilityMeasure_airy1Fdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Fdd_orthant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Fdd_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1FddPositive.airy1FinCdf_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1FddPositive.airy1FinCdf_le_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1FddPositive.monotone_airy1FinCdf' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1FddPositive.tendsto_airy1FinCdf_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Fdd_singleton_orthant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_restrictErase' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Fdd_map_erase' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Fdd_map_restrict₂' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isProjectiveMeasureFamily_airy1Fdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isProjectiveLimit_airy1Law' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_map_restrict' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eq_airy1Law_of_isProjectiveLimit' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.setOf_forall_le_eq_cylinder' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.setOf_forall_mem_le_eq_cylinder' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_setOf_forall_mem_finset_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_orthant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_fdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.extendLevels_apply' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eq_airy1Law_of_fdd' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_timeShift' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_map_timeShift' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pairStationary_airy1Process' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampTo_mem' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.le_of_clampTo_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lt_of_lt_clampTo' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_clampTo' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.abs_clampTo_sub_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.cdfOfEntries_congr' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1FinCdf_singleton_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.fwdDefectBound_exists' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.revDefectBound_exists' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_le_eval' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_fwd_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_rev_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_clamp_gap_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.truncMomentConst_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.one_div_rpow_neg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lintegral_clamp_incr_rpow_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_clamp_moment' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lintegral_edist_clamp_le_of_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lintegral_edist_clamp_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lintegral_edist_clamp_le_global' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isKolmogorovProcess_clamp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isKolmogorovProcess_clamp_nnreal' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isKolmogorovProcess_clamp_of_diam_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ratNN_countable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.dense_ratNN' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.zero_mem_ratNN' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampTo_clampTo' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampTo_le_self' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampTo_le_max' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampTo_eq_self_of_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampTo_eq_max_of_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.continuous_clampTo' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.iSup_clampTo' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isKolmogorovProcess_windowProc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.winPts_countable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.hasCoveringExponent_Ico_zero_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.window_tail_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_gt_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measure_unbddEvent_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_truncMomentConst_div' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_unbddEvent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ae_bddAbove_rat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_holder_modification_clamp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.le_add_natCast' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_clampMod' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampMod_ae_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.holder_clampMod' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.continuous_clampMod' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_goodSet' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ae_mem_goodSet' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampMod_eq_clampTo' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampMod_mem' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampMod_mono' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.clampMod_le_of_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_clampMod_stable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_airy1ContL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1ContL_eq_clampMod' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1ContL_eventuallyEq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.continuous_airy1ContL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.holder_airy1ContL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1ContL_ge' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1ContL_ae_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_continuous_version_max' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.goeLeftTail_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_cubicEnvelope' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.not_hasCubicLeftTail_of_tendsto' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.HasCubicLeftTail.tendsto_zero' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.not_hasCubicLeftTail_const_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.not_hasCubicLeftTail_airy1FinCdf_reflect' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.goeLeftTail_consistent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.goeLeftTail_iff_eventually' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.GOELeftTail.tail_at' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_le_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.GOELeftTail.airy1Law_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.GOELeftTail.airy1Law_le_ofReal' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.fwdDefectBoundOn_one_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.revDefectBoundOn_one_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_fwd_le_on' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_rev_le_on' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_clamp_gap_le_on' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lintegral_clamp_incr_rpow_le_on' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lintegral_edist_clamp_le_on_of_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lintegral_edist_clamp_le_on' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isKolmogorovProcess_windowProcS' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.window_low_tail_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_le_eq_ofReal' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1FinCdf_singleton_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measure_lowEvent_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_exp_cubic' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.kcA_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.kcB_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.truncMomentConst_four' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_lowBound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lowEvent_real_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_lowEvent_of' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ae_bddBelow_rat_of' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_goodLowSet' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ae_mem_goodLowSet_of' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1ContL_eq_max' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1ContL_ge_of_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_airy1ContL_stable' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_airy1Cont' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Cont_eq_airy1ContL' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Cont_eventuallyEq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.continuous_airy1Cont' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.holder_airy1Cont' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.iInf_max_neg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Cont_ae_eq_of' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_lowEvent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ae_bddBelow_rat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Cont_ae_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_continuous_version' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.countablyDetermined_of_measurableSet' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measure_eq_one_of_update_mem' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isEmpty_localModulusEstimate_of_coord' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isEmpty_localModulusEstimate_airy1Process' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1ContR_of_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1ContR_of_not_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_airy1ContR' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1ContR_ae_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.continuousOn_airy1ContR' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.lt_sSup_image_Icc_iff_rat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1BlockMax_gt_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurable_airy1BlockMax' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1CMax_Y' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_ratExc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.timeShift_preimage_ratExc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_timeShift_preimage' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ae_airy1ContR_rat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1BlockMax_event_ae' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1BlockMax_stat_marginal' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1BlockMax_stat_pair' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1SRP_A' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pairStationary_airy1SRP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.isEmpty_localModulusEstimate_airy1SRP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mesoscopic_of_records₆' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized_of_QR₆' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1BlockExtremes.gumbel_limit_of_QR₆' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_QR₆' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized_of_QR₆' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_of_tendsto_of_QR₆' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_of_QR₆' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₆' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.upEta_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sum_upEta' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.sum_upEta_lt_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.bandClamp_of_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.bandClamp_of_ge' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_level_of_bandClamp_gap' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.dyadic_chain_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_bad_dyadic_step' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_dyadic_gt_of_continuousOn' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mem_upBad_of_cross' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.grid_or_upBad_of_block_gt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measureReal_upLevel_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.upLevel_term_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measureReal_iUnion_le_of_le_geom' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eventually_upRho_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eventually_two_upD_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.eventually_measureReal_upBad_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.cover_of_upcrossing' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_lag_envelope_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.highLevelUpcrossingTail_const' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.highLevelUpcrossingTail_timeConst' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gaussianReal_real_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.not_flippedUpcrossingTail_timeConst' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.not_highLevelUpcrossingTail_switch' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meshSet_subset_succ' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meshSet_mono' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meshSet_subset_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_meshSet_near' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_div_two_pow' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.forall_Icc_le_iff_forall_meshSet' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_meshEvent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.antitone_meshEvent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.setOf_forall_Icc_le_eq_iInter' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_meshEvent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airyTildeOp_congr_weight' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1BlockMax_zero_le_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrUnitBlockLaw_airy1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoBlockLaw_airy1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₇' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.meshHittingLimit' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.forall_meshHittingLimit' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.tendsto_airy1FinCdf_meshSet_of_pos' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet'' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrUnitBlockLaw_airy1'' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoBlockLaw_airy1'' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₈' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.airy1ContR_upcrossing_ae_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1SRP_upcrossing_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.highLevelUpcrossingTail_airy1SRP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₉' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.airy1BlockMax_le_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.setOf_two_blocks_eq_iInter' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_twoMeshEvent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.qrTwoIntervalLaw_airy1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₁₀' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.pastSigma_le_aeClosure' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.futureSigma_le_aeClosure' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.covariance_congr_ae' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.ProcessAssociated.ofModification' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.nonempty_cubicStrongMixing_iff_of_modification' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.nonempty_cubicCovarianceDecay_iff_of_modification' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.processAssociated_iff_of_modification' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1SRP_ae_eq_airy1Process' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.cubicStrongMixing_airy1SRP_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.cubicCovarianceDecay_airy1SRP_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.processAssociated_airy1SRP_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final_coord' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.traceNorm_le_of_traceENorm_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.goeLevel0_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.norm_goeOp_lt_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.norm_goeResolvent_le_two' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.neg_psiTP_add_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_abs_airy1FinCdf_pair_const_sub_sq_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.measurableSet_coord_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_coord_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_pair_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_coord_gt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_pair_gt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1Law_twoPoint_sub_sq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.abs_airy1FinCdf_singleton_le_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.twoPointExcess_airy1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1SRP_pair_gt_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.airy1SRP_gt_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pairTP_airy1SRP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pairTP_airy1SRP_field' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.two_thirds_lt_of_rpow_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_qN_le_linear' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_exponent_TP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.MesoscopicBoundsTP.block_pair_le_TP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.meso_envelope_tendsto_zero_TP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mesoscopic_of_boundsTP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.mesoscopic_of_recordsTP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized_of_QRTP' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.mesoscopic_airy1TP' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QRTP' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.exists_abs_airy1FinCdf_pair_const_sub_sq_le_sharp' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.twoPointExcess_airy1_sharp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pairTP_airy1SRP_sharp' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_abs_airy1FinCdf_pair_const_sub_sq_le_sharp_sqrt' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.twoPointExcess_airy1_sharp_sqrt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pairTP_airy1SRP_sharp_sqrt' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_abs_airy1FinCdf_pair_const_sub_sq_le_sharp_d' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.twoPointExcess_airy1_sharp_d' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pairTP_airy1SRP_sharp_d' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.exists_abs_airy1FinCdf_pair_const_sub_sq_le_sharp_e' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Airy1Gumbel.twoPointExcess_airy1_sharp_e' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Airy1Gumbel.pairTP_airy1SRP_sharp_e' depends on axioms: [propext, Classical.choice, Quot.sound]
+axiom-transcript: end
+Traceback (most recent call last):
+  File "<repo>/scripts/audit.py", line 206, in <module>
+    main()
+  File "<repo>/scripts/audit.py", line 185, in main
+    actual = validate_transcript(args.transcript.read_text(), names)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<repo>/scripts/audit.py", line 80, in validate_transcript
+    raise ValueError('Live theorem names differ from the exact expected inventory')
+ValueError: Live theorem names differ from the exact expected inventory
+negative-mutation: rejected as required
+negative-sorry: rejected as required
+PASS: 696 exact theorem names; approved axioms only
+restored-audit: exit 0
+claim-axioms: Airy1Gumbel.Airy1BlockExtremes Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.Airy1BlockExtremes.gumbel_limit Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.twoSidedBM Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.groeneboomS Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.groeneboom_stationary_fdd Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.sharp_tail_of_QRUnitBlockLaw Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.touching_of_QR Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.separated_of_QR Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.pair_mix_of_decouple Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.decouple_of_CubicStrongMixing Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.newman_lemma3 Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.QRTwoIntervalLaw.iff_law_detOne Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.qrRecords_joint_consistent Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.mesoscopic_of_records Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.qrTwoInterval_implied_joint_pos Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.airy1Fdd_map_erase Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.airy1Law_map_timeShift Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.lintegral_clamp_incr_rpow_le Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.exists_continuous_version_max Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.GOELeftTail.airy1Law_le Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.exists_continuous_version Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1 Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.isEmpty_localModulusEstimate_airy1Process Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.not_highLevelUpcrossingTail_switch Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.mesoscopic_of_records₆ Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₆ Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.qrTwoBlockLaw_airy1 Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₇ Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.meshHittingLimit Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.tendsto_airy1FinCdf_meshSet_of_pos Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₈ Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.highLevelUpcrossingTail_airy1SRP Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.qrTwoIntervalLaw_airy1 Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₁₀ Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.cubicStrongMixing_airy1SRP_iff Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.twoPointExcess_airy1 Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.pairTP_airy1SRP_field Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.mesoscopic_of_boundsTP Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂ Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.twoPointExcess_airy1_sharp Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.twoPointExcess_airy1_sharp_sqrt Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.twoPointExcess_airy1_sharp_d Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.twoPointExcess_airy1_sharp_e Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.airyH_gumbelA Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.gumbel_normalization Classical.choice,Quot.sound,propext
+claim-axioms: Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet' Classical.choice,Quot.sound,propext
+claim-axioms-done: 52
+== lean-pkg hypotheses (hyp-probe/1) ==
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.Airy1BlockExtremes","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false}],"data_binders":3}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.Airy1BlockExtremes.gumbel_limit","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false}],"data_binders":5}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false},{"i":6,"head":"Eq","kind":"inductive","module":"Init.Prelude","explicit":true}],"data_binders":6}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false},{"i":6,"head":"Eq","kind":"inductive","module":"Init.Prelude","explicit":true}],"data_binders":6}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.twoSidedBM","binders":[],"data_binders":2}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.groeneboomS","binders":[],"data_binders":2}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.groeneboom_stationary_fdd","binders":[],"data_binders":3}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.sharp_tail_of_QRUnitBlockLaw","binders":[{"i":4,"head":"Airy1Gumbel.QRUnitBlockLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true}],"data_binders":4}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.touching_of_QR","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false},{"i":7,"head":"Airy1Gumbel.QRUnitBlockLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":8,"head":"Airy1Gumbel.QRTwoBlockLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true}],"data_binders":5}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.separated_of_QR","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false},{"i":7,"head":"Airy1Gumbel.QRUnitBlockLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":8,"head":"Airy1Gumbel.QRTwoIntervalLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":11,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":12,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":6}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.pair_mix_of_decouple","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false}],"data_binders":7}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.decouple_of_CubicStrongMixing","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false},{"i":7,"head":"Eq","kind":"inductive","module":"Init.Prelude","explicit":true}],"data_binders":10}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.newman_lemma3","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false},{"i":6,"head":"MeasureTheory.MemLp","kind":"def","module":"Mathlib.MeasureTheory.Function.LpSeminorm.Defs","explicit":true},{"i":7,"head":"MeasureTheory.MemLp","kind":"def","module":"Mathlib.MeasureTheory.Function.LpSeminorm.Defs","explicit":true},{"i":13,"head":"LipschitzWith","kind":"def","module":"Mathlib.Topology.EMetricSpace.Lipschitz","explicit":true},{"i":14,"head":"LipschitzWith","kind":"def","module":"Mathlib.Topology.EMetricSpace.Lipschitz","explicit":true}],"data_binders":9}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.QRTwoIntervalLaw.iff_law_detOne","binders":[],"data_binders":4}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.qrRecords_joint_consistent","binders":[],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.mesoscopic_of_records","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false},{"i":6,"head":"Eq","kind":"inductive","module":"Init.Prelude","explicit":true},{"i":8,"head":"Airy1Gumbel.PairStationary","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":9,"head":"Airy1Gumbel.ProcessAssociated","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":11,"head":"Airy1Gumbel.QRUnitBlockLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":15,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":16,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":17,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":10}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.qrTwoInterval_implied_joint_pos","binders":[{"i":1,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":2,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":1}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.airy1Fdd_map_erase","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":3,"head":"Membership.mem","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":2}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.airy1Law_map_timeShift","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true}],"data_binders":1}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.lintegral_clamp_incr_rpow_le","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":6,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true},{"i":7,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true},{"i":8,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true},{"i":9,"head":"Airy1Gumbel.FwdDefectBound","kind":"def","module":"Airy1Gumbel.TruncatedMoment","explicit":true},{"i":10,"head":"Airy1Gumbel.RevDefectBound","kind":"def","module":"Airy1Gumbel.TruncatedMoment","explicit":true},{"i":11,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":14,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":15,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":7}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.exists_continuous_version_max","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true}],"data_binders":1}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.GOELeftTail.airy1Law_le","binders":[{"i":0,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true},{"i":1,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.exists_continuous_version","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true},{"i":2,"head":"Airy1Gumbel.QRUnitBlockLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":3,"head":"Airy1Gumbel.QRTwoBlockLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":4,"head":"Airy1Gumbel.QRTwoIntervalLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true}],"data_binders":2}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.isEmpty_localModulusEstimate_airy1Process","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.not_highLevelUpcrossingTail_switch","binders":[],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.mesoscopic_of_records₆","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false},{"i":6,"head":"Eq","kind":"inductive","module":"Init.Prelude","explicit":true},{"i":8,"head":"Airy1Gumbel.PairStationary","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":9,"head":"Airy1Gumbel.ProcessAssociated","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":10,"head":"Airy1Gumbel.HighLevelUpcrossingTail","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":11,"head":"Airy1Gumbel.QRUnitBlockLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":15,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":16,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":17,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":9}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₆","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true},{"i":2,"head":"Airy1Gumbel.QRUnitBlockLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":3,"head":"Airy1Gumbel.QRTwoBlockLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":4,"head":"Airy1Gumbel.QRTwoIntervalLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":7,"head":"Airy1Gumbel.ProcessAssociated","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":8,"head":"Airy1Gumbel.HighLevelUpcrossingTail","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true}],"data_binders":3}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true},{"i":5,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true},{"i":6,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true},{"i":7,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":8,"head":"AiryFdd.MeshHittingLimit","kind":"inductive","module":"Airy1GumbelContrib.Mesh.MeshLimit","explicit":true}],"data_binders":3}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.qrTwoBlockLaw_airy1","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₇","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true},{"i":4,"head":"Airy1Gumbel.QRTwoIntervalLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":7,"head":"Airy1Gumbel.ProcessAssociated","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":8,"head":"Airy1Gumbel.HighLevelUpcrossingTail","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true}],"data_binders":3}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.meshHittingLimit","binders":[{"i":2,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":2}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.tendsto_airy1FinCdf_meshSet_of_pos","binders":[{"i":3,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true},{"i":4,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":3}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₈","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true},{"i":2,"head":"Airy1Gumbel.QRTwoIntervalLaw","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":5,"head":"Airy1Gumbel.ProcessAssociated","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":6,"head":"Airy1Gumbel.HighLevelUpcrossingTail","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true}],"data_binders":3}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.highLevelUpcrossingTail_airy1SRP","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true},{"i":6,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true},{"i":7,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":8,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":9,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":4}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.qrTwoIntervalLaw_airy1","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₁₀","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true},{"i":4,"head":"Airy1Gumbel.ProcessAssociated","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true},{"i":5,"head":"Airy1Gumbel.HighLevelUpcrossingTail","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true}],"data_binders":3}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true},{"i":4,"head":"Airy1Gumbel.ProcessAssociated","kind":"inductive","module":"Airy1Gumbel.ExternalInputs","explicit":true}],"data_binders":3}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.cubicStrongMixing_airy1SRP_iff","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.twoPointExcess_airy1","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.pairTP_airy1SRP_field","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.mesoscopic_of_boundsTP","binders":[{"i":3,"head":"MeasureTheory.IsProbabilityMeasure","kind":"inductive","module":"Mathlib.MeasureTheory.Measure.Typeclasses.Probability","explicit":false},{"i":10,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":11,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true},{"i":12,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":9}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true}],"data_binders":2}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true}],"data_binders":2}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.twoPointExcess_airy1_sharp","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.twoPointExcess_airy1_sharp_sqrt","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.twoPointExcess_airy1_sharp_d","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.twoPointExcess_airy1_sharp_e","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true}],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.airyH_gumbelA","binders":[],"data_binders":0}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.gumbel_normalization","binders":[],"data_binders":1}
+hyp-decl: {"v":1,"theorem":"Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet'","binders":[{"i":0,"head":"Airy1Gumbel.Airy1FddPositive","kind":"inductive","module":"Airy1Gumbel.FddRecord","explicit":true},{"i":1,"head":"Airy1Gumbel.GOELeftTail","kind":"inductive","module":"Airy1Gumbel.GOELeftTail","explicit":true},{"i":5,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true},{"i":6,"head":"LE.le","kind":"def","module":"Init.Prelude","explicit":true},{"i":7,"head":"LT.lt","kind":"def","module":"Init.Prelude","explicit":true}],"data_binders":3}
+hyp-done: {"v":1,"decls":52,"challenge":0,"configs":[]}
+sorry-count: 0
+axioms: Classical.choice,Quot.sound,propext
+generated-at: 2026-11-20T13:08:23Z
