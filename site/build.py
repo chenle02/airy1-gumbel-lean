@@ -205,6 +205,10 @@ def rewrite_links(md, from_path):
 def render(md):
     conv = markdown.Markdown(extensions=["tables", "fenced_code", "md_in_html", "toc", "sane_lists"],
                              extension_configs={"toc": {"slugify": lambda v, sep: slug(v)}})
+    # lean-pkg escapes `~` as `\~`; Python-Markdown does not treat that as an escape by
+    # default and would print the backslash.
+    if "~" not in conv.ESCAPED_CHARS:
+        conv.ESCAPED_CHARS.append("~")
     return conv.convert(md)
 
 
