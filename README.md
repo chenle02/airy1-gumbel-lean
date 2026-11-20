@@ -186,7 +186,7 @@ To use the library from another Lake project:
 [[require]]
 name = "airy1-gumbel-lean"
 git = "https://github.com/chenle02/airy1-gumbel-lean"
-rev = "v0.3.0"
+rev = "v0.3.1"
 ```
 
 ## Trust and axioms
