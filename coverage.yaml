@@ -13,7 +13,6 @@ rows:
     claims:
       - airy1-gumbel-lean/continuous-instance-headline-final2
       - airy1-gumbel-lean/continuous-instance-headline-final2-coord
-      - airy1-gumbel-lean/gumbel-limit-real
     inputs:
       - "Airy1FddPositive: for every finite set of times, a probability law whose box distribution function is the Airy_1 Fredholm-determinant formula (Quastel-Remenik, Theorem 1; Borodin-Ferrari-Prahofer 2007)"
       - "GOELeftTail: a cubic left-tail bound for the one-point law (Baik-Buckingham-DiFranco 2008 with the Ferrari-Spohn GOE identity); an input the paper does not need, since it starts from an existing continuous process"
