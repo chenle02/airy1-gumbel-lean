@@ -1,0 +1,743 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.TwoTime.TwoTimeEst
+
+/-! # Sharp-Ψ two-time estimates
+
+"Sharp" here means: sharp exponent Ψ; polynomial prefactor not optimised (the
+factor `(1 + w + d)²` and the constants come from the proof route).
+
+Equal levels `w ≥ 1/2`, gap `d > 0`, `D = 1 + w + d`, `Ψ = psiTP d w`.  The quadratic loss
+`e^{16(1 + w + d²)}` / `e^{20(1 + w + d²)}` of `TwoTimeEst` is replaced by a polynomial factor:
+
+* **Sharp trace bound for `K₂₁`** (`traceENorm_k21Op_le_sharp`): `‖K₂₁‖₁ ≤ C♯ · D · e^{−Ψ(d,w)}`;
+* **Sharp trace bound for `K₂₁T`** (`traceENorm_k21TOp_le_sharp`): `‖K₂₁T‖₁ ≤ C♯ · D · e^{−Ψ(d,w)}`;
+* **Sharp operator bound for `Q`** (`exists_enorm_qOp_le_poly`): `‖Q‖ ≤ C_Q (1 + d)` uniformly in `w ≥ 0`
+  (replacing `e^{(9/2)d}`);
+* **Sharp excess bound** (`traceENorm_twoTimeExcess_le_sharp`): for `‖R‖ ≤ 2`,
+  `‖(D − B) + K₂₁ R Q‖₁ ≤ C₅ · D² · e^{−Ψ(d,w)}`.
+
+## Route
+
+* **Heat time** `τ = 1/D²` (not `τ = 1`): the split `K₂₁ = K_a ⋆ K_b` is re-done with
+  `K_a(x, z) = 1_{x>w} p_τ(x − z) e^{−γz}` and `K_b` at `s = d + τ`, weight `γ = s + κ`,
+  `κ = √(2w + s²) ≥ 1` (this is where `w ≥ 1/2` is used).  The heat factor is `e^{4γ²τ}` and
+  `γ² ≤ 4D²`, so it costs at most `e^{16}`; the crude `p_τ² ≤ c₀(τ) p_τ` costs
+  `c₀(τ) = (4πτ)^{−1/2} ≤ D`.  The exponent identity `−4γw − (4/3)s³ − 2κs² + (2/3)κ³ = −2Ψ(s,w)`
+  is exact and `Ψ(s, w) ≥ Ψ(d, w)`.  (No first-order cancellation `∂_sΨ = γ²` is needed: with
+  `τ ≍ 1/γ²` the heat loss is already `O(1)`.)
+* **`‖Q‖`**: Jensen–Tonelli with the Chernoff weight `λ = 1/(1 + d)` (instead of `λ = 3`) and the
+  envelope `Ai(r)² ≤ M e^{−λr/2}` (bounded on `r < 0`, exponentially decaying on `r ≥ 0`):
+  `∫∫ Q² ≤ M e^{dλ²} · 4(1 + d)² ≤ 4eM (1 + d)²`.
+-/
+
+namespace AiryFdd
+
+open MeasureTheory Real Set Filter
+open HilbertSchmidt
+open scoped ENNReal
+
+/-! ## 1. The heat split at a free heat time `τ` -/
+
+/-- `K_a^τ(x, z) = 1_{x > w} p_τ(x − z) e^{−γz}`. -/
+noncomputable def kaKerT (w τ γ : ℝ) (p : ℝ × ℝ) : ℝ :=
+  (Ioi w).indicator (fun _ => (1 : ℝ)) p.1 * heatKernel τ (p.1 - p.2) * Real.exp (-γ * p.2)
+
+theorem measurable_kaKerT (w τ γ : ℝ) : Measurable (kaKerT w τ γ) :=
+  (((measurable_indicator_one _ measurableSet_Ioi).comp measurable_fst).mul
+    ((continuous_heatKernel τ).comp (continuous_fst.sub continuous_snd)).measurable).mul
+    (Real.continuous_exp.comp (continuous_const.mul continuous_snd)).measurable
+
+/-- **Heat split at time `τ`**: `K_a^τ ⋆ K_b = K₂₁` (`s = d + τ`, any `d`, any weight `γ`). -/
+theorem compKernel_kaKerT_kbKer (w d : ℝ) {τ : ℝ} (hτ : 0 < τ) (γ : ℝ) :
+    AiryConj.compKernel (kaKerT w τ γ) (kbKer w (d + τ) γ) = k21Ker w w d := by
+  funext p
+  obtain ⟨u, y⟩ := p
+  show ∫ z : ℝ, kaKerT w τ γ (u, z) * kbKer w (d + τ) γ (z, y) = _
+  have h : ∀ z : ℝ, kaKerT w τ γ (u, z) * kbKer w (d + τ) γ (z, y)
+      = (Ioi w).indicator (fun _ => (1 : ℝ)) u
+          * (heatKernel τ (u - z) * backwardAiry (d + τ) (z + y))
+          * (Ioi w).indicator (fun _ => (1 : ℝ)) y := by
+    intro z
+    have e : Real.exp (-γ * z) * Real.exp (γ * z) = 1 := by
+      rw [← Real.exp_add, show -γ * z + γ * z = 0 by ring, Real.exp_zero]
+    simp only [kaKerT, kbKer]
+    calc (Ioi w).indicator (fun _ => (1 : ℝ)) u * heatKernel τ (u - z) * Real.exp (-γ * z)
+          * (Real.exp (γ * z) * backwardAiry (d + τ) (z + y)
+            * (Ioi w).indicator (fun _ => (1 : ℝ)) y)
+        = (Ioi w).indicator (fun _ => (1 : ℝ)) u
+            * (heatKernel τ (u - z) * backwardAiry (d + τ) (z + y))
+            * (Ioi w).indicator (fun _ => (1 : ℝ)) y * (Real.exp (-γ * z) * Real.exp (γ * z)) := by
+          ring
+      _ = _ := by rw [e, mul_one]
+  simp_rw [h]
+  rw [integral_mul_const, integral_const_mul]
+  have hs := congrFun (AiryTwoInt.heatKerTwo_comp_bAiryKer_any hτ (d + τ)) (u, y)
+  have hs' : (∫ z : ℝ, heatKernel τ (u - z) * backwardAiry (d + τ) (z + y))
+      = backwardAiry (d + τ - τ) (u + y) := hs
+  rw [hs', add_sub_cancel_right]
+  rfl
+
+/-- The Fubini domination for `K_a^τ ⋆ K_b ⋆ T`. -/
+theorem integrable_assoc_kaT_kb_t (w γ : ℝ) {d τ : ℝ} (hd : 0 < d) (hτ : 0 < τ) (x m : ℝ) :
+    Integrable (Function.uncurry fun z y : ℝ =>
+      kaKerT w τ γ (x, z) * (kbKer w (d + τ) γ (z, y) * tKer w d (y, m))) (volume.prod volume) := by
+  obtain ⟨Cg, hCg⟩ := backwardAiry_abs_le_exp_neg (show (0 : ℝ) < d + τ by linarith)
+  have hdom : Integrable (fun q : ℝ × ℝ =>
+      Cg * ((Real.exp (-(d + τ) * q.1) * heatKernel τ (x - q.1))
+        * (Real.exp (-(d + τ) * q.2) * heatKernel d (m - q.2)))) (volume.prod volume) :=
+    ((integrable_exp_mul_heatKernel hτ (-(d + τ)) x).mul_prod
+      (integrable_exp_mul_heatKernel hd (-(d + τ)) m)).const_mul Cg
+  have hmeas : Measurable (Function.uncurry fun z y : ℝ =>
+      kaKerT w τ γ (x, z) * (kbKer w (d + τ) γ (z, y) * tKer w d (y, m))) :=
+    ((measurable_kaKerT w τ γ).comp (measurable_const.prodMk measurable_fst)).mul
+      ((measurable_kbKer w (d + τ) γ).mul
+        ((measurable_tKer w d).comp (measurable_snd.prodMk measurable_const)))
+  refine hdom.mono' hmeas.aestronglyMeasurable (Eventually.of_forall fun q => ?_)
+  obtain ⟨z, y⟩ := q
+  simp only [Function.uncurry_apply_pair, kaKerT, kbKer, tKer]
+  have e : Real.exp (-γ * z) * Real.exp (γ * z) = 1 := by
+    rw [← Real.exp_add, show -γ * z + γ * z = 0 by ring, Real.exp_zero]
+  set I₁ := (Ioi w).indicator (fun _ => (1 : ℝ)) x
+  set I₂ := (Ioi w).indicator (fun _ => (1 : ℝ)) y
+  set I₃ := (Ioi w).indicator (fun _ => (1 : ℝ)) m
+  have hrw : I₁ * heatKernel τ (x - z) * Real.exp (-γ * z)
+      * (Real.exp (γ * z) * backwardAiry (d + τ) (z + y) * I₂ * (I₂ * heatKernel d (y - m) * I₃))
+      = (I₁ * I₂ * I₂ * I₃) * (heatKernel τ (x - z) * (backwardAiry (d + τ) (z + y)
+          * heatKernel d (y - m))) * (Real.exp (-γ * z) * Real.exp (γ * z)) := by ring
+  have hp1 := heatKernel_nonneg hτ (x - z)
+  have hpd := heatKernel_nonneg hd (y - m)
+  rw [hrw, e, mul_one, Real.norm_eq_abs, abs_mul (I₁ * I₂ * I₂ * I₃),
+    abs_mul (heatKernel τ (x - z)), abs_mul (backwardAiry (d + τ) (z + y)),
+    abs_of_nonneg hp1, abs_of_nonneg hpd]
+  have hI : |I₁ * I₂ * I₂ * I₃| ≤ 1 := by
+    rw [abs_mul, abs_mul, abs_mul]
+    have := abs_indicator_one_le (Ioi w) x
+    have := abs_indicator_one_le (Ioi w) y
+    have := abs_indicator_one_le (Ioi w) m
+    have h1 : |I₁| * |I₂| ≤ 1 := by nlinarith [abs_nonneg I₁, abs_nonneg I₂]
+    have h2 : |I₁| * |I₂| * |I₂| ≤ 1 := by
+      nlinarith [abs_nonneg I₂, mul_nonneg (abs_nonneg I₁) (abs_nonneg I₂)]
+    nlinarith [abs_nonneg I₃, mul_nonneg (mul_nonneg (abs_nonneg I₁) (abs_nonneg I₂)) (abs_nonneg I₂)]
+  have hg := hCg (z + y)
+  rw [show m - y = -(y - m) by ring, AiryTwoInt.heatKernel_even]
+  have hgexp : Real.exp (-(d + τ) * (z + y))
+      = Real.exp (-(d + τ) * z) * Real.exp (-(d + τ) * y) := by
+    rw [← Real.exp_add]; ring_nf
+  calc |I₁ * I₂ * I₂ * I₃| * (heatKernel τ (x - z) * (|backwardAiry (d + τ) (z + y)|
+        * heatKernel d (y - m)))
+      ≤ 1 * (heatKernel τ (x - z) * (Cg * Real.exp (-(d + τ) * (z + y))
+          * heatKernel d (y - m))) := by
+        apply mul_le_mul hI _ (by positivity) zero_le_one
+        exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hg hpd) hp1
+    _ = _ := by rw [hgexp]; ring
+
+/-- **Re-association at time `τ`**: `K₂₁T = K_a^τ ⋆ (K_b ⋆ T)` as kernels. -/
+theorem k21TKer_eq_compKernelT (w γ : ℝ) {d τ : ℝ} (hd : 0 < d) (hτ : 0 < τ) :
+    k21TKer w d = AiryConj.compKernel (kaKerT w τ γ)
+      (AiryConj.compKernel (kbKer w (d + τ) γ) (tKer w d)) := by
+  unfold k21TKer
+  rw [← compKernel_kaKerT_kbKer w d hτ γ]
+  funext p
+  obtain ⟨x, m⟩ := p
+  exact AiryTwoInt.compKernel_assoc x m (integrable_assoc_kaT_kb_t w γ hd hτ x m)
+
+/-! ## 2. `‖K_a^τ‖₂²` -/
+
+theorem kaKerT_sq_le (w : ℝ) {τ : ℝ} (hτ : 0 < τ) (γ x z : ℝ) :
+    kaKerT w τ γ (x, z) ^ 2 ≤ (Ioi w).indicator (fun _ => (1 : ℝ)) x
+      * (c0 τ * (Real.exp (-(2 * γ) * z) * heatKernel τ (x - z))) := by
+  unfold kaKerT
+  by_cases hx : x ∈ Ioi w
+  · simp only [Set.indicator_of_mem hx, one_mul]
+    have hp := heatKernel_nonneg hτ (x - z)
+    have hle : heatKernel τ (x - z) ≤ c0 τ := AiryTwoInt.heatKernel_le hτ _
+    have e : Real.exp (-γ * z) ^ 2 = Real.exp (-(2 * γ) * z) := by
+      rw [sq, ← Real.exp_add]; ring_nf
+    have hE := (Real.exp_pos (-(2 * γ) * z)).le
+    rw [mul_pow, e]
+    calc heatKernel τ (x - z) ^ 2 * Real.exp (-(2 * γ) * z)
+        = (heatKernel τ (x - z) * heatKernel τ (x - z)) * Real.exp (-(2 * γ) * z) := by ring
+      _ ≤ (c0 τ * heatKernel τ (x - z)) * Real.exp (-(2 * γ) * z) :=
+          mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hle hp) hE
+      _ = _ := by ring
+  · simp [Set.indicator_of_notMem hx]
+
+/-- `‖K_a^τ‖₂² ≤ c₀(τ) e^{4γ²τ} e^{−2γw}/(2γ)`. -/
+theorem lintegral_kaKerT_sq_le (w : ℝ) {τ γ : ℝ} (hτ : 0 < τ) (hγ : 0 < γ) :
+    ∫⁻ p, ENNReal.ofReal (kaKerT w τ γ p ^ 2) ∂(volume.prod volume)
+      ≤ ENNReal.ofReal (c0 τ * Real.exp (4 * γ ^ 2 * τ) * (Real.exp (-(2 * γ) * w) / (2 * γ))) := by
+  have hmeas : Measurable fun p : ℝ × ℝ => ENNReal.ofReal (kaKerT w τ γ p ^ 2) :=
+    ENNReal.measurable_ofReal.comp ((measurable_kaKerT w τ γ).pow_const 2)
+  have hc0 := c0_pos hτ
+  rw [lintegral_prod _ hmeas.aemeasurable]
+  have hin : ∀ x : ℝ, ∫⁻ z, ENNReal.ofReal (kaKerT w τ γ (x, z) ^ 2)
+      ≤ ENNReal.ofReal (c0 τ * Real.exp (4 * γ ^ 2 * τ))
+        * ENNReal.ofReal ((Ioi w).indicator (fun x => Real.exp (-(2 * γ) * x)) x) := by
+    intro x
+    have hint : Integrable fun z => (Ioi w).indicator (fun _ => (1 : ℝ)) x
+        * (c0 τ * (Real.exp (-(2 * γ) * z) * heatKernel τ (x - z))) :=
+      ((integrable_exp_mul_heatKernel hτ (-(2 * γ)) x).const_mul _).const_mul _
+    calc ∫⁻ z, ENNReal.ofReal (kaKerT w τ γ (x, z) ^ 2)
+        ≤ ∫⁻ z, ENNReal.ofReal ((Ioi w).indicator (fun _ => (1 : ℝ)) x
+            * (c0 τ * (Real.exp (-(2 * γ) * z) * heatKernel τ (x - z)))) :=
+          lintegral_mono fun z => ENNReal.ofReal_le_ofReal (kaKerT_sq_le w hτ γ x z)
+      _ = ENNReal.ofReal (∫ z, (Ioi w).indicator (fun _ => (1 : ℝ)) x
+            * (c0 τ * (Real.exp (-(2 * γ) * z) * heatKernel τ (x - z)))) :=
+          (ofReal_integral_eq_lintegral_ofReal hint (Eventually.of_forall fun z =>
+            mul_nonneg (indicator_one_nonneg _ _) (mul_nonneg hc0.le
+              (mul_nonneg (Real.exp_pos _).le (heatKernel_nonneg hτ _))))).symm
+      _ = _ := by
+          rw [integral_const_mul, integral_const_mul, integral_exp_mul_heatKernel hτ,
+            ← ENNReal.ofReal_mul (by positivity)]
+          congr 1
+          by_cases hx : x ∈ Ioi w
+          · rw [Set.indicator_of_mem hx, Set.indicator_of_mem hx, one_mul, mul_assoc,
+              ← Real.exp_add]
+            congr 2
+            ring
+          · simp [Set.indicator_of_notMem hx]
+  have hind : Measurable fun x : ℝ =>
+      ENNReal.ofReal ((Ioi w).indicator (fun x => Real.exp (-(2 * γ) * x)) x) :=
+    ENNReal.measurable_ofReal.comp ((Real.continuous_exp.comp
+      (continuous_const.mul continuous_id)).measurable.indicator measurableSet_Ioi)
+  calc ∫⁻ x, ∫⁻ z, ENNReal.ofReal (kaKerT w τ γ (x, z) ^ 2)
+      ≤ ∫⁻ x, ENNReal.ofReal (c0 τ * Real.exp (4 * γ ^ 2 * τ))
+          * ENNReal.ofReal ((Ioi w).indicator (fun x => Real.exp (-(2 * γ) * x)) x) :=
+        lintegral_mono hin
+    _ = ENNReal.ofReal (c0 τ * Real.exp (4 * γ ^ 2 * τ))
+          * ∫⁻ x, ENNReal.ofReal ((Ioi w).indicator (fun x => Real.exp (-(2 * γ) * x)) x) :=
+        lintegral_const_mul _ hind
+    _ = _ := by
+        rw [lintegral_indicator_exp_Ioi (by positivity), ← ENNReal.ofReal_mul (by positivity)]
+
+theorem kaBudgetT_nonneg (w : ℝ) {τ γ : ℝ} (hτ : 0 < τ) (hγ : 0 < γ) :
+    0 ≤ c0 τ * Real.exp (4 * γ ^ 2 * τ) * (Real.exp (-(2 * γ) * w) / (2 * γ)) := by
+  have := c0_pos hτ
+  have : 0 < 2 * γ := by linarith
+  positivity
+
+theorem memLp_kaKerT (w : ℝ) {τ γ : ℝ} (hτ : 0 < τ) (hγ : 0 < γ) :
+    MemLp (kaKerT w τ γ) 2 (volume.prod volume) :=
+  memLp_of_lintegral_sq_le (measurable_kaKerT w τ γ).aestronglyMeasurable
+    (kaBudgetT_nonneg w hτ hγ) (lintegral_kaKerT_sq_le w hτ hγ)
+
+/-! ## 3. The sharp parameters `τ = 1/D²`, `s = d + τ`, `γ = s + √(2w + s²)` -/
+
+/-- `τ = 1/(1 + w + d)²`. -/
+noncomputable def tauS (d w : ℝ) : ℝ := 1 / (1 + w + d) ^ 2
+
+/-- `κ = √(2w + s²)`, `s = d + τ`. -/
+noncomputable def kapS (d w : ℝ) : ℝ := Real.sqrt (2 * w + (d + tauS d w) ^ 2)
+
+/-- The tuned weight `γ = s + κ`. -/
+noncomputable def gamS (d w : ℝ) : ℝ := (d + tauS d w) + kapS d w
+
+theorem tauS_pos {w d : ℝ} (hw : 0 ≤ w) (hd : 0 ≤ d) : 0 < tauS d w := by
+  unfold tauS
+  have : 0 < 1 + w + d := by linarith
+  positivity
+
+theorem tauS_le_one {w d : ℝ} (hw : 0 ≤ w) (hd : 0 ≤ d) : tauS d w ≤ 1 := by
+  unfold tauS
+  rw [div_le_one (by positivity)]
+  nlinarith
+
+theorem kapS_sq {w d : ℝ} (hw : 0 ≤ w) : kapS d w ^ 2 = 2 * w + (d + tauS d w) ^ 2 :=
+  Real.sq_sqrt (by positivity)
+
+theorem one_le_kapS {w d : ℝ} (hw : 1 / 2 ≤ w) : 1 ≤ kapS d w := by
+  unfold kapS
+  rw [show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
+  exact Real.sqrt_le_sqrt (by nlinarith [sq_nonneg (d + tauS d w)])
+
+theorem gamS_sub {d w : ℝ} : gamS d w - (d + tauS d w) = kapS d w := by unfold gamS; ring
+
+theorem one_le_gamS {w d : ℝ} (hw : 1 / 2 ≤ w) (hd : 0 ≤ d) : 1 ≤ gamS d w := by
+  have := one_le_kapS (d := d) hw
+  have := tauS_pos (by linarith : (0 : ℝ) ≤ w) hd
+  unfold gamS; linarith
+
+/-- `γ² ≤ 4D²`, hence the heat factor `e^{4γ²τ}` is at most `e^{16}`. -/
+theorem gamS_sq_mul_tauS_le {w d : ℝ} (hw : 1 / 2 ≤ w) (hd : 0 ≤ d) :
+    gamS d w ^ 2 * tauS d w ≤ 4 := by
+  have hw0 : (0 : ℝ) ≤ w := by linarith
+  have hκ2 := kapS_sq (d := d) hw0
+  have hτ1 := tauS_le_one hw0 hd
+  have hτ0 := tauS_pos hw0 hd
+  set τ := tauS d w with hτdef
+  set κ := kapS d w
+  set s := d + τ with hs
+  have hγ : gamS d w = s + κ := rfl
+  have hg2 : (s + κ) ^ 2 ≤ 4 * (1 + w + d) ^ 2 := by
+    have h1 : (s + κ) ^ 2 ≤ 2 * s ^ 2 + 2 * κ ^ 2 := by nlinarith [sq_nonneg (s - κ)]
+    have h2 : s ≤ d + 1 := by rw [hs]; linarith
+    have h3 : s ^ 2 ≤ (d + 1) ^ 2 := pow_le_pow_left₀ (by rw [hs]; linarith) h2 2
+    nlinarith
+  have hD : 0 < (1 + w + d) ^ 2 := by positivity
+  rw [hγ, hτdef]
+  unfold tauS
+  rw [mul_one_div, div_le_iff₀ hD]
+  exact hg2
+
+/-- **Sharp exponent bookkeeping**: the Tonelli exponent at `(τ, s, γ)` is at most
+`2(−Ψ(d, w) + 8)`. -/
+theorem sharp_exponent_le {w d : ℝ} (hw : 1 / 2 ≤ w) (hd : 0 ≤ d) :
+    4 * gamS d w ^ 2 * tauS d w + -(2 * gamS d w) * w + -(2 * gamS d w) * w
+      + (-(4 / 3) * (d + tauS d w) ^ 3 - 2 * (gamS d w - (d + tauS d w)) * (d + tauS d w) ^ 2)
+      + (2 / 3) * (gamS d w - (d + tauS d w)) ^ 3
+      ≤ 2 * (-psiTP d w + 8) := by
+  have hw0 : (0 : ℝ) ≤ w := by linarith
+  have hloss := gamS_sq_mul_tauS_le hw hd
+  rw [gamS_sub]
+  have hκ2 := kapS_sq (d := d) hw0
+  have hτ0 := tauS_pos hw0 hd
+  set τ := tauS d w
+  set κ := kapS d w
+  set s := d + τ with hs
+  have hγ : gamS d w = s + κ := rfl
+  rw [hγ] at hloss ⊢
+  have hκd : Real.sqrt (2 * w + d ^ 2) ≤ κ :=
+    Real.sqrt_le_sqrt (by nlinarith)
+  have hψ : psiTP d w ≤ (2 / 3) * κ ^ 3 + 2 * w * s + (2 / 3) * s ^ 3 := by
+    unfold psiTP
+    rw [rpow_three_halves_eq (by positivity)]
+    have h1 : Real.sqrt (2 * w + d ^ 2) ^ 3 ≤ κ ^ 3 :=
+      pow_le_pow_left₀ (Real.sqrt_nonneg _) hκd 3
+    have h2 : w * d ≤ w * s := mul_le_mul_of_nonneg_left (by linarith) hw0
+    have h3 : d ^ 3 ≤ s ^ 3 := pow_le_pow_left₀ hd (by linarith) 3
+    nlinarith
+  have hid : -(2 * (s + κ)) * w + -(2 * (s + κ)) * w + (-(4 / 3) * s ^ 3 - 2 * κ * s ^ 2)
+      + (2 / 3) * κ ^ 3 = -2 * ((2 / 3) * κ ^ 3 + 2 * w * s + (2 / 3) * s ^ 3) := by
+    linear_combination (2 * κ) * hκ2
+  have hl : 4 * (s + κ) ^ 2 * τ ≤ 16 := by nlinarith
+  linarith
+
+/-- `c₀(τ) = (4πτ)^{−1/2} ≤ D` at `τ = 1/D²`. -/
+theorem c0_tauS_le {w d : ℝ} (hw : 0 ≤ w) (hd : 0 ≤ d) : c0 (tauS d w) ≤ 1 + w + d := by
+  have hD : 0 < 1 + w + d := by linarith
+  have hτ := tauS_pos hw hd
+  have hx : 0 < 4 * Real.pi * tauS d w := by positivity
+  unfold c0
+  rw [show (-1 / 2 : ℝ) = -(1 / 2) by norm_num, Real.rpow_neg hx.le, ← Real.sqrt_eq_rpow]
+  have hsq : 0 < Real.sqrt (4 * Real.pi * tauS d w) := Real.sqrt_pos.2 hx
+  have h1 : 1 ≤ (1 + w + d) * Real.sqrt (4 * Real.pi * tauS d w) := by
+    have e : (1 + w + d) * Real.sqrt (4 * Real.pi * tauS d w) = Real.sqrt (4 * Real.pi) := by
+      rw [← Real.sqrt_sq hD.le, ← Real.sqrt_mul (by positivity)]
+      congr 1
+      unfold tauS
+      field_simp
+    rw [e, show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
+    exact Real.sqrt_le_sqrt (by nlinarith [Real.pi_gt_three])
+  calc (Real.sqrt (4 * Real.pi * tauS d w))⁻¹
+      ≤ (Real.sqrt (4 * Real.pi * tauS d w))⁻¹
+          * ((1 + w + d) * Real.sqrt (4 * Real.pi * tauS d w)) :=
+        le_mul_of_one_le_right (inv_nonneg.2 hsq.le) h1
+    _ = 1 + w + d := by field_simp
+
+/-! ## 4. Sharp trace bounds for `K₂₁` and `K₂₁T` -/
+
+/-- `C♯ = (√C_lap / 2) e^8`. -/
+noncomputable def sharpConst : ℝ := Real.sqrt airyLapC / 2 * Real.exp 8
+
+theorem sharpConst_pos : 0 < sharpConst := by
+  unfold sharpConst
+  have := airyLapC_pos
+  positivity
+
+/-- The product of the two `L²` budgets is at most `(C♯ D e^{−Ψ(d,w)})²`. -/
+theorem sharp_product_le {w d : ℝ} (hw : 1 / 2 ≤ w) (hd : 0 ≤ d) :
+    (c0 (tauS d w) * Real.exp (4 * gamS d w ^ 2 * tauS d w)
+        * (Real.exp (-(2 * gamS d w) * w) / (2 * gamS d w)))
+      * (Real.exp (-(2 * gamS d w) * w) / (2 * gamS d w)
+        * (Real.exp (-(4 / 3) * (d + tauS d w) ^ 3
+            - 2 * (gamS d w - (d + tauS d w)) * (d + tauS d w) ^ 2)
+          * (airyLapC * Real.exp ((2 / 3) * (gamS d w - (d + tauS d w)) ^ 3))))
+      ≤ (sharpConst * (1 + w + d) * Real.exp (-psiTP d w)) ^ 2 := by
+  have hw0 : (0 : ℝ) ≤ w := by linarith
+  set γ := gamS d w
+  set τ := tauS d w
+  set s := d + τ
+  have hγ1 := one_le_gamS hw hd
+  have hτ0 := tauS_pos hw0 hd
+  have hc0 := c0_pos hτ0
+  have hc0D := c0_tauS_le hw0 hd
+  have hL := airyLapC_pos
+  set D := 1 + w + d with hDdef
+  have hD1 : 1 ≤ D := by rw [hDdef]; linarith
+  set X := 4 * γ ^ 2 * τ + -(2 * γ) * w + -(2 * γ) * w
+      + (-(4 / 3) * s ^ 3 - 2 * (γ - s) * s ^ 2)
+      + (2 / 3) * (γ - s) ^ 3 with hX
+  set Ψ := psiTP d w
+  have hXE : X ≤ 2 * (-Ψ + 8) := sharp_exponent_le hw hd
+  have hexpX : Real.exp X = Real.exp (4 * γ ^ 2 * τ) * Real.exp (-(2 * γ) * w)
+      * Real.exp (-(2 * γ) * w)
+      * Real.exp (-(4 / 3) * s ^ 3 - 2 * (γ - s) * s ^ 2)
+      * Real.exp ((2 / 3) * (γ - s) ^ 3) := by
+    simp only [hX, Real.exp_add]
+  have hlhs : (c0 τ * Real.exp (4 * γ ^ 2 * τ) * (Real.exp (-(2 * γ) * w) / (2 * γ)))
+      * (Real.exp (-(2 * γ) * w) / (2 * γ)
+        * (Real.exp (-(4 / 3) * s ^ 3 - 2 * (γ - s) * s ^ 2)
+          * (airyLapC * Real.exp ((2 / 3) * (γ - s) ^ 3))))
+      = (c0 τ * airyLapC) * (1 / (2 * γ)) ^ 2 * Real.exp X := by
+    rw [hexpX]; field_simp
+  have hrhs : (sharpConst * D * Real.exp (-Ψ)) ^ 2
+      = airyLapC * (1 / 4) * D ^ 2 * Real.exp (2 * (-Ψ + 8)) := by
+    have e2 : Real.exp (2 * (-Ψ + 8)) = Real.exp 8 ^ 2 * Real.exp (-Ψ) ^ 2 := by
+      rw [← mul_pow, ← Real.exp_add, ← Real.exp_nat_mul]
+      congr 1; push_cast; ring
+    rw [e2]
+    unfold sharpConst
+    rw [mul_pow, mul_pow, mul_pow, div_pow, Real.sq_sqrt hL.le]
+    ring
+  rw [hlhs, hrhs]
+  have hq : (1 / (2 * γ)) ^ 2 ≤ 1 / 4 := by
+    rw [div_pow, one_pow]
+    apply div_le_div_of_nonneg_left zero_le_one (by norm_num)
+    nlinarith
+  have hcD : c0 τ * airyLapC ≤ airyLapC * D ^ 2 := by
+    have : c0 τ ≤ D ^ 2 := hc0D.trans (by nlinarith)
+    nlinarith
+  calc c0 τ * airyLapC * (1 / (2 * γ)) ^ 2 * Real.exp X
+      ≤ (airyLapC * D ^ 2) * (1 / 4) * Real.exp (2 * (-Ψ + 8)) := by
+        apply mul_le_mul (mul_le_mul hcD hq (by positivity) (by positivity))
+          (Real.exp_le_exp.2 hXE) (Real.exp_pos _).le (by positivity)
+    _ = _ := by ring
+
+theorem eLpNorm_kaKerT_mul_eLpNorm_kbKer_le {w d : ℝ} (hw : 1 / 2 ≤ w) (hd : 0 ≤ d) :
+    eLpNorm (kaKerT w (tauS d w) (gamS d w)) 2 (volume.prod volume)
+        * eLpNorm (kbKer w (d + tauS d w) (gamS d w)) 2 (volume.prod volume)
+      ≤ ENNReal.ofReal (sharpConst * (1 + w + d) * Real.exp (-psiTP d w)) := by
+  have hw0 : (0 : ℝ) ≤ w := by linarith
+  have hγ : 0 < gamS d w := by linarith [one_le_gamS hw hd]
+  have hτ := tauS_pos hw0 hd
+  have hκ : 1 ≤ gamS d w - (d + tauS d w) := by rw [gamS_sub]; exact one_le_kapS hw
+  have hA := eLpNorm_le_of_lintegral_sq_le
+    (measurable_kaKerT w (tauS d w) (gamS d w)).aestronglyMeasurable
+    (kaBudgetT_nonneg w hτ hγ) (lintegral_kaKerT_sq_le w hτ hγ)
+  have hB := eLpNorm_le_of_lintegral_sq_le
+    (measurable_kbKer w (d + tauS d w) (gamS d w)).aestronglyMeasurable
+    (kbBudget_nonneg w (d + tauS d w) hγ) (lintegral_kbKer_sq_le w hγ hκ)
+  refine (mul_le_mul' hA hB).trans ?_
+  rw [← ENNReal.ofReal_mul (Real.sqrt_nonneg _), ← Real.sqrt_mul (kaBudgetT_nonneg w hτ hγ)]
+  apply ENNReal.ofReal_le_ofReal
+  rw [Real.sqrt_le_left (by have := sharpConst_pos; positivity)]
+  exact sharp_product_le hw hd
+
+/-- **Sharp trace bound for `K₂₁` (generic, `d ≥ 0`)**: `‖K₂₁‖₁ ≤ C♯ (1 + w + d) e^{−Ψ(d,w)}` for `w ≥ 1/2`. -/
+theorem traceENorm_kernelOperator_k21Ker_le_sharp {w d : ℝ} (hw : 1 / 2 ≤ w) (hd : 0 ≤ d)
+    (hK : MemLp (k21Ker w w d) 2 (volume.prod volume)) :
+    traceENorm (kernelOperator hK)
+      ≤ ENNReal.ofReal (sharpConst * (1 + w + d) * Real.exp (-psiTP d w)) := by
+  have hw0 : (0 : ℝ) ≤ w := by linarith
+  have hγ : 0 < gamS d w := by linarith [one_le_gamS hw hd]
+  have hτ := tauS_pos hw0 hd
+  have hκ : 1 ≤ gamS d w - (d + tauS d w) := by rw [gamS_sub]; exact one_le_kapS hw
+  have mka := memLp_kaKerT w hτ hγ
+  have mkb := memLp_kbKer (s := d + tauS d w) w hγ hκ
+  have hop : kernelOperator hK = kernelOperator mka ∘L kernelOperator mkb := by
+    have hc : MemLp (AiryConj.compKernel (kaKerT w (tauS d w) (gamS d w))
+        (kbKer w (d + tauS d w) (gamS d w))) 2 (volume.prod volume) := by
+      rw [compKernel_kaKerT_kbKer w d hτ]; exact hK
+    rw [← AiryTwoInt.kernelOperator_compKernel mka mkb hc]
+    exact AiryTwoInt.kernelOperator_congr (compKernel_kaKerT_kbKer w d hτ _).symm _ _
+  rw [hop]
+  calc traceENorm (kernelOperator mka ∘L kernelOperator mkb)
+      ≤ hsENorm (kernelOperator mka) * hsENorm (kernelOperator mkb) :=
+        traceENorm_comp_le (isHilbertSchmidt_kernelOperator _) (isHilbertSchmidt_kernelOperator _)
+    _ ≤ eLpNorm (kaKerT w (tauS d w) (gamS d w)) 2 (volume.prod volume)
+          * eLpNorm (kbKer w (d + tauS d w) (gamS d w)) 2 (volume.prod volume) :=
+        mul_le_mul' (hsENorm_kernelOperator_le _) (hsENorm_kernelOperator_le _)
+    _ ≤ _ := eLpNorm_kaKerT_mul_eLpNorm_kbKer_le hw hd
+
+/-- **Sharp trace bound for `K₂₁`**: `‖K₂₁‖₁ ≤ C♯ (1 + w + d) e^{−Ψ(d,w)}` for `w ≥ 1/2`, `d > 0`. -/
+theorem traceENorm_k21Op_le_sharp {w d : ℝ} (hw : 1 / 2 ≤ w) (hd : 0 < d) :
+    traceENorm (k21Op w w hd)
+      ≤ ENNReal.ofReal (sharpConst * (1 + w + d) * Real.exp (-psiTP d w)) :=
+  traceENorm_kernelOperator_k21Ker_le_sharp hw hd.le _
+
+/-- **Sharp trace bound for `K₂₁T`**: `‖K₂₁T‖₁ ≤ C♯ (1 + w + d) e^{−Ψ(d,w)}` for `w ≥ 1/2`, `d > 0`. -/
+theorem traceENorm_k21TOp_le_sharp {w d : ℝ} (hw : 1 / 2 ≤ w) (hd : 0 < d) :
+    traceENorm (k21TOp w hd)
+      ≤ ENNReal.ofReal (sharpConst * (1 + w + d) * Real.exp (-psiTP d w)) := by
+  have hw0 : (0 : ℝ) ≤ w := by linarith
+  have hγ : 0 < gamS d w := by linarith [one_le_gamS hw hd.le]
+  have hτ := tauS_pos hw0 hd.le
+  have hκ : 1 ≤ gamS d w - (d + tauS d w) := by rw [gamS_sub]; exact one_le_kapS hw
+  have mka := memLp_kaKerT w hτ hγ
+  have mkb := memLp_kbKer (s := d + tauS d w) w hγ hκ
+  have hs : (0 : ℝ) < d + tauS d w := by linarith
+  have hbt_meas := AiryTwoInt.measurable_compKernel
+    (measurable_kbKer w (d + tauS d w) (gamS d w)) (measurable_tKer w d)
+  have hbt : eLpNorm (AiryConj.compKernel (kbKer w (d + tauS d w) (gamS d w)) (tKer w d)) 2
+        (volume.prod volume)
+      ≤ eLpNorm (kbKer w (d + tauS d w) (gamS d w)) 2 (volume.prod volume) :=
+    eLpNorm_le_of_lintegral_sq_le_lintegral_sq hbt_meas.aestronglyMeasurable
+      (measurable_kbKer _ _ _).aestronglyMeasurable (lintegral_kbtKer_sq_le w hs _ hd)
+  have mkbt : MemLp (AiryConj.compKernel (kbKer w (d + tauS d w) (gamS d w)) (tKer w d)) 2
+      (volume.prod volume) := hbt.trans_lt mkb
+  have hop : k21TOp w hd = kernelOperator mka ∘L kernelOperator mkbt := by
+    have hc : MemLp (AiryConj.compKernel (kaKerT w (tauS d w) (gamS d w))
+        (AiryConj.compKernel (kbKer w (d + tauS d w) (gamS d w)) (tKer w d))) 2
+        (volume.prod volume) := by
+      rw [← k21TKer_eq_compKernelT w _ hd hτ]; exact memLp_k21TKer w hd
+    unfold k21TOp
+    rw [← AiryTwoInt.kernelOperator_compKernel mka mkbt hc]
+    exact AiryTwoInt.kernelOperator_congr (k21TKer_eq_compKernelT w _ hd hτ) _ _
+  rw [hop]
+  calc traceENorm (kernelOperator mka ∘L kernelOperator mkbt)
+      ≤ hsENorm (kernelOperator mka) * hsENorm (kernelOperator mkbt) :=
+        traceENorm_comp_le (isHilbertSchmidt_kernelOperator _) (isHilbertSchmidt_kernelOperator _)
+    _ ≤ eLpNorm (kaKerT w (tauS d w) (gamS d w)) 2 (volume.prod volume)
+          * eLpNorm (kbKer w (d + tauS d w) (gamS d w)) 2 (volume.prod volume) :=
+        mul_le_mul' (hsENorm_kernelOperator_le _) ((hsENorm_kernelOperator_le _).trans hbt)
+    _ ≤ _ := eLpNorm_kaKerT_mul_eLpNorm_kbKer_le hw hd.le
+
+/-! ## 5. Sharp operator bound for `Q`: a polynomial bound on `‖Q‖` -/
+
+/-- The Airy envelope `Ai(r)² ≤ M e^{−ar}` for `0 ≤ a ≤ 2`, all `r` (`M` uniform). -/
+theorem exists_airy_sq_le_exp : ∃ M : ℝ, 0 < M ∧ ∀ a : ℝ, 0 ≤ a → a ≤ 2 → ∀ r : ℝ,
+    airyAiReal r ^ 2 ≤ M * Real.exp (-a * r) := by
+  obtain ⟨CA, hCA0, hCA⟩ := AiryKernel.airyAiReal_abs_le_exp'
+  obtain ⟨CB, hCB0, hCB⟩ := AiryTwoInt.airyAiReal_abs_le'
+  refine ⟨CA ^ 2 + CB ^ 2, by positivity, fun a ha0 ha2 r => ?_⟩
+  by_cases hr : 0 ≤ r
+  · have h1 : airyAiReal r ^ 2 ≤ (CA * Real.exp (-r)) ^ 2 := by
+      rw [← sq_abs]; exact pow_le_pow_left₀ (abs_nonneg _) (hCA r) 2
+    have e : (CA * Real.exp (-r)) ^ 2 = CA ^ 2 * Real.exp (-2 * r) := by
+      rw [mul_pow, ← Real.exp_nat_mul]; congr 2; push_cast; ring
+    have h2 : Real.exp (-2 * r) ≤ Real.exp (-a * r) := Real.exp_le_exp.2 (by nlinarith)
+    have h3 : CA ^ 2 * Real.exp (-a * r) ≤ (CA ^ 2 + CB ^ 2) * Real.exp (-a * r) :=
+      mul_le_mul_of_nonneg_right (by nlinarith [sq_nonneg CB]) (Real.exp_pos _).le
+    nlinarith [sq_nonneg CA]
+  · have h1 : airyAiReal r ^ 2 ≤ CB ^ 2 := by
+      rw [← sq_abs]; exact pow_le_pow_left₀ (abs_nonneg _) (hCB r) 2
+    have h2 : 1 ≤ Real.exp (-a * r) := Real.one_le_exp (by nlinarith)
+    nlinarith [sq_nonneg CA, sq_nonneg CB]
+
+/-- Chernoff envelope with a free rate `λ ≥ 0`: `∫ P(y, m) dm ≤ e^{−λw} e^{λy + dλ²}`. -/
+theorem lintegral_qPKer_snd_le_rate (w : ℝ) {d : ℝ} (hd : 0 < d) {lam : ℝ} (hlam : 0 ≤ lam)
+    (y : ℝ) :
+    ∫⁻ m, ENNReal.ofReal (qPKer w d (y, m))
+      ≤ ENNReal.ofReal (Real.exp (-lam * w) * Real.exp (lam * y + d * lam ^ 2)) := by
+  have hint : Integrable fun m =>
+      Real.exp (-lam * w) * (Real.exp (lam * m) * heatKernel d (y - m)) :=
+    (integrable_exp_mul_heatKernel hd lam y).const_mul _
+  calc ∫⁻ m, ENNReal.ofReal (qPKer w d (y, m))
+      ≤ ∫⁻ m, ENNReal.ofReal (Real.exp (-lam * w) * (Real.exp (lam * m) * heatKernel d (y - m))) := by
+        refine lintegral_mono fun m => ENNReal.ofReal_le_ofReal ?_
+        unfold qPKer
+        have hp := heatKernel_nonneg hd (y - m)
+        by_cases hm : m ∈ Ioi w
+        · rw [Set.indicator_of_mem hm, mul_one, ← mul_assoc, ← Real.exp_add]
+          have : 1 ≤ Real.exp (-lam * w + lam * m) := by
+            apply Real.one_le_exp; have : w < m := hm; nlinarith
+          nlinarith
+        · rw [Set.indicator_of_notMem hm, mul_zero]; positivity
+    _ = ENNReal.ofReal (∫ m, Real.exp (-lam * w) * (Real.exp (lam * m) * heatKernel d (y - m))) :=
+        (ofReal_integral_eq_lintegral_ofReal hint (Eventually.of_forall fun m => by
+          have := heatKernel_nonneg hd (y - m); positivity)).symm
+    _ = _ := by rw [integral_const_mul, integral_exp_mul_heatKernel hd]
+
+/-- **Sharp operator bound for `Q`** (`‖Q‖₂`): `∫∫ Q² ≤ C (1 + d)²` uniformly in `w ≥ 0`.  Proof: Jensen–Tonelli with
+the Chernoff rate `λ = 2a`, `a = 1/(2(1 + d))`, and `Ai(r)² ≤ M e^{−ar}`; the result is
+`M e^{dλ² − λw} / a² ≤ 4eM (1 + d)²`. -/
+theorem exists_lintegral_qKer_sq_le_poly : ∃ C : ℝ, 0 < C ∧ ∀ w : ℝ, 0 ≤ w → ∀ d : ℝ, 0 < d →
+    ∫⁻ p, ENNReal.ofReal (qKer w w d p ^ 2) ∂(volume.prod volume)
+      ≤ ENNReal.ofReal (C * (1 + d) ^ 2) := by
+  obtain ⟨M, hM0, hM⟩ := exists_airy_sq_le_exp
+  obtain ⟨CB, hCB0, hCB⟩ := AiryTwoInt.airyAiReal_abs_le'
+  refine ⟨4 * M * Real.exp 1, by positivity, fun w hw d hd => ?_⟩
+  set a : ℝ := 1 / (2 * (1 + d)) with ha
+  have ha0 : 0 < a := by rw [ha]; positivity
+  have ha1 : a ≤ 1 / 2 := by
+    rw [ha, div_le_div_iff₀ (by positivity) (by norm_num)]; linarith
+  have hFb : ∀ q, |qFKer w q| ≤ CB := by
+    intro q
+    unfold qFKer
+    rw [abs_mul, abs_mul]
+    have h1 := abs_indicator_one_le (Ioi w) q.1
+    have h2 := abs_indicator_one_le (Iic w) q.2
+    have := hCB (q.1 + q.2)
+    calc _ ≤ 1 * CB * 1 := mul_le_mul (mul_le_mul h1 this (abs_nonneg _) zero_le_one) h2
+          (abs_nonneg _) (by positivity)
+      _ = CB := by ring
+  have hFP : ∀ z m, Integrable fun y => qFKer w (z, y) * qPKer w d (y, m) := by
+    intro z m
+    refine ((integrable_qPKer_fst w hd m).const_mul CB).mono'
+      (((measurable_qFKer w).comp (measurable_const.prodMk measurable_id)).mul
+        ((measurable_qPKer w d).comp (measurable_id.prodMk measurable_const))).aestronglyMeasurable
+      (Eventually.of_forall fun y => ?_)
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (qPKer_nonneg w hd _)]
+    exact mul_le_mul_of_nonneg_right (hFb _) (qPKer_nonneg w hd _)
+  have hF2P : ∀ z m, Integrable fun y => qFKer w (z, y) ^ 2 * qPKer w d (y, m) := by
+    intro z m
+    refine ((integrable_qPKer_fst w hd m).const_mul (CB ^ 2)).mono'
+      ((((measurable_qFKer w).comp (measurable_const.prodMk measurable_id)).pow_const 2).mul
+        ((measurable_qPKer w d).comp (measurable_id.prodMk measurable_const))).aestronglyMeasurable
+      (Eventually.of_forall fun y => ?_)
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (qPKer_nonneg w hd _),
+      abs_of_nonneg (sq_nonneg _)]
+    refine mul_le_mul_of_nonneg_right ?_ (qPKer_nonneg w hd _)
+    rw [← sq_abs]
+    exact pow_le_pow_left₀ (abs_nonneg _) (hFb _) 2
+  have hP1 : ∀ m, ∫ y, qPKer w d (y, m) ≤ 1 := fun m =>
+    (integral_mono (integrable_qPKer_fst w hd m) ((integrable_heatKernel hd).comp_sub_right m)
+      fun y => qPKer_le w hd (y, m)).trans_eq (integral_heatKernel_sub_right hd m)
+  rw [qKer_eq_compKernel]
+  refine (lintegral_sq_compKernel_le (measurable_qFKer w) (measurable_qPKer w d)
+    (qPKer_nonneg w hd) hP1 (integrable_qPKer_fst w hd) hFP hF2P).trans ?_
+  set Kc := M * Real.exp (d * (2 * a) ^ 2 + -(2 * a) * w)
+  have hKc : 0 ≤ Kc := by positivity
+  have hpt : ∀ q : ℝ × ℝ, ENNReal.ofReal (qFKer w q ^ 2) * ∫⁻ m, ENNReal.ofReal (qPKer w d (q.2, m))
+      ≤ ENNReal.ofReal ((Ioi w).indicator (fun x => Real.exp (-a * x)) q.1)
+        * ENNReal.ofReal (Kc * (Iic w).indicator (fun x => Real.exp (a * x)) q.2) := by
+    intro q
+    obtain ⟨u, y⟩ := q
+    refine (mul_le_mul' le_rfl (lintegral_qPKer_snd_le_rate w hd (by positivity : 0 ≤ 2 * a) y)).trans ?_
+    rw [← ENNReal.ofReal_mul (sq_nonneg _), ← ENNReal.ofReal_mul
+      (Set.indicator_nonneg (fun _ _ => (Real.exp_pos _).le) _)]
+    apply ENNReal.ofReal_le_ofReal
+    simp only [qFKer]
+    by_cases hu : u ∈ Ioi w
+    · by_cases hy : y ∈ Iic w
+      · rw [Set.indicator_of_mem hu, Set.indicator_of_mem hu, Set.indicator_of_mem hy,
+          Set.indicator_of_mem hy, one_mul, mul_one]
+        have hA : airyAiReal (u + y) ^ 2 ≤ M * Real.exp (-a * (u + y)) :=
+          hM a ha0.le (by linarith) (u + y)
+        have hE : M * Real.exp (-a * (u + y))
+              * (Real.exp (-(2 * a) * w) * Real.exp ((2 * a) * y + d * (2 * a) ^ 2))
+            = Real.exp (-a * u) * (Kc * Real.exp (a * y)) := by
+          simp only [Kc]
+          have l : M * Real.exp (-a * (u + y))
+                * (Real.exp (-(2 * a) * w) * Real.exp ((2 * a) * y + d * (2 * a) ^ 2))
+              = M * Real.exp (-a * (u + y) + -(2 * a) * w + ((2 * a) * y + d * (2 * a) ^ 2)) := by
+            simp only [Real.exp_add]; ring
+          have r : Real.exp (-a * u) * (M * Real.exp (d * (2 * a) ^ 2 + -(2 * a) * w)
+                * Real.exp (a * y))
+              = M * Real.exp (-a * u + (d * (2 * a) ^ 2 + -(2 * a) * w) + a * y) := by
+            simp only [Real.exp_add]; ring
+          rw [l, r, show -a * (u + y) + -(2 * a) * w + ((2 * a) * y + d * (2 * a) ^ 2)
+            = -a * u + (d * (2 * a) ^ 2 + -(2 * a) * w) + a * y by ring]
+        rw [← hE]
+        exact mul_le_mul_of_nonneg_right hA (by positivity)
+      · rw [Set.indicator_of_notMem hy, Set.indicator_of_notMem hy]; simp
+    · rw [Set.indicator_of_notMem hu, Set.indicator_of_notMem hu]; simp
+  have hm1 : Measurable fun x : ℝ =>
+      ENNReal.ofReal ((Ioi w).indicator (fun x => Real.exp (-a * x)) x) :=
+    ENNReal.measurable_ofReal.comp ((Real.continuous_exp.comp
+      (continuous_const.mul continuous_id)).measurable.indicator measurableSet_Ioi)
+  have hm2 : Measurable fun x : ℝ =>
+      ENNReal.ofReal (Kc * (Iic w).indicator (fun x => Real.exp (a * x)) x) :=
+    ENNReal.measurable_ofReal.comp (measurable_const.mul ((Real.continuous_exp.comp
+      (continuous_const.mul continuous_id)).measurable.indicator measurableSet_Iic))
+  calc _ ≤ ∫⁻ q : ℝ × ℝ, ENNReal.ofReal ((Ioi w).indicator (fun x => Real.exp (-a * x)) q.1)
+          * ENNReal.ofReal (Kc * (Iic w).indicator (fun x => Real.exp (a * x)) q.2)
+          ∂(volume.prod volume) := lintegral_mono hpt
+    _ = (∫⁻ x, ENNReal.ofReal ((Ioi w).indicator (fun x => Real.exp (-a * x)) x))
+          * ∫⁻ x, ENNReal.ofReal (Kc * (Iic w).indicator (fun x => Real.exp (a * x)) x) :=
+        lintegral_prod_mul hm1.aemeasurable hm2.aemeasurable
+    _ = ENNReal.ofReal (Real.exp (-a * w) / a) * (ENNReal.ofReal Kc
+          * ENNReal.ofReal (Real.exp (a * w) / a)) := by
+        rw [lintegral_indicator_exp_Ioi ha0]
+        congr 1
+        rw [lintegral_congr fun x => ENNReal.ofReal_mul hKc,
+          lintegral_const_mul' _ _ ENNReal.ofReal_ne_top,
+          lintegral_indicator_exp_Iic ha0]
+    _ ≤ ENNReal.ofReal (4 * M * Real.exp 1 * (1 + d) ^ 2) := by
+        rw [← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_mul (by positivity)]
+        apply ENNReal.ofReal_le_ofReal
+        have e1 : Real.exp (-a * w) / a * (Kc * (Real.exp (a * w) / a))
+            = Kc * (1 / a) ^ 2 := by
+          rw [show Real.exp (a * w) = (Real.exp (-a * w))⁻¹ by
+            rw [← Real.exp_neg]; ring_nf]
+          field_simp
+        have e2 : (1 / a) ^ 2 = 4 * (1 + d) ^ 2 := by
+          rw [ha]; field_simp; ring
+        rw [e1, e2]
+        have hexp : d * (2 * a) ^ 2 + -(2 * a) * w ≤ 1 := by
+          have h2a : 2 * a = 1 / (1 + d) := by rw [ha]; field_simp
+          rw [h2a]
+          have h1 : d * (1 / (1 + d)) ^ 2 ≤ 1 := by
+            rw [div_pow, one_pow, mul_one_div, div_le_one (by positivity)]
+            nlinarith
+          have h2 : 0 ≤ 1 / (1 + d) * w := by positivity
+          nlinarith
+        have : Kc ≤ M * Real.exp 1 :=
+          mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 hexp) hM0.le
+        have hd2 : 0 ≤ 4 * (1 + d) ^ 2 := by positivity
+        nlinarith
+
+/-- **Sharp operator bound for `Q`**: `‖Q‖ ≤ C_Q (1 + d)` for `w ≥ 0`, `d > 0` (replacing `e^{(9/2)d}`). -/
+theorem exists_enorm_qOp_le_poly : ∃ C : ℝ, 0 < C ∧ ∀ w : ℝ, 0 ≤ w → ∀ d : ℝ, ∀ hd : 0 < d,
+    ‖qOp w w hd‖ₑ ≤ ENNReal.ofReal (C * (1 + d)) := by
+  obtain ⟨C, hC0, hC⟩ := exists_lintegral_qKer_sq_le_poly
+  refine ⟨Real.sqrt C, Real.sqrt_pos.2 hC0, fun w hw d hd => ?_⟩
+  have hmeas : Measurable (qKer w w d) := by
+    rw [qKer_eq_compKernel]
+    exact AiryTwoInt.measurable_compKernel (measurable_qFKer w) (measurable_qPKer w d)
+  have h := eLpNorm_le_of_lintegral_sq_le hmeas.aestronglyMeasurable (by positivity) (hC w hw d hd)
+  refine (opENorm_le_hsENorm _).trans ((hsENorm_kernelOperator_le _).trans (h.trans ?_))
+  apply ENNReal.ofReal_le_ofReal
+  rw [Real.sqrt_mul hC0.le, Real.sqrt_sq (by linarith)]
+
+/-! ## 6. Sharp excess bound: the assembly -/
+
+/-- **Sharp excess bound**: for every bounded `R` with `‖R‖ ≤ 2` (e.g. `R = (I − B)⁻¹`),
+`‖(D − B) + K₂₁ R Q‖₁ ≤ C (1 + w + d)² e^{−Ψ(d,w)}` for `w ≥ 1/2`, `d > 0`. -/
+theorem traceENorm_twoTimeExcess_le_sharp : ∃ C : ℝ, 0 < C ∧ ∀ w : ℝ, 1 / 2 ≤ w → ∀ d : ℝ,
+    ∀ hd : 0 < d, ∀ R : Lp ℝ 2 (volume : Measure ℝ) →L[ℝ] Lp ℝ 2 (volume : Measure ℝ),
+      ‖R‖ ≤ 2 →
+      traceENorm ((dOp w w hd - goeOp w) + k21Op w w hd ∘L R ∘L qOp w w hd)
+        ≤ ENNReal.ofReal (C * (1 + w + d) ^ 2 * Real.exp (-psiTP d w)) := by
+  obtain ⟨CQ, hCQ, hQ⟩ := exists_enorm_qOp_le_poly
+  refine ⟨sharpConst * (1 + 2 * CQ), by have := sharpConst_pos; positivity,
+    fun w hw d hd R hR => ?_⟩
+  have hw0 : (0 : ℝ) ≤ w := by linarith
+  set D := 1 + w + d with hDdef
+  have hD1 : 1 ≤ D := by rw [hDdef]; linarith
+  set a := sharpConst * D * Real.exp (-psiTP d w)
+  set b := CQ * (1 + d)
+  have hsc := sharpConst_pos
+  have ha : 0 ≤ a := by positivity
+  have hb : 0 ≤ b := by have : (0 : ℝ) ≤ 1 + d := by linarith
+                        positivity
+  have hRe : ‖R‖ₑ ≤ ENNReal.ofReal 2 := by
+    rw [← ofReal_norm]; exact ENNReal.ofReal_le_ofReal hR
+  have hRQ : ‖R ∘L qOp w w hd‖ₑ ≤ ENNReal.ofReal 2 * ENNReal.ofReal b :=
+    (ContinuousLinearMap.opENorm_comp_le _ _).trans (mul_le_mul' hRe (hQ w hw0 d hd))
+  rw [dOp_sub_goeOp]
+  calc traceENorm (-k21TOp w hd + k21Op w w hd ∘L R ∘L qOp w w hd)
+      ≤ traceENorm (-k21TOp w hd) + traceENorm (k21Op w w hd ∘L R ∘L qOp w w hd) :=
+        traceENorm_add_le _ _
+    _ ≤ ENNReal.ofReal a + ENNReal.ofReal a * (ENNReal.ofReal 2 * ENNReal.ofReal b) := by
+        rw [traceENorm_neg]
+        gcongr
+        · exact traceENorm_k21TOp_le_sharp hw hd
+        · exact (traceENorm_comp_right_le _ _).trans
+            (mul_le_mul' (traceENorm_k21Op_le_sharp hw hd) hRQ)
+    _ = ENNReal.ofReal (a + a * (2 * b)) := by
+        rw [← ENNReal.ofReal_mul (by norm_num), ← ENNReal.ofReal_mul ha,
+          ← ENNReal.ofReal_add ha (by positivity)]
+    _ ≤ _ := by
+        apply ENNReal.ofReal_le_ofReal
+        have hE := (Real.exp_pos (-psiTP d w)).le
+        have h1 : D ≤ D ^ 2 := by nlinarith
+        have h2 : D * (1 + d) ≤ D ^ 2 := by
+          rw [sq]; exact mul_le_mul_of_nonneg_left (by rw [hDdef]; linarith) (by linarith)
+        have e : a + a * (2 * b) = sharpConst * Real.exp (-psiTP d w) * D
+            + 2 * CQ * sharpConst * Real.exp (-psiTP d w) * (D * (1 + d)) := by ring
+        rw [e]
+        have hk : 0 ≤ sharpConst * Real.exp (-psiTP d w) := by positivity
+        have hk2 : 0 ≤ 2 * CQ * sharpConst * Real.exp (-psiTP d w) := by positivity
+        calc sharpConst * Real.exp (-psiTP d w) * D
+              + 2 * CQ * sharpConst * Real.exp (-psiTP d w) * (D * (1 + d))
+            ≤ sharpConst * Real.exp (-psiTP d w) * D ^ 2
+              + 2 * CQ * sharpConst * Real.exp (-psiTP d w) * D ^ 2 := by
+              gcongr
+          _ = _ := by ring
+
+end AiryFdd

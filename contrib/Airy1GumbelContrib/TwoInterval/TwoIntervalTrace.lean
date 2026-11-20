@@ -1,0 +1,920 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.TwoInterval.TwoIntervalOps
+
+/-!
+# The two-interval trace formula and the four-sector decomposition
+
+Part of the two-interval layer (`TwoInterval/`) of the Airy1–Gumbel contrib library: the
+trace step of the paper's separated-block estimate — the trace formula for the conjugated
+two-block interaction operator `C̃_r` and its decomposition into the four sector integrals,
+consumed by the sector bounds (`SectorRR.lean`, `SectorRF.lean`, `SectorFR.lean`,
+`SectorFF.lean`) and assembled in `TwoIntervalTraceBound.lean`.
+
+## Correspondence with the paper
+
+* `C_r = Q P_r Q P_{-S} B_0` with `S = 2 + r`, and the factorization
+  `C̃_r = A_r W_{S,a}` with `A_r := U_a Q P_r Q U_a Φ`,
+  `W_{S,a} := Φ⁻¹ U_a⁻¹ P_{-S} B₀ U_a⁻¹`.
+* The Hilbert–Schmidt product trace formula
+  `Tr C̃_r = ∫∫ A_r(x, w) W_{S,a}(w, x) dx dw`.
+* The weight cancellation `Tr C̃_r = Tr C_r`: the
+  exponential and polynomial weights cancel in the trace integral.
+* The R/F splitting `Q = Q^R + Q^F` and the four sector integrals
+  `Tr C_r^{αβ} = ∫_{ℝ⁴} Q^α(x, y) p_r(y − z) Q^β(z, w) (P_{-S}B₀)(w, x) dx dy dz dw`,
+  with `(P_{-S}B₀)(w, x) = g_S(w + x)`.
+
+## The Tonelli justification, and a shortcut that fails (read before reusing)
+
+The paper justifies the four-fold expansion by Cauchy–Schwarz for the
+Hilbert–Schmidt factors `A_r`, `W_{S,a}` — i.e. exactly the `MemLp` hypotheses
+`hA`, `hW` below — plus nonnegativity of the `A_r`-kernel (Tonelli "by domination
+by `A_r`").
+
+⚠️ **A domination that fails.** The naive domination of the sector integrands by
+`p₁(x − y) · p_r(y − z) · p₁(z − w) · |g_S(w + x)|` does **not** give an integrable
+bound on ℝ⁴: Chapman–Kolmogorov collapses the inner two factors exactly to
+`p_{2+r}(x − w)` (`heatKernel_conv`), and with `|g_S(s)| ≤ C e^{S|s|}`
+(`backwardAiry_abs_le_exp`)
+`∫∫ p_{2+r}(x − w) e^{S|w + x|} dx dw = ½ (∫ p_{2+r}) · (∫ e^{S|s|} ds) = ∞`
+(the change of variables `s = w + x`, `d = x − w` has Jacobian 2). The same bound
+is equally lossy pointwise: `|g_S(s)| ≤ C e^{S|s|}` grows for `s → +∞` while `g_S`
+actually decays superexponentially there. The correct justification is the
+paper's own: the weights cancel in
+`|A_r(x, w) W_{S,a}(w, x)| = (Q P_r Q)(x, w) · |g_S(w + x)|`, and the right side is
+integrable by Cauchy–Schwarz from the `L²` data of the two weighted factors (the
+`memLp_aRKer` / `memLp_wSKer` interface). All four-fold (sector) integrability statements in
+this module are therefore conditional on `hA`, `hW`; the factorization
+(`crKerT_eq_compKernel_aRKer_wSKer`) and the weight-cancellation identity
+(`trCrWeighted_eq_trCr`) are unconditional pointwise algebra.
+
+## Packaging
+
+* The sector integrals `trSectorRR/RF/FR/FF M r` and the full integral `trCr M r`
+  are **iterated** Bochner integrals in the order `x, w, y, z` (the outer trace
+  variables first — the order of the paper's
+  `∫∫ A_r(x,w) W_{S,a}(w,x) dx dw` and of its Tonelli justification). Given the
+  integrability proved here they coincide with the `ℝ⁴`
+  product-measure integral by `MeasureTheory.integral_prod`; we keep
+  the iterated form because the sector bounds decompose it region by region.
+* `qPrQKer M r` is the kernel of the middle factor `Q P_r Q`; `aRKer a M r`,
+  `wSKer S a` are the kernels of `A_r`, `W_{S,a}`. The paper's `W_{S,a}`
+  kernel is *definitionally* `AiryConj.wKernel S a` (the factor `W` at `T := S`):
+  `W_{S,a}(w, x) = φ(w)⁻¹ e^{a w} g_S(w + x) e^{a x}`.
+
+## What is proved here
+
+* `aRKer_mul_wSKer` / `crKerT_eq_compKernel_aRKer_wSKer`: the kernel
+  factorization `C̃_r = A_r W_{S,a}` pointwise, with no integrability hypotheses
+  (the `φ`/`exp` cancellation pattern of `compKernel_vKernel_wKernel`).
+* `kernelOperator_compKernel`: the operator of a composite kernel is the
+  composition of the operators (a.e. Fubini via `integrable_compKernel_mul_ae`);
+  the glue between `kernelOperator_congr` and `AiryConj.trace_kernelOperator_comp`.
+* `trace_crKerT_eq`: `Tr C̃_r = ∫∫ A_r(x, w) W_{S,a}(w, x)` conditional on
+  the explicit `MemLp` data `hA`, `hW`, `hcr` (stated in conditional form, with explicit
+  hypotheses).
+* `integrable_sectorIntegrand_z`, `integrable_sectorInnerY`, `sectorInnerW_abs_le`,
+  `integrable_sectorInnerW_ae`, `integrable_sectorInnerX`: the four-level Tonelli
+  chain for every sector, closed by the two-fold Cauchy–Schwarz integrability
+  `integrable_uncurry_qPrQKer_mul_abs_bAiryKer` derived from `hA`, `hW`.
+* `trCrWeighted_eq_trCr`: the weighted trace integral equals the unweighted
+  four-fold integral (the weights cancel pointwise).
+* `trCr_sum_sectors`: `trCr = trSectorRR + trSectorRF + trSectorFR +
+  trSectorFF`.
+* `trace_crKerT_eq_sectors`: the headline `Tr C̃_r = Tr C_r^{RR} + Tr C_r^{RF} +
+  Tr C_r^{FR} + Tr C_r^{FF}` (the input of the total trace bound).
+
+## Presentation choices
+
+* Iterated-integral packaging of the `ℝ⁴` sector integrals (see above).
+* The sector Tonelli chain is conditional on the `MemLp` data `hA`, `hW` (see the
+  note above); this matches the paper's justification exactly.
+* The factorization, the trace formula and the sector decomposition are formalized
+  as stated in the paper.
+-/
+
+namespace AiryTwoInt
+
+open MeasureTheory Real Set Filter
+open scoped Topology BigOperators ENNReal NNReal InnerProduct InnerProductSpace
+open HilbertSchmidt
+
+/-! ## The `A_r`/`W_{S,a}` kernels -/
+
+/-- The kernel of the middle factor `Q P_r Q` of `C_r`. -/
+noncomputable def qPrQKer (M r : ℝ) : ℝ × ℝ → ℝ :=
+  AiryConj.compKernel (qKerTwo M) (AiryConj.compKernel (heatKerTwo r) (qKerTwo M))
+
+/-- The kernel of `A_r := U_a Q P_r Q U_a Φ`:
+`A_r(x, w) = e^{−a x} (Q P_r Q)(x, w) e^{−a w} φ(w)`. Note the right weight is
+`U_a Φ`, *not* `U_a⁻¹`: this is the Hilbert–Schmidt factorization, not a
+similarity. -/
+noncomputable def aRKer (a M r : ℝ) : ℝ × ℝ → ℝ :=
+  fun p => Real.exp (-a * p.1) * qPrQKer M r p * Real.exp (-a * p.2)
+    * AiryConj.phiWeight p.2
+
+/-- The kernel of `W_{S,a} := Φ⁻¹ U_a⁻¹ P_{-S} B₀ U_a⁻¹`:
+`W_{S,a}(w, x) = φ(w)⁻¹ e^{a w} g_S(w + x) e^{a x}` — definitionally
+`AiryConj.wKernel S a` (the paper's factor `W` at `T := S`). -/
+noncomputable def wSKer (S a : ℝ) : ℝ × ℝ → ℝ := AiryConj.wKernel S a
+
+/-- `qPrQKer` unfolds to its defining iterated integral. -/
+theorem qPrQKer_apply (M r x w : ℝ) :
+    qPrQKer M r (x, w)
+      = ∫ y : ℝ, qKerTwo M (x, y)
+          * AiryConj.compKernel (heatKerTwo r) (qKerTwo M) (y, w) := rfl
+
+/-- The inner factor of `qPrQKer` unfolds to its defining integral. -/
+theorem compKernel_heatKerTwo_qKerTwo_apply (M r y w : ℝ) :
+    AiryConj.compKernel (heatKerTwo r) (qKerTwo M) (y, w)
+      = ∫ z : ℝ, heatKernel r (y - z) * qKerTwo M (z, w) := rfl
+
+/-- `qPrQKer` is measurable. -/
+theorem measurable_qPrQKer (M r : ℝ) : Measurable (qPrQKer M r) :=
+  measurable_compKernel (measurable_qKerTwo M)
+    (measurable_compKernel (measurable_heatKerTwo r) (measurable_qKerTwo M))
+
+/-- `aRKer` is measurable. -/
+theorem measurable_aRKer (a M r : ℝ) : Measurable (aRKer a M r) :=
+  ((((Real.continuous_exp.comp (continuous_const.mul continuous_fst)).measurable.mul
+    (measurable_qPrQKer M r)).mul
+    (Real.continuous_exp.comp (continuous_const.mul continuous_snd)).measurable).mul
+    (AiryConj.continuous_phiWeight.comp continuous_snd).measurable)
+
+/-- `wSKer` is continuous, hence measurable (`AiryConj.continuous_wKernel`, `AiryKernel/`). -/
+theorem measurable_wSKer (S a : ℝ) : Measurable (wSKer S a) :=
+  (AiryConj.continuous_wKernel S a).measurable
+
+/-- The kernel of `Q P_r Q` is pointwise nonnegative (`0 ≤ Q ≤ P_1`,
+so `Q P_r Q ≥ 0` — the paper's "the kernel of `A_r` is nonnegative"). -/
+theorem qPrQKer_nonneg (hr : 0 < r) (M : ℝ) (p : ℝ × ℝ) : 0 ≤ qPrQKer M r p := by
+  rw [qPrQKer_apply]
+  exact integral_nonneg fun y => mul_nonneg (qKerTwo_nonneg M _)
+    (compKernel_heatKerTwo_qKerTwo_nonneg hr M _ _)
+
+/-- The backward-Airy factor in explicit form:
+`(P_{-S}B₀)(w, x) = e^{−(2/3)S³ − S(w+x)} Ai(w + x + S²)`. -/
+theorem bAiryKer_eq (S w x : ℝ) :
+    bAiryKer S (w, x)
+      = Real.exp (-(2/3) * S ^ 3 - S * (w + x)) * airyAiReal (w + x + S ^ 2) := rfl
+
+/-! ## The kernel factorization `C̃_r = A_r W_{S,a}` -/
+
+/-- **The pointwise `A_r · W_{S,a}` integrand identity**: the
+middle `e^{∓a w}` and `φ(w)^{±1}` factors cancel (`φ > 0`), leaving the outer
+`U_a`-weights times the unweighted kernel product. Pure algebra — no integrability
+is needed (cf. `uConj_mul_uConj`, `compKernel_vKernel_wKernel`). -/
+theorem aRKer_mul_wSKer (a M r x w t : ℝ) :
+    aRKer a M r (x, w) * wSKer (2 + r) a (w, t)
+      = Real.exp (-a * x) * (qPrQKer M r (x, w) * bAiryKer (2 + r) (w, t))
+        * Real.exp (a * t) := by
+  have hφ : AiryConj.phiWeight w * (AiryConj.phiWeight w)⁻¹ = 1 :=
+    mul_inv_cancel₀ (AiryConj.phiWeight_pos w).ne'
+  have he : Real.exp (-a * w) * Real.exp (a * w) = 1 := by
+    rw [← Real.exp_add, show -a * w + a * w = (0 : ℝ) by ring, Real.exp_zero]
+  show (Real.exp (-a * x) * qPrQKer M r (x, w) * Real.exp (-a * w)
+      * AiryConj.phiWeight w)
+      * ((AiryConj.phiWeight w)⁻¹ * Real.exp (a * w) * bAiryKer (2 + r) (w, t)
+        * Real.exp (a * t))
+    = Real.exp (-a * x) * (qPrQKer M r (x, w) * bAiryKer (2 + r) (w, t))
+      * Real.exp (a * t)
+  calc (Real.exp (-a * x) * qPrQKer M r (x, w) * Real.exp (-a * w)
+        * AiryConj.phiWeight w)
+      * ((AiryConj.phiWeight w)⁻¹ * Real.exp (a * w) * bAiryKer (2 + r) (w, t)
+        * Real.exp (a * t))
+      = Real.exp (-a * x) * (qPrQKer M r (x, w) * bAiryKer (2 + r) (w, t))
+        * Real.exp (a * t) * (Real.exp (-a * w) * Real.exp (a * w))
+        * (AiryConj.phiWeight w * (AiryConj.phiWeight w)⁻¹) := by ring
+    _ = Real.exp (-a * x) * (qPrQKer M r (x, w) * bAiryKer (2 + r) (w, t))
+        * Real.exp (a * t) := by rw [he, hφ, mul_one, mul_one]
+
+/-- **The A_r/W factorization at kernel level**:
+`C̃_r = A_r W_{S,a}` pointwise as kernels, i.e.
+`crKerT a M r = compKernel (aRKer a M r) (wSKer (2 + r) a)`. The middle-factor
+cancellations are pointwise, so no integrability hypotheses are needed (the
+`uConj_compKernel` pattern); the closing step is
+`compKernel_QPrQ_bAiryKer_eq_crKer`. -/
+theorem crKerT_eq_compKernel_aRKer_wSKer (hr : 0 < r) (a M : ℝ) :
+    crKerT a M r = AiryConj.compKernel (aRKer a M r) (wSKer (2 + r) a) := by
+  funext p
+  obtain ⟨x, y⟩ := p
+  show uConj a (crKer M r) (x, y) = AiryConj.compKernel (aRKer a M r) (wSKer (2 + r) a) (x, y)
+  rw [← compKernel_QPrQ_bAiryKer_eq_crKer hr M]
+  show Real.exp (-a * x) * AiryConj.compKernel (qPrQKer M r) (bAiryKer (2 + r)) (x, y)
+      * Real.exp (a * y)
+    = ∫ w : ℝ, aRKer a M r (x, w) * wSKer (2 + r) a (w, y)
+  rw [show AiryConj.compKernel (qPrQKer M r) (bAiryKer (2 + r)) (x, y)
+      = ∫ w : ℝ, qPrQKer M r (x, w) * bAiryKer (2 + r) (w, y) from rfl]
+  rw [← integral_const_mul, ← integral_mul_const]
+  apply integral_congr_ae
+  filter_upwards with w
+  exact (aRKer_mul_wSKer a M r x w y).symm
+
+/-- The absolute-value form of the integrand identity (the Tonelli input):
+`|A_r(x, w) · W_{S,a}(w, x)| = (Q P_r Q)(x, w) · |g_S(w + x)|`, using
+`(Q P_r Q) ≥ 0`. -/
+theorem abs_aRKer_mul_wSKer (hr : 0 < r) (a M x w : ℝ) :
+    |aRKer a M r (x, w) * wSKer (2 + r) a (w, x)|
+      = qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)| := by
+  rw [aRKer_mul_wSKer a M r x w x]
+  have he : Real.exp (-a * x) * Real.exp (a * x) = 1 := by
+    rw [← Real.exp_add, show -a * x + a * x = (0 : ℝ) by ring, Real.exp_zero]
+  rw [abs_mul, abs_mul, abs_of_nonneg (Real.exp_pos _).le, abs_of_nonneg (Real.exp_pos _).le,
+    abs_mul, abs_of_nonneg (qPrQKer_nonneg hr M _)]
+  calc Real.exp (-a * x) * (qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)|) * Real.exp (a * x)
+      = (Real.exp (-a * x) * Real.exp (a * x))
+        * (qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)|) := by ring
+    _ = qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)| := by rw [he, one_mul]
+
+/-! ## The two-fold Cauchy–Schwarz integrability -/
+
+/-- The weighted trace integrand `(x, w) ↦ A_r(x, w) · W_{S,a}(w, x)` is integrable
+on ℝ² from the `L²` data of the two factors (Cauchy–Schwarz). -/
+theorem integrable_uncurry_aRKer_mul_wSKer_flip (a M r : ℝ)
+    (hA : MemLp (aRKer a M r) 2 (volume.prod volume))
+    (hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume)) :
+    Integrable (Function.uncurry fun x w : ℝ => aRKer a M r (x, w) * wSKer (2 + r) a (w, x))
+      (volume.prod volume) := by
+  have h := MemLp.integrable_mul hA (AiryConj.memLp_kernelFlip hW)
+  have heq : (aRKer a M r * AiryConj.kernelFlip (wSKer (2 + r) a))
+      = Function.uncurry fun x w : ℝ => aRKer a M r (x, w) * wSKer (2 + r) a (w, x) := by
+    funext p
+    obtain ⟨x, w⟩ := p
+    rfl
+  rwa [heq] at h
+
+/-- The unweighted two-fold Tonelli dominator: after the weight cancellation,
+`(x, w) ↦ (Q P_r Q)(x, w) · |g_S(w + x)|` is integrable on ℝ². This
+is the analytic content closing every sector's four-fold Tonelli chain below. -/
+theorem integrable_uncurry_qPrQKer_mul_abs_bAiryKer (hr : 0 < r) (a M : ℝ)
+    (hA : MemLp (aRKer a M r) 2 (volume.prod volume))
+    (hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume)) :
+    Integrable (Function.uncurry fun x w : ℝ =>
+      qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)|) (volume.prod volume) := by
+  have h := (integrable_uncurry_aRKer_mul_wSKer_flip a M r hA hW).abs
+  apply h.congr
+  filter_upwards with p
+  obtain ⟨x, w⟩ := p
+  show |aRKer a M r (x, w) * wSKer (2 + r) a (w, x)| = _
+  exact abs_aRKer_mul_wSKer hr a M x w
+
+/-! ## The operator of a composite kernel is the composition of the operators -/
+
+/-- For a.e. `x` the Fubini integrand `(z, w) ↦ K (x, z) * (K' (z, w) * f w)` of the
+composite-kernel operator identity is jointly integrable on ℝ²: Cauchy–Schwarz first
+in `w` against the `L²`-slice of `K'`, then in `z` against the `L²`-slice of `K`
+(both finite a.e. by `slice_measurable_finite_ae`). -/
+theorem integrable_compKernel_mul_ae {K K' : ℝ × ℝ → ℝ}
+    (hK : MemLp K 2 (volume.prod volume)) (hK' : MemLp K' 2 (volume.prod volume))
+    (f : Lp ℝ 2 (volume : Measure ℝ)) :
+    ∀ᵐ x : ℝ ∂volume, Integrable
+      (Function.uncurry fun z w : ℝ => K (x, z) * (K' (z, w) * f w))
+      (volume.prod volume) := by
+  filter_upwards [slice_measurable_finite_ae hK] with x hx
+  obtain ⟨hxmeas, hxfin⟩ := hx
+  have hmeas : AEStronglyMeasurable
+      (Function.uncurry fun z w : ℝ => K (x, z) * (K' (z, w) * f w))
+      (volume.prod volume) :=
+    hxmeas.comp_fst.mul (hK'.aestronglyMeasurable.mul (Lp.aestronglyMeasurable f).comp_snd)
+  refine ⟨hmeas, ?_⟩
+  have hnorm : ∀ p : ℝ × ℝ,
+      ‖Function.uncurry (fun z w : ℝ => K (x, z) * (K' (z, w) * f w)) p‖ₑ
+        = ‖K (x, p.1)‖ₑ * (‖K' (p.1, p.2)‖ₑ * ‖f p.2‖ₑ) := fun p => by
+    show ‖K (x, p.1) * (K' (p.1, p.2) * f p.2)‖ₑ = _
+    rw [enorm_mul, enorm_mul]
+  have hKx : AEMeasurable (fun z : ℝ => ‖K (x, z)‖ₑ) volume := hxmeas.enorm
+  have hfm : AEMeasurable (fun w : ℝ => ‖f w‖ₑ) volume := (Lp.aestronglyMeasurable f).enorm
+  have hK'sl : ∀ᵐ z : ℝ ∂volume, AEMeasurable (fun w : ℝ => ‖K' (z, w)‖ₑ) volume := by
+    filter_upwards [AEStronglyMeasurable.prodMk_left hK'.aestronglyMeasurable] with z hz
+    exact hz.enorm
+  have hK'norm : AEMeasurable (fun p => (‖K' p‖ₑ) ^ (2 : ℝ)) (volume.prod volume) :=
+    (hK'.aestronglyMeasurable.enorm).pow_const (2 : ℝ)
+  have hG : AEMeasurable (fun z : ℝ => (∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ))
+      volume :=
+    ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hK'norm.lintegral_prod_right'
+  have hfin_f : (∫⁻ w, (‖f w‖ₑ) ^ (2 : ℝ) ∂volume) < ⊤ := by
+    rw [lintegral_congr fun w => enorm_rpow_two _,
+      ← MeasureTheory.eLpNorm_two_sq_eq_lintegral (Lp.aestronglyMeasurable f)]
+    exact ENNReal.pow_lt_top (Lp.eLpNorm_lt_top f)
+  have hK'fin : (∫⁻ p, (‖K' p‖ₑ) ^ (2 : ℝ) ∂(volume.prod volume)) < ⊤ := by
+    rw [lintegral_congr fun p => enorm_rpow_two _,
+      ← MeasureTheory.eLpNorm_two_sq_eq_lintegral hK'.aestronglyMeasurable]
+    exact ENNReal.pow_lt_top hK'.eLpNorm_lt_top
+  have hstep : ∀ᵐ z : ℝ ∂volume, ∫⁻ w, ‖K (x, z)‖ₑ * (‖K' (z, w)‖ₑ * ‖f w‖ₑ)
+      ≤ ‖K (x, z)‖ₑ * ((∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+        * (∫⁻ w, (‖f w‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)) := by
+    filter_upwards [hK'sl] with z hz
+    have hholder : (∫⁻ w, ‖K' (z, w)‖ₑ * ‖f w‖ₑ ∂volume)
+        ≤ (∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+          * (∫⁻ w, (‖f w‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ) :=
+      ENNReal.lintegral_mul_le_Lp_mul_Lq volume Real.HolderConjugate.two_two hz hfm
+    calc ∫⁻ w, ‖K (x, z)‖ₑ * (‖K' (z, w)‖ₑ * ‖f w‖ₑ)
+        = ‖K (x, z)‖ₑ * ∫⁻ w, ‖K' (z, w)‖ₑ * ‖f w‖ₑ :=
+          lintegral_const_mul'' _ (show AEMeasurable (fun w : ℝ => ‖K' (z, w)‖ₑ * ‖f w‖ₑ)
+            volume from hz.mul hfm)
+      _ ≤ ‖K (x, z)‖ₑ * ((∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+            * (∫⁻ w, (‖f w‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)) :=
+          mul_le_mul_of_nonneg_left hholder bot_le
+  have hre : ∀ z : ℝ, ‖K (x, z)‖ₑ * ((∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+        * (∫⁻ w, (‖f w‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ))
+      = (∫⁻ w, (‖f w‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+        * (‖K (x, z)‖ₑ * (∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)) :=
+    fun z => by ring
+  have hG2 : ∀ z : ℝ, ((∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)) ^ (2 : ℝ)
+      = ∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume := fun z => by
+    rw [← ENNReal.rpow_mul, show (1/2 : ℝ) * 2 = 1 by norm_num, ENNReal.rpow_one]
+  calc (∫⁻ p, ‖Function.uncurry (fun z w : ℝ => K (x, z) * (K' (z, w) * f w)) p‖ₑ
+          ∂(volume.prod volume))
+      = ∫⁻ z, ∫⁻ w, ‖K (x, z)‖ₑ * (‖K' (z, w)‖ₑ * ‖f w‖ₑ) ∂volume ∂volume := by
+        rw [MeasureTheory.lintegral_prod _ hmeas.enorm]
+        apply lintegral_congr; intro z
+        apply lintegral_congr; intro w
+        exact hnorm (z, w)
+    _ ≤ ∫⁻ z, ‖K (x, z)‖ₑ * ((∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+          * (∫⁻ w, (‖f w‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)) ∂volume := lintegral_mono_ae hstep
+    _ = (∫⁻ w, (‖f w‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+          * ∫⁻ z, ‖K (x, z)‖ₑ * (∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+            ∂volume := by
+        rw [lintegral_congr hre, lintegral_const_mul'' _
+          (show AEMeasurable (fun z : ℝ => ‖K (x, z)‖ₑ
+            * (∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)) volume from hKx.mul hG)]
+    _ ≤ (∫⁻ w, (‖f w‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+          * ((∫⁻ z, (‖K (x, z)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+            * (∫⁻ z, ((∫⁻ w, (‖K' (z, w)‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)) ^ (2 : ℝ)
+                ∂volume) ^ (1/2 : ℝ)) := by
+        apply mul_le_mul_of_nonneg_left _ bot_le
+        exact ENNReal.lintegral_mul_le_Lp_mul_Lq volume Real.HolderConjugate.two_two hKx hG
+    _ = (∫⁻ w, (‖f w‖ₑ) ^ (2 : ℝ) ∂volume) ^ (1/2 : ℝ)
+          * ((∫⁻ z, ‖K (x, z)‖ₑ ^ 2 ∂volume) ^ (1/2 : ℝ)
+            * (∫⁻ p, (‖K' p‖ₑ) ^ (2 : ℝ) ∂(volume.prod volume)) ^ (1/2 : ℝ)) := by
+        congr 1
+        congr 1
+        · congr 1
+          apply lintegral_congr; intro z; rw [enorm_rpow_two]
+        · congr 1
+          rw [lintegral_congr fun z => hG2 z]
+          exact (MeasureTheory.lintegral_prod _ hK'norm).symm
+    _ < ⊤ := by
+        apply ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg (by norm_num) hfin_f.ne)
+        exact ENNReal.mul_lt_top
+          (ENNReal.rpow_lt_top_of_nonneg (by norm_num) hxfin.ne)
+          (ENNReal.rpow_lt_top_of_nonneg (by norm_num) hK'fin.ne)
+
+/-- **The operator of a composite kernel is the composition of the operators**:
+`kernelOperator` of `compKernel K K' (x, w) = ∫ z, K (x, z) K' (z, w)` equals
+`kernelOperator K ∘L kernelOperator K'` (pointwise-a.e. Fubini). This is the glue
+between `kernelOperator_congr` and `AiryConj.trace_kernelOperator_comp`. -/
+theorem kernelOperator_compKernel {K K' : ℝ × ℝ → ℝ}
+    (hK : MemLp K 2 (volume.prod volume)) (hK' : MemLp K' 2 (volume.prod volume))
+    (hcomp : MemLp (AiryConj.compKernel K K') 2 (volume.prod volume)) :
+    kernelOperator hcomp = kernelOperator hK ∘L kernelOperator hK' := by
+  apply ContinuousLinearMap.ext
+  intro f
+  apply Lp.ext
+  filter_upwards [kernelOperator_apply_ae hcomp f,
+    kernelOperator_apply_ae hK (kernelOperator hK' f),
+    integrable_compKernel_mul_ae hK hK' f] with x hxcomp hxK hxint
+  rw [ContinuousLinearMap.comp_apply, hxcomp, hxK]
+  show (∫ w : ℝ, AiryConj.compKernel K K' (x, w) * f w)
+    = ∫ z : ℝ, K (x, z) * (kernelOperator hK' f) z
+  have hK'f : ∀ᵐ z : ℝ ∂volume, K (x, z) * (kernelOperator hK' f) z
+      = K (x, z) * (∫ w : ℝ, K' (z, w) * f w) := by
+    filter_upwards [kernelOperator_apply_ae hK' f] with z hz
+    rw [hz]
+    rfl
+  rw [integral_congr_ae hK'f]
+  calc ∫ w : ℝ, AiryConj.compKernel K K' (x, w) * f w
+      = ∫ w : ℝ, (∫ z : ℝ, K (x, z) * K' (z, w)) * f w := by
+        apply integral_congr_ae; filter_upwards with w; rfl
+    _ = ∫ w : ℝ, ∫ z : ℝ, K (x, z) * (K' (z, w) * f w) := by
+        apply integral_congr_ae; filter_upwards with w
+        rw [← integral_mul_const]
+        apply integral_congr_ae; filter_upwards with z; ring
+    _ = ∫ z : ℝ, ∫ w : ℝ, K (x, z) * (K' (z, w) * f w) :=
+        (MeasureTheory.integral_integral_swap
+          (f := fun z w : ℝ => K (x, z) * (K' (z, w) * f w)) hxint).symm
+    _ = ∫ z : ℝ, K (x, z) * (∫ w : ℝ, K' (z, w) * f w) := by
+        apply integral_congr_ae; filter_upwards with z
+        rw [integral_const_mul]
+
+/-! ## The trace formula -/
+
+/-- **The two-interval trace formula**: conditional on the `L²`
+membership of the weighted kernels (the `memLp_aRKer` / `memLp_wSKer` interface — the
+Hilbert–Schmidt bounds for `V` and `W` in the paper), the trace of the conjugated interaction operator
+`C̃_r` is the cross-integrated kernel product
+`Tr C̃_r = ∫∫ A_r(x, w) W_{S,a}(w, x) dx dw`.
+
+The proof is `kernelOperator_congr` over the kernel factorization
+`crKerT_eq_compKernel_aRKer_wSKer`, then `kernelOperator_compKernel`, then
+`AiryConj.trace_kernelOperator_comp`. The `MemLp` hypotheses are stated in
+conditional form: explicit hypotheses, no `sorry`. -/
+theorem trace_crKerT_eq (hr : 0 < r) (a M : ℝ)
+    (hA : MemLp (aRKer a M r) 2 (volume.prod volume))
+    (hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume))
+    (hcr : MemLp (crKerT a M r) 2 (volume.prod volume)) :
+    trace (kernelOperator hcr)
+      = ∫ x : ℝ, ∫ w : ℝ, aRKer a M r (x, w) * wSKer (2 + r) a (w, x) := by
+  have hcomp : MemLp (AiryConj.compKernel (aRKer a M r) (wSKer (2 + r) a)) 2
+      (volume.prod volume) :=
+    (memLp_congr_ae (Eventually.of_forall
+      fun p => congrFun (crKerT_eq_compKernel_aRKer_wSKer hr a M) p)).mp hcr
+  rw [kernelOperator_congr (crKerT_eq_compKernel_aRKer_wSKer hr a M) hcr hcomp,
+    kernelOperator_compKernel hA hW hcomp, AiryConj.trace_kernelOperator_comp hA hW]
+
+/-! ## The four-sector decomposition -/
+
+/-- The sector trace integrand: for `α β ∈ {R, F}`,
+`Q^α(x, y) · p_r(y − z) · Q^β(z, w) · (P_{−S}B₀)(w, x)`, with `S = 2 + r`. -/
+noncomputable def sectorIntegrand (Qα Qβ : ℝ × ℝ → ℝ) (r : ℝ) (x y z w : ℝ) : ℝ :=
+  Qα (x, y) * heatKernel r (y - z) * Qβ (z, w) * bAiryKer (2 + r) (w, x)
+
+/-- The sector trace integral `Tr C_r^{αβ}`, as an iterated
+Bochner integral in the order `x, w, y, z` — the order of the paper's Tonelli
+justification. Given integrability it coincides with the `ℝ⁴`
+product-measure integral by `MeasureTheory.integral_prod`. -/
+noncomputable def trSector (Qα Qβ : ℝ × ℝ → ℝ) (r : ℝ) : ℝ :=
+  ∫ x : ℝ, ∫ w : ℝ, ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w
+
+/-- The RR sector trace `Tr C_r^{RR}`. -/
+noncomputable def trSectorRR (M r : ℝ) : ℝ := trSector (qRKerTwo M) (qRKerTwo M) r
+
+/-- The RF sector trace `Tr C_r^{RF}`. -/
+noncomputable def trSectorRF (M r : ℝ) : ℝ := trSector (qRKerTwo M) (qFKerTwo M) r
+
+/-- The FR sector trace `Tr C_r^{FR}`. -/
+noncomputable def trSectorFR (M r : ℝ) : ℝ := trSector (qFKerTwo M) (qRKerTwo M) r
+
+/-- The FF sector trace `Tr C_r^{FF}`. -/
+noncomputable def trSectorFF (M r : ℝ) : ℝ := trSector (qFKerTwo M) (qFKerTwo M) r
+
+/-- The full (unsplit) four-fold trace integral — the unweighted `Tr C_r`. -/
+noncomputable def trCr (M r : ℝ) : ℝ := trSector (qKerTwo M) (qKerTwo M) r
+
+/-- `Q^R` is pointwise nonnegative. -/
+theorem qRKerTwo_nonneg (M : ℝ) (p : ℝ × ℝ) : 0 ≤ qRKerTwo M p := by
+  unfold qRKerTwo
+  by_cases h : p ∈ Set.Iic M ×ˢ Set.Iic M
+  · rw [Set.indicator_of_mem h]
+    exact (heatKernel_pos one_pos _).le
+  · rw [Set.indicator_of_notMem h]
+
+/-- `Q^F` is pointwise nonnegative. -/
+theorem qFKerTwo_nonneg (M : ℝ) (p : ℝ × ℝ) : 0 ≤ qFKerTwo M p := by
+  unfold qFKerTwo
+  by_cases h : p ∈ {q : ℝ × ℝ | M < q.1 ∨ M < q.2}
+  · rw [Set.indicator_of_mem h]
+    exact (heatKernel_pos one_pos _).le
+  · rw [Set.indicator_of_notMem h]
+
+/-- `Q^R ≤ Q` pointwise (from `Q = Q^R + Q^F` and `Q^F ≥ 0`). -/
+theorem qRKerTwo_le_qKerTwo (M : ℝ) (p : ℝ × ℝ) : qRKerTwo M p ≤ qKerTwo M p := by
+  have h := qKerTwo_eq_RF M p
+  have hF := qFKerTwo_nonneg M p
+  linarith
+
+/-- `Q^F ≤ Q` pointwise. -/
+theorem qFKerTwo_le_qKerTwo (M : ℝ) (p : ℝ × ℝ) : qFKerTwo M p ≤ qKerTwo M p := by
+  have h := qKerTwo_eq_RF M p
+  have hR := qRKerTwo_nonneg M p
+  linarith
+
+/-- `|Q^R| ≤ Q` pointwise (the sector domination). -/
+theorem qRKerTwo_abs_le_qKerTwo (M : ℝ) (p : ℝ × ℝ) : |qRKerTwo M p| ≤ qKerTwo M p := by
+  rw [abs_of_nonneg (qRKerTwo_nonneg M p)]
+  exact qRKerTwo_le_qKerTwo M p
+
+/-- `|Q^F| ≤ Q` pointwise. -/
+theorem qFKerTwo_abs_le_qKerTwo (M : ℝ) (p : ℝ × ℝ) : |qFKerTwo M p| ≤ qKerTwo M p := by
+  rw [abs_of_nonneg (qFKerTwo_nonneg M p)]
+  exact qFKerTwo_le_qKerTwo M p
+
+/-- The sector integrand is measurable in the innermost variable `z`. -/
+theorem measurable_sectorIntegrand_z {Qα Qβ : ℝ × ℝ → ℝ}
+    (hQα : Measurable Qα) (hQβ : Measurable Qβ) (r x y w : ℝ) :
+    Measurable fun z : ℝ => sectorIntegrand Qα Qβ r x y z w :=
+  ((measurable_const.mul (((continuous_heatKernel r).comp
+    (continuous_const.sub continuous_id)).measurable)).mul
+    (hQβ.comp (continuous_id.prodMk continuous_const).measurable)).mul measurable_const
+
+/-- The sector integrand is jointly measurable in `(y, z)`. -/
+theorem measurable_sectorIntegrand_yz {Qα Qβ : ℝ × ℝ → ℝ}
+    (hQα : Measurable Qα) (hQβ : Measurable Qβ) (r x w : ℝ) :
+    Measurable fun q : ℝ × ℝ => sectorIntegrand Qα Qβ r x q.1 q.2 w :=
+  (((hQα.comp (continuous_const.prodMk continuous_fst).measurable).mul
+    (((continuous_heatKernel r).comp
+    (continuous_fst.sub continuous_snd)).measurable)).mul
+    (hQβ.comp (continuous_snd.prodMk continuous_const).measurable)).mul measurable_const
+
+/-- The `z`-integrated sector factor is measurable in `y`. -/
+theorem measurable_sectorInnerY {Qα Qβ : ℝ × ℝ → ℝ}
+    (hQα : Measurable Qα) (hQβ : Measurable Qβ) (r x w : ℝ) :
+    Measurable fun y : ℝ => ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w :=
+  ((measurable_sectorIntegrand_yz hQα hQβ r x w).stronglyMeasurable.integral_prod_right'
+    (ν := volume)).measurable
+
+/-- The sector integrand is jointly measurable in `((w, y), z)`. -/
+theorem measurable_sectorIntegrand_wyz {Qα Qβ : ℝ × ℝ → ℝ}
+    (hQα : Measurable Qα) (hQβ : Measurable Qβ) (r x : ℝ) :
+    Measurable fun q : (ℝ × ℝ) × ℝ => sectorIntegrand Qα Qβ r x q.1.2 q.2 q.1.1 :=
+  (((hQα.comp (continuous_const.prodMk (continuous_snd.comp continuous_fst)).measurable).mul
+    (((continuous_heatKernel r).comp ((continuous_snd.comp continuous_fst).sub
+      continuous_snd)).measurable)).mul
+    (hQβ.comp (continuous_snd.prodMk (continuous_fst.comp continuous_fst)).measurable)).mul
+    ((measurable_bAiryKer (2 + r)).comp
+      ((continuous_fst.comp continuous_fst).prodMk continuous_const).measurable)
+
+/-- The `(y, z)`-integrated sector factor is measurable in `w`. -/
+theorem measurable_sectorInnerW {Qα Qβ : ℝ × ℝ → ℝ}
+    (hQα : Measurable Qα) (hQβ : Measurable Qβ) (r x : ℝ) :
+    Measurable fun w : ℝ => ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w :=
+  (((measurable_sectorIntegrand_wyz hQα hQβ r x).stronglyMeasurable.integral_prod_right'
+    (ν := volume)).integral_prod_right' (ν := volume)).measurable
+
+/-- The sector integrand is jointly measurable in `(((x, w), y), z)`. -/
+theorem measurable_sectorIntegrand_xwyz {Qα Qβ : ℝ × ℝ → ℝ}
+    (hQα : Measurable Qα) (hQβ : Measurable Qβ) (r : ℝ) :
+    Measurable fun q : ((ℝ × ℝ) × ℝ) × ℝ =>
+      sectorIntegrand Qα Qβ r q.1.1.1 q.1.2 q.2 q.1.1.2 :=
+  (((hQα.comp ((continuous_fst.comp (continuous_fst.comp continuous_fst)).prodMk
+      (continuous_snd.comp continuous_fst)).measurable).mul
+    (((continuous_heatKernel r).comp ((continuous_snd.comp continuous_fst).sub
+      continuous_snd)).measurable)).mul
+    (hQβ.comp (continuous_snd.prodMk
+      (continuous_snd.comp (continuous_fst.comp continuous_fst))).measurable)).mul
+    ((measurable_bAiryKer (2 + r)).comp
+      ((continuous_snd.comp (continuous_fst.comp continuous_fst)).prodMk
+        (continuous_fst.comp (continuous_fst.comp continuous_fst))).measurable)
+
+/-- The `(w, y, z)`-integrated sector factor is measurable in `x`. -/
+theorem measurable_sectorInnerX {Qα Qβ : ℝ × ℝ → ℝ}
+    (hQα : Measurable Qα) (hQβ : Measurable Qβ) (r : ℝ) :
+    Measurable fun x : ℝ => ∫ w : ℝ, ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w :=
+  ((((measurable_sectorIntegrand_xwyz hQα hQβ r).stronglyMeasurable.integral_prod_right'
+    (ν := volume)).integral_prod_right' (ν := volume)).integral_prod_right'
+    (ν := volume)).measurable
+
+/-- **Sector Tonelli, level `z`** (pointwise): the innermost slice is integrable,
+dominated by `Q(x, y) · |g_S(w + x)| · (p_r * p₁)(y, w)` (`|Q^α| ≤ Q ≤ P₁`). -/
+theorem integrable_sectorIntegrand_z (hr : 0 < r) (M : ℝ)
+    {Qα Qβ : ℝ × ℝ → ℝ} (hQαmeas : Measurable Qα) (hQβmeas : Measurable Qβ)
+    (hQα : ∀ p : ℝ × ℝ, |Qα p| ≤ qKerTwo M p) (hQβ : ∀ p : ℝ × ℝ, |Qβ p| ≤ qKerTwo M p)
+    (x y w : ℝ) :
+    Integrable fun z : ℝ => sectorIntegrand Qα Qβ r x y z w := by
+  have hbase : Integrable fun z : ℝ => heatKerTwo r (y, z) * heatKerTwo 1 (z, w) :=
+    integrable_pair_mul_of_heatKernel_le hr one_pos (measurable_heatKerTwo r)
+      (measurable_heatKerTwo 1) (fun a b => heatKerTwo_abs_le_self hr (a, b))
+      (fun a b => heatKerTwo_abs_le_self one_pos (a, b)) y w
+  apply ((hbase.const_mul (qKerTwo M (x, y) * |bAiryKer (2 + r) (w, x)|))).mono'
+    (measurable_sectorIntegrand_z hQαmeas hQβmeas r x y w).aestronglyMeasurable
+  filter_upwards with z
+  have h1 := hQα (x, y)
+  have h2 := (hQβ (z, w)).trans (qKerTwo_le M (z, w))
+  have hheat := (heatKernel_pos hr (y - z)).le
+  have hQ := qKerTwo_nonneg M (x, y)
+  have hg := abs_nonneg (bAiryKer (2 + r) (w, x))
+  show |Qα (x, y) * heatKernel r (y - z) * Qβ (z, w) * bAiryKer (2 + r) (w, x)|
+    ≤ qKerTwo M (x, y) * |bAiryKer (2 + r) (w, x)| * (heatKernel r (y - z) * heatKernel 1 (z - w))
+  rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg hheat]
+  calc ((|Qα (x, y)| * heatKernel r (y - z)) * |Qβ (z, w)|) * |bAiryKer (2 + r) (w, x)|
+      = (|Qα (x, y)| * heatKernel r (y - z)) * (|Qβ (z, w)| * |bAiryKer (2 + r) (w, x)|) := by ring
+    _ ≤ (qKerTwo M (x, y) * heatKernel r (y - z))
+          * (heatKernel 1 (z - w) * |bAiryKer (2 + r) (w, x)|) :=
+        mul_le_mul (mul_le_mul_of_nonneg_right h1 hheat)
+          (mul_le_mul_of_nonneg_right h2 hg) (mul_nonneg (abs_nonneg _) hg)
+          (mul_nonneg hQ hheat)
+    _ = qKerTwo M (x, y) * |bAiryKer (2 + r) (w, x)|
+          * (heatKernel r (y - z) * heatKernel 1 (z - w)) := by ring
+
+/-- **Sector Tonelli, level `y`**: the `z`-integral is integrable in `y`, dominated
+by `|g_S(w + x)| · (Q · p_{r+1})(x, w)` (Chapman–Kolmogorov, `heatKernel_conv`). -/
+theorem integrable_sectorInnerY (hr : 0 < r) (M : ℝ)
+    {Qα Qβ : ℝ × ℝ → ℝ} (hQαmeas : Measurable Qα) (hQβmeas : Measurable Qβ)
+    (hQα : ∀ p : ℝ × ℝ, |Qα p| ≤ qKerTwo M p) (hQβ : ∀ p : ℝ × ℝ, |Qβ p| ≤ qKerTwo M p)
+    (x w : ℝ) :
+    Integrable fun y : ℝ => ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w := by
+  have hbase : Integrable fun y : ℝ => qKerTwo M (x, y) * heatKerTwo (r + 1) (y, w) :=
+    integrable_pair_mul_of_heatKernel_le one_pos (by linarith : (0:ℝ) < r + 1)
+      (measurable_qKerTwo M) (measurable_heatKerTwo (r + 1))
+      (fun a b => qKerTwo_abs_le M (a, b))
+      (fun a b => heatKerTwo_abs_le_self (by linarith) (a, b)) x w
+  apply ((hbase.const_mul |bAiryKer (2 + r) (w, x)|)).mono'
+    (measurable_sectorInnerY hQαmeas hQβmeas r x w).aestronglyMeasurable
+  filter_upwards with y
+  have hz := integrable_sectorIntegrand_z hr M hQαmeas hQβmeas hQα hQβ x y w
+  have hQβ' : ∀ p : ℝ × ℝ, |Qβ p| ≤ heatKernel 1 (p.1 - p.2) :=
+    fun p => (hQβ p).trans (qKerTwo_le M p)
+  have hdom : Integrable fun z : ℝ =>
+      |bAiryKer (2 + r) (w, x)|
+        * (qKerTwo M (x, y) * (heatKernel r (y - z) * heatKernel 1 (z - w))) := by
+    have hb : Integrable fun z : ℝ => heatKerTwo r (y, z) * heatKerTwo 1 (z, w) :=
+      integrable_pair_mul_of_heatKernel_le hr one_pos (measurable_heatKerTwo r)
+        (measurable_heatKerTwo 1) (fun a b => heatKerTwo_abs_le_self hr (a, b))
+        (fun a b => heatKerTwo_abs_le_self one_pos (a, b)) y w
+    exact ((hb.const_mul (qKerTwo M (x, y))).const_mul _).congr
+      (Eventually.of_forall fun z => rfl)
+  calc ‖∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w‖
+      ≤ ∫ z : ℝ, ‖sectorIntegrand Qα Qβ r x y z w‖ := norm_integral_le_integral_norm _
+    _ ≤ ∫ z : ℝ, |bAiryKer (2 + r) (w, x)|
+          * (qKerTwo M (x, y) * (heatKernel r (y - z) * heatKernel 1 (z - w))) := by
+        apply integral_mono hz.norm hdom
+        intro z
+        show |Qα (x, y) * heatKernel r (y - z) * Qβ (z, w) * bAiryKer (2 + r) (w, x)| ≤ _
+        rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg (heatKernel_pos hr _).le]
+        have h1 := hQα (x, y)
+        have h2 := hQβ' (z, w)
+        have hheat := (heatKernel_pos hr (y - z)).le
+        have hQ := qKerTwo_nonneg M (x, y)
+        have hg := abs_nonneg (bAiryKer (2 + r) (w, x))
+        calc ((|Qα (x, y)| * heatKernel r (y - z)) * |Qβ (z, w)|) * |bAiryKer (2 + r) (w, x)|
+            = (|Qα (x, y)| * heatKernel r (y - z))
+                * (|Qβ (z, w)| * |bAiryKer (2 + r) (w, x)|) := by ring
+          _ ≤ (qKerTwo M (x, y) * heatKernel r (y - z))
+                * (heatKernel 1 (z - w) * |bAiryKer (2 + r) (w, x)|) :=
+            mul_le_mul (mul_le_mul_of_nonneg_right h1 hheat)
+              (mul_le_mul_of_nonneg_right h2 hg) (mul_nonneg (abs_nonneg _) hg)
+              (mul_nonneg hQ hheat)
+          _ = |bAiryKer (2 + r) (w, x)|
+                * (qKerTwo M (x, y) * (heatKernel r (y - z) * heatKernel 1 (z - w))) := by ring
+    _ = |bAiryKer (2 + r) (w, x)|
+          * (qKerTwo M (x, y) * heatKernel (r + 1) (y - w)) := by
+        rw [integral_const_mul, integral_const_mul, heatKernel_conv hr one_pos y w]
+    _ = |bAiryKer (2 + r) (w, x)| * (qKerTwo M (x, y) * heatKerTwo (r + 1) (y, w)) := rfl
+
+/-- **Sector Tonelli, the `A_r`-domination step** ("domination by
+`A_r`"): the inner double integral is dominated by the *exact* middle convolution
+`(Q P_r Q)(x, w)` times `|g_S(w + x)|` — not by the lossy Gaussian bound
+`p_{2+r}(x − w)` (see the module docstring's note on the failing domination). -/
+theorem sectorInnerW_abs_le (hr : 0 < r) (M : ℝ)
+    {Qα Qβ : ℝ × ℝ → ℝ} (hQαmeas : Measurable Qα) (hQβmeas : Measurable Qβ)
+    (hQα : ∀ p : ℝ × ℝ, |Qα p| ≤ qKerTwo M p) (hQβ : ∀ p : ℝ × ℝ, |Qβ p| ≤ qKerTwo M p)
+    (x w : ℝ) :
+    ‖∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w‖
+      ≤ qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)| := by
+  have hzbound : ∀ y : ℝ, ‖∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w‖
+      ≤ |bAiryKer (2 + r) (w, x)|
+          * (qKerTwo M (x, y) * AiryConj.compKernel (heatKerTwo r) (qKerTwo M) (y, w)) := by
+    intro y
+    have hz := integrable_sectorIntegrand_z hr M hQαmeas hQβmeas hQα hQβ x y w
+    have hdom : Integrable fun z : ℝ =>
+        |bAiryKer (2 + r) (w, x)|
+          * (qKerTwo M (x, y) * (heatKernel r (y - z) * qKerTwo M (z, w))) := by
+      have hb : Integrable fun z : ℝ => heatKerTwo r (y, z) * qKerTwo M (z, w) :=
+        integrable_pair_mul_of_heatKernel_le hr one_pos (measurable_heatKerTwo r)
+          (measurable_qKerTwo M) (fun a b => heatKerTwo_abs_le_self hr (a, b))
+          (fun a b => qKerTwo_abs_le M (a, b)) y w
+      exact ((hb.const_mul (qKerTwo M (x, y))).const_mul _).congr
+        (Eventually.of_forall fun z => rfl)
+    calc ‖∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w‖
+        ≤ ∫ z : ℝ, ‖sectorIntegrand Qα Qβ r x y z w‖ := norm_integral_le_integral_norm _
+      _ ≤ ∫ z : ℝ, |bAiryKer (2 + r) (w, x)|
+            * (qKerTwo M (x, y) * (heatKernel r (y - z) * qKerTwo M (z, w))) := by
+          apply integral_mono hz.norm hdom
+          intro z
+          show |Qα (x, y) * heatKernel r (y - z) * Qβ (z, w) * bAiryKer (2 + r) (w, x)| ≤ _
+          rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg (heatKernel_pos hr _).le]
+          have h1 := hQα (x, y)
+          have h2 := hQβ (z, w)
+          have hheat := (heatKernel_pos hr (y - z)).le
+          have hQ := qKerTwo_nonneg M (x, y)
+          have hg := abs_nonneg (bAiryKer (2 + r) (w, x))
+          calc ((|Qα (x, y)| * heatKernel r (y - z)) * |Qβ (z, w)|) * |bAiryKer (2 + r) (w, x)|
+              = (|Qα (x, y)| * heatKernel r (y - z))
+                  * (|Qβ (z, w)| * |bAiryKer (2 + r) (w, x)|) := by ring
+            _ ≤ (qKerTwo M (x, y) * heatKernel r (y - z))
+                  * (qKerTwo M (z, w) * |bAiryKer (2 + r) (w, x)|) :=
+              mul_le_mul (mul_le_mul_of_nonneg_right h1 hheat)
+                (mul_le_mul_of_nonneg_right h2 hg) (mul_nonneg (abs_nonneg _) hg)
+                (mul_nonneg hQ hheat)
+            _ = |bAiryKer (2 + r) (w, x)|
+                  * (qKerTwo M (x, y) * (heatKernel r (y - z) * qKerTwo M (z, w))) := by ring
+      _ = |bAiryKer (2 + r) (w, x)|
+            * (qKerTwo M (x, y) * (∫ z : ℝ, heatKernel r (y - z) * qKerTwo M (z, w))) := by
+          rw [integral_const_mul, integral_const_mul]
+      _ = |bAiryKer (2 + r) (w, x)|
+            * (qKerTwo M (x, y) * AiryConj.compKernel (heatKerTwo r) (qKerTwo M) (y, w)) := by
+          rw [compKernel_heatKerTwo_qKerTwo_apply]
+  calc ‖∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w‖
+      ≤ ∫ y : ℝ, ‖∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w‖ := norm_integral_le_integral_norm _
+    _ ≤ ∫ y : ℝ, |bAiryKer (2 + r) (w, x)|
+          * (qKerTwo M (x, y) * AiryConj.compKernel (heatKerTwo r) (qKerTwo M) (y, w)) :=
+        integral_mono (integrable_sectorInnerY hr M hQαmeas hQβmeas hQα hQβ x w).norm
+          ((integrable_pair_mul_of_heatKernel_le one_pos (by linarith : (0:ℝ) < r + 1)
+            (measurable_qKerTwo M)
+            (measurable_compKernel (measurable_heatKerTwo r) (measurable_qKerTwo M))
+            (fun a b => qKerTwo_abs_le M (a, b))
+            (fun a b => compKernel_heatKerTwo_qKerTwo_abs_le hr M a b) x w).const_mul
+            |bAiryKer (2 + r) (w, x)|)
+          fun y => hzbound y
+    _ = |bAiryKer (2 + r) (w, x)| * qPrQKer M r (x, w) := by
+        rw [integral_const_mul, qPrQKer_apply]
+    _ = qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)| := mul_comm _ _
+
+/-- **Sector Tonelli, level `w`** (a.e. `x`): the inner double integral is integrable
+in `w`, dominated by the two-fold Cauchy–Schwarz dominator
+`(Q P_r Q)(x, w) · |g_S(w + x)|` of `integrable_uncurry_qPrQKer_mul_abs_bAiryKer`. -/
+theorem integrable_sectorInnerW_ae (hr : 0 < r) (a M : ℝ)
+    (hA : MemLp (aRKer a M r) 2 (volume.prod volume))
+    (hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume))
+    {Qα Qβ : ℝ × ℝ → ℝ} (hQαmeas : Measurable Qα) (hQβmeas : Measurable Qβ)
+    (hQα : ∀ p : ℝ × ℝ, |Qα p| ≤ qKerTwo M p) (hQβ : ∀ p : ℝ × ℝ, |Qβ p| ≤ qKerTwo M p) :
+    ∀ᵐ x : ℝ ∂volume, Integrable fun w : ℝ =>
+      ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w := by
+  have H := integrable_uncurry_qPrQKer_mul_abs_bAiryKer hr a M hA hW
+  have hslice := ((integrable_prod_iff H.aestronglyMeasurable).mp H).1
+  filter_upwards [hslice] with x hx
+  simp only [Function.uncurry_apply_pair] at hx
+  exact hx.mono' (measurable_sectorInnerW hQαmeas hQβmeas r x).aestronglyMeasurable
+    (Eventually.of_forall fun w => sectorInnerW_abs_le hr M hQαmeas hQβmeas hQα hQβ x w)
+
+/-- **Sector Tonelli, level `x`** (the closing step): the full iterated sector
+integral is Bochner-convergent, dominated by the outer `x`-integral of the two-fold
+Cauchy–Schwarz dominator. -/
+theorem integrable_sectorInnerX (hr : 0 < r) (a M : ℝ)
+    (hA : MemLp (aRKer a M r) 2 (volume.prod volume))
+    (hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume))
+    {Qα Qβ : ℝ × ℝ → ℝ} (hQαmeas : Measurable Qα) (hQβmeas : Measurable Qβ)
+    (hQα : ∀ p : ℝ × ℝ, |Qα p| ≤ qKerTwo M p) (hQβ : ∀ p : ℝ × ℝ, |Qβ p| ≤ qKerTwo M p) :
+    Integrable fun x : ℝ => ∫ w : ℝ, ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w := by
+  have H := integrable_uncurry_qPrQKer_mul_abs_bAiryKer hr a M hA hW
+  have houter := ((integrable_prod_iff H.aestronglyMeasurable).mp H).2
+  have hslice := ((integrable_prod_iff H.aestronglyMeasurable).mp H).1
+  simp only [Function.uncurry_apply_pair] at houter hslice
+  apply houter.mono' (measurable_sectorInnerX hQαmeas hQβmeas r).aestronglyMeasurable
+  filter_upwards [integrable_sectorInnerW_ae hr a M hA hW hQαmeas hQβmeas hQα hQβ, hslice]
+    with x hx hxH
+  calc ‖∫ w : ℝ, ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w‖
+      ≤ ∫ w : ℝ, ‖∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w‖ :=
+        norm_integral_le_integral_norm _
+    _ ≤ ∫ w : ℝ, qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)| := by
+        apply integral_mono hx.norm hxH
+        intro w
+        exact sectorInnerW_abs_le hr M hQαmeas hQβmeas hQα hQβ x w
+    _ = ∫ w : ℝ, ‖qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)|‖ := by
+        apply integral_congr_ae
+        filter_upwards with w
+        rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (qPrQKer_nonneg hr M _), abs_abs]
+
+/-- **The weights cancel**: the weighted trace integral equals
+the unweighted four-fold trace integral. Unconditional: the pointwise identity
+`aRKer_mul_wSKer` plus pulling the outer weights through the (total) Bochner
+integral; integrability is only needed for the *sector split* (`trCr_sum_sectors`). -/
+theorem trCrWeighted_eq_trCr (a M r : ℝ) :
+    (∫ x : ℝ, ∫ w : ℝ, aRKer a M r (x, w) * wSKer (2 + r) a (w, x)) = trCr M r := by
+  unfold trCr trSector
+  apply integral_congr_ae
+  filter_upwards with x
+  apply integral_congr_ae
+  filter_upwards with w
+  rw [aRKer_mul_wSKer a M r x w x]
+  have hex : Real.exp (-a * x) * Real.exp (a * x) = 1 := by
+    rw [← Real.exp_add, show -a * x + a * x = (0 : ℝ) by ring, Real.exp_zero]
+  rw [show Real.exp (-a * x) * (qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x)) * Real.exp (a * x)
+      = qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x) by
+    calc Real.exp (-a * x) * (qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x)) * Real.exp (a * x)
+        = (Real.exp (-a * x) * Real.exp (a * x))
+          * (qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x)) := by ring
+      _ = qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x) := by rw [hex, one_mul]]
+  rw [qPrQKer_apply, ← integral_mul_const]
+  apply integral_congr_ae
+  filter_upwards with y
+  rw [compKernel_heatKerTwo_qKerTwo_apply]
+  show qKerTwo M (x, y) * (∫ z : ℝ, heatKernel r (y - z) * qKerTwo M (z, w))
+      * bAiryKer (2 + r) (w, x)
+    = ∫ z : ℝ, sectorIntegrand (qKerTwo M) (qKerTwo M) r x y z w
+  rw [← integral_const_mul, ← integral_mul_const]
+  apply integral_congr_ae
+  filter_upwards with z
+  unfold sectorIntegrand
+  ring
+
+/-- **The four-sector decomposition**: the full four-fold trace
+integral splits over `Q = Q^R + Q^F` into the four sector trace integrals.
+The sector integrabilities are discharged level by level by
+`integrable_sectorIntegrand_z` / `integrable_sectorInnerY` /
+`integrable_sectorInnerW_ae` / `integrable_sectorInnerX`, closed by the `MemLp`
+(Cauchy–Schwarz) input. -/
+theorem trCr_sum_sectors (hr : 0 < r) (a M : ℝ)
+    (hA : MemLp (aRKer a M r) 2 (volume.prod volume))
+    (hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume)) :
+    trCr M r = trSectorRR M r + trSectorRF M r + trSectorFR M r + trSectorFF M r := by
+  have hsplit : ∀ x y z w : ℝ, sectorIntegrand (qKerTwo M) (qKerTwo M) r x y z w
+      = ((sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w
+          + sectorIntegrand (qRKerTwo M) (qFKerTwo M) r x y z w)
+        + sectorIntegrand (qFKerTwo M) (qRKerTwo M) r x y z w)
+        + sectorIntegrand (qFKerTwo M) (qFKerTwo M) r x y z w := by
+    intro x y z w
+    show qKerTwo M (x, y) * heatKernel r (y - z) * qKerTwo M (z, w)
+        * bAiryKer (2 + r) (w, x) = _
+    rw [qKerTwo_eq_RF M (x, y), qKerTwo_eq_RF M (z, w)]
+    unfold sectorIntegrand
+    ring
+  have hR : ∀ p : ℝ × ℝ, |qRKerTwo M p| ≤ qKerTwo M p := qRKerTwo_abs_le_qKerTwo M
+  have hF : ∀ p : ℝ × ℝ, |qFKerTwo M p| ≤ qKerTwo M p := qFKerTwo_abs_le_qKerTwo M
+  have hzRR := fun x y w => integrable_sectorIntegrand_z hr M
+    (measurable_qRKerTwo M) (measurable_qRKerTwo M) hR hR x y w
+  have hzRF := fun x y w => integrable_sectorIntegrand_z hr M
+    (measurable_qRKerTwo M) (measurable_qFKerTwo M) hR hF x y w
+  have hzFR := fun x y w => integrable_sectorIntegrand_z hr M
+    (measurable_qFKerTwo M) (measurable_qRKerTwo M) hF hR x y w
+  have hzFF := fun x y w => integrable_sectorIntegrand_z hr M
+    (measurable_qFKerTwo M) (measurable_qFKerTwo M) hF hF x y w
+  have hyRR := fun x w => integrable_sectorInnerY hr M
+    (measurable_qRKerTwo M) (measurable_qRKerTwo M) hR hR x w
+  have hyRF := fun x w => integrable_sectorInnerY hr M
+    (measurable_qRKerTwo M) (measurable_qFKerTwo M) hR hF x w
+  have hyFR := fun x w => integrable_sectorInnerY hr M
+    (measurable_qFKerTwo M) (measurable_qRKerTwo M) hF hR x w
+  have hyFF := fun x w => integrable_sectorInnerY hr M
+    (measurable_qFKerTwo M) (measurable_qFKerTwo M) hF hF x w
+  have hwRR := integrable_sectorInnerW_ae hr a M hA hW
+    (measurable_qRKerTwo M) (measurable_qRKerTwo M) hR hR
+  have hwRF := integrable_sectorInnerW_ae hr a M hA hW
+    (measurable_qRKerTwo M) (measurable_qFKerTwo M) hR hF
+  have hwFR := integrable_sectorInnerW_ae hr a M hA hW
+    (measurable_qFKerTwo M) (measurable_qRKerTwo M) hF hR
+  have hwFF := integrable_sectorInnerW_ae hr a M hA hW
+    (measurable_qFKerTwo M) (measurable_qFKerTwo M) hF hF
+  have hxRR := integrable_sectorInnerX hr a M hA hW
+    (measurable_qRKerTwo M) (measurable_qRKerTwo M) hR hR
+  have hxRF := integrable_sectorInnerX hr a M hA hW
+    (measurable_qRKerTwo M) (measurable_qFKerTwo M) hR hF
+  have hxFR := integrable_sectorInnerX hr a M hA hW
+    (measurable_qFKerTwo M) (measurable_qRKerTwo M) hF hR
+  have hxFF := integrable_sectorInnerX hr a M hA hW
+    (measurable_qFKerTwo M) (measurable_qFKerTwo M) hF hF
+  have add4 : ∀ {f₁ f₂ f₃ f₄ : ℝ → ℝ},
+      Integrable f₁ volume → Integrable f₂ volume → Integrable f₃ volume →
+      Integrable f₄ volume →
+      (∫ t : ℝ, ((f₁ t + f₂ t) + f₃ t) + f₄ t)
+        = ((∫ t : ℝ, f₁ t) + (∫ t : ℝ, f₂ t)) + (∫ t : ℝ, f₃ t) + (∫ t : ℝ, f₄ t) := by
+    intro f₁ f₂ f₃ f₄ h1 h2 h3 h4
+    have g1 : (∫ t : ℝ, ((f₁ t + f₂ t) + f₃ t) + f₄ t)
+        = (∫ t : ℝ, (f₁ t + f₂ t) + f₃ t) + (∫ t : ℝ, f₄ t) :=
+      integral_add ((h1.add h2).add h3) h4
+    have g2 : (∫ t : ℝ, (f₁ t + f₂ t) + f₃ t)
+        = (∫ t : ℝ, f₁ t + f₂ t) + (∫ t : ℝ, f₃ t) := integral_add (h1.add h2) h3
+    have g3 : (∫ t : ℝ, f₁ t + f₂ t) = (∫ t : ℝ, f₁ t) + (∫ t : ℝ, f₂ t) :=
+      integral_add h1 h2
+    rw [g1, g2, g3]
+  have step1 : ∀ x w y : ℝ, (∫ z : ℝ, sectorIntegrand (qKerTwo M) (qKerTwo M) r x y z w)
+      = ((∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+          + (∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qFKerTwo M) r x y z w))
+        + (∫ z : ℝ, sectorIntegrand (qFKerTwo M) (qRKerTwo M) r x y z w)
+        + (∫ z : ℝ, sectorIntegrand (qFKerTwo M) (qFKerTwo M) r x y z w) := by
+    intro x w y
+    rw [show (fun z => sectorIntegrand (qKerTwo M) (qKerTwo M) r x y z w)
+        = fun z => ((sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w
+            + sectorIntegrand (qRKerTwo M) (qFKerTwo M) r x y z w)
+          + sectorIntegrand (qFKerTwo M) (qRKerTwo M) r x y z w)
+          + sectorIntegrand (qFKerTwo M) (qFKerTwo M) r x y z w from
+        funext fun z => hsplit x y z w]
+    exact add4 (hzRR x y w) (hzRF x y w) (hzFR x y w) (hzFF x y w)
+  have step2 : ∀ x w : ℝ, (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qKerTwo M) (qKerTwo M) r x y z w)
+      = ((∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+          + (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qFKerTwo M) r x y z w))
+        + (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qFKerTwo M) (qRKerTwo M) r x y z w)
+        + (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qFKerTwo M) (qFKerTwo M) r x y z w) := by
+    intro x w
+    rw [show (fun y => ∫ z : ℝ, sectorIntegrand (qKerTwo M) (qKerTwo M) r x y z w)
+        = fun y => ((∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+            + (∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qFKerTwo M) r x y z w))
+          + (∫ z : ℝ, sectorIntegrand (qFKerTwo M) (qRKerTwo M) r x y z w)
+          + (∫ z : ℝ, sectorIntegrand (qFKerTwo M) (qFKerTwo M) r x y z w) from
+        funext fun y => step1 x w y]
+    exact add4 (hyRR x w) (hyRF x w) (hyFR x w) (hyFF x w)
+  have step3 : ∀ᵐ x : ℝ ∂volume,
+      (∫ w : ℝ, ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qKerTwo M) (qKerTwo M) r x y z w)
+      = ((∫ w : ℝ, ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+          + (∫ w : ℝ, ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qFKerTwo M) r x y z w))
+        + (∫ w : ℝ, ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qFKerTwo M) (qRKerTwo M) r x y z w)
+        + (∫ w : ℝ, ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qFKerTwo M) (qFKerTwo M) r x y z w) := by
+    filter_upwards [hwRR, hwRF, hwFR, hwFF] with x hxRR' hxRF' hxFR' hxFF'
+    rw [show (fun w => ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qKerTwo M) (qKerTwo M) r x y z w)
+        = fun w => ((∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+            + (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qFKerTwo M) r x y z w))
+          + (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qFKerTwo M) (qRKerTwo M) r x y z w)
+          + (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qFKerTwo M) (qFKerTwo M) r x y z w) from
+        funext fun w => step2 x w]
+    exact add4 hxRR' hxRF' hxFR' hxFF'
+  unfold trCr trSectorRR trSectorRF trSectorFR trSectorFF trSector
+  rw [integral_congr_ae step3]
+  exact add4 hxRR hxRF hxFR hxFF
+
+/-- **The four-sector trace formula** (the input of the total trace bound): the trace of
+the conjugated interaction operator is the sum of the four sector trace integrals,
+conditional on the `MemLp` data of the weighted factors (the `memLp_aRKer` / `memLp_wSKer`
+interface). -/
+theorem trace_crKerT_eq_sectors (hr : 0 < r) (a M : ℝ)
+    (hA : MemLp (aRKer a M r) 2 (volume.prod volume))
+    (hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume))
+    (hcr : MemLp (crKerT a M r) 2 (volume.prod volume)) :
+    trace (kernelOperator hcr)
+      = trSectorRR M r + trSectorRF M r + trSectorFR M r + trSectorFF M r := by
+  rw [trace_crKerT_eq hr a M hA hW hcr, trCrWeighted_eq_trCr a M r,
+    trCr_sum_sectors hr a M hA hW]
+
+end AiryTwoInt

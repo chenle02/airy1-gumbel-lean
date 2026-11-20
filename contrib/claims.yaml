@@ -1,0 +1,766 @@
+schema: claims/1
+package: airy1-gumbel-lean-contrib
+claims:
+  - id: airy1-gumbel-lean-contrib/airy-ai
+    decl: Complex.airyAi
+    kind: definition
+    summary: Airy Ai as an entire function on C via the regularized hypergeometric 0F1~ (DLMF 9.4.1), with Bi (DLMF 9.4.2), values at 0, and the DLMF 9.6.1 Bessel bridge through the Schlaefli K_{1/3} integral.
+    file: Airy1GumbelContrib/Airy/Airy.lean
+    status: reusable
+    keywords: [airy, special-function, hypergeometric, bessel]
+  - id: airy1-gumbel-lean-contrib/airy-ode
+    decl: iteratedDeriv_two_airyAiReal
+    kind: theorem
+    summary: The Airy ODE y'' = x*y for airyAiReal (and the complex version), plus half-line ODE uniqueness (Groenwall) in Airy/AiryUniqueness.lean.
+    file: Airy1GumbelContrib/Airy/AiryReal.lean
+    status: reusable
+    keywords: [airy, ode, uniqueness]
+  - id: airy1-gumbel-lean-contrib/airy-laplace
+    decl: airyAiReal_laplace
+    kind: theorem
+    summary: "The Airy Laplace bound: there is C with ∫_R e^{2βu} Ai(u)^2 du ≤ C e^{(2/3)β^3} for all β ≥ 1 (the paper's Airy Laplace lemma)."
+    file: Airy1GumbelContrib/Airy/AiryLaplaceFull.lean
+    status: reusable
+    keywords: [airy, laplace, decay]
+  - id: airy1-gumbel-lean-contrib/airy-k13-schlaefli
+    decl: schlaefliK13
+    kind: definition
+    summary: The Schlaefli integral K_{1/3}(z) = ∫_0^∞ e^{-z cosh t} cosh(t/3) dt with Gaussian domination, Laplace-method-ready.
+    file: Airy1GumbelContrib/Airy/BesselK13.lean
+    status: reusable
+    keywords: [bessel, schlaefli, integral-representation]
+  - id: airy1-gumbel-lean-contrib/airy-leading-asymptotics
+    decl: airyAiReal_isEquivalent
+    kind: theorem
+    summary: Exact leading asymptotics Ai(x) ~ (1/(2 sqrt(pi))) x^{-1/4} e^{-(2/3) x^{3/2}} as x -> +infty (IsEquivalent), where kappa = 4 sqrt(2)/3 and C* = 2^{1/4}/sqrt(pi) originate.
+    file: Airy1GumbelContrib/Airy/AiryLeading.lean
+    status: reusable
+    keywords: [airy, asymptotics, laplace-method]
+  - id: airy1-gumbel-lean-contrib/airy-deriv-asymptotics
+    decl: deriv_airyAiReal_isEquivalent
+    kind: theorem
+    summary: Ai'(x) ~ -(1/(2 sqrt(pi))) x^{1/4} e^{-(2/3) x^{3/2}} (IsEquivalent), via the Schlaefli K_{1/3} derivative asymptotics.
+    file: Airy1GumbelContrib/Airy/AiryLeading.lean
+    status: reusable
+    keywords: [airy, asymptotics, derivative]
+  - id: airy1-gumbel-lean-contrib/airy-tail-asymptotics
+    decl: integral_airyAiReal_isEquivalent
+    kind: theorem
+    summary: The tail integral ∫_A^infty Ai ~ (1/(2 sqrt(pi))) A^{-3/4} e^{-(2/3) A^{3/2}} (IsEquivalent), by a sandwich argument without l'Hopital.
+    file: Airy1GumbelContrib/Airy/AiryLeading.lean
+    status: reusable
+    keywords: [airy, tail, asymptotics]
+  - id: airy1-gumbel-lean-contrib/gaussian-mills
+    decl: gaussianTail_isEquivalent
+    kind: theorem
+    summary: Mills-ratio Gaussian tail asymptotics (IsEquivalent form) for the quadratic-plus-linear exponent family used by the heat-Airy bounds.
+    file: Airy1GumbelContrib/Gaussian/MillsRatio.lean
+    status: reusable
+    keywords: [gaussian, mills-ratio, tail]
+  - id: airy1-gumbel-lean-contrib/gumbel-measure
+    decl: ProbabilityTheory.gumbelMeasure
+    kind: definition
+    summary: The standard Gumbel distribution as a probability measure on R, with PDF/CDF and integrability facts.
+    file: Airy1GumbelContrib/Gumbel/Gumbel.lean
+    status: reusable
+    keywords: [gumbel, extreme-value, distribution]
+  - id: airy1-gumbel-lean-contrib/hilbert-schmidt
+    decl: HilbertSchmidt.IsHilbertSchmidt
+    kind: definition
+    summary: Hilbert-Schmidt operators via the basis-independent enormous-norm hsENorm; adjoint invariance, two-sided ideal, HS => compact.
+    file: Airy1GumbelContrib/HilbertSchmidt/HilbertSchmidt.lean
+    status: reusable
+    keywords: [hilbert-schmidt, operator-theory, schatten]
+  - id: airy1-gumbel-lean-contrib/kernel-hs
+    decl: HilbertSchmidt.kernelOperator
+    kind: definition
+    summary: L^2 integral kernels give Hilbert-Schmidt operators with the HS-norm equality (isHilbertSchmidt_kernelOperator, hsENorm_kernelOperator_eq).
+    file: Airy1GumbelContrib/HilbertSchmidt/KernelHS.lean
+    status: reusable
+    keywords: [integral-kernel, hilbert-schmidt, l2]
+  - id: airy1-gumbel-lean-contrib/trace-class
+    decl: HilbertSchmidt.IsTraceClass
+    kind: definition
+    summary: Trace-class operators via HS factorization, with a basis-independent trace, cyclicity (trace_comp_comm), and |Tr(K^m)| <= ||K||_2^m (norm_trace_pow_le).
+    file: Airy1GumbelContrib/TraceClass/TraceClass.lean
+    status: reusable
+    keywords: [trace-class, trace, cyclicity]
+  - id: airy1-gumbel-lean-contrib/fredholm-det-two
+    decl: HilbertSchmidt.fredholmDetTwo
+    kind: definition
+    summary: The 2-regularized Fredholm determinant det_2(1+zK) for Hilbert-Schmidt K on the disk ||z||*||K||_2 < 1, as exp of the m>=2 Plemelj series; differentiable, det_2(0)=1, derivative 0 at 0.
+    file: Airy1GumbelContrib/TraceClass/FredholmTwo.lean
+    status: reusable
+    keywords: [fredholm-determinant, regularized-determinant, plemelj]
+  - id: airy1-gumbel-lean-contrib/fredholm-det-one
+    decl: HilbertSchmidt.fredholmDetOne
+    kind: definition
+    summary: The trace-class Fredholm determinant det_1(I-zA) on the Plemelj disk, with det_1 = e^{-Tr A} det_2 and the remainder estimate 1 - det_1(1-A) = Tr A + O(||A||_2^2 e^{||A||_2}).
+    file: Airy1GumbelContrib/TraceClass/FredholmOne.lean
+    status: reusable
+    keywords: [fredholm-determinant, trace-class, plemelj]
+  - id: airy1-gumbel-lean-contrib/fredholm-cyclicity
+    decl: HilbertSchmidt.fredholmDetOne_cyclic
+    kind: theorem
+    summary: Simon's determinant cyclicity det(I-AB) = det(I-BA) for HS factors, from trace cyclicity; no disk hypothesis.
+    file: Airy1GumbelContrib/TraceClass/FredholmOne.lean
+    status: reusable
+    keywords: [fredholm-determinant, cyclicity, simon]
+  - id: airy1-gumbel-lean-contrib/airy-kernel-operator
+    decl: AiryKernel.airyKernelOp
+    kind: definition
+    summary: The Airy kernel operator K_s = T_s T_s* on L^2(s,infty) via the Airy-Hankel operator; trace class with ||K_s||_2 -> 0 as s -> +infty.
+    file: Airy1GumbelContrib/AiryKernel/AiryKernel.lean
+    status: reusable
+    keywords: [airy-kernel, trace-class, determinantal]
+  - id: airy1-gumbel-lean-contrib/airy-energy-identity
+    decl: AiryKernel.airyAiReal_sq_integral
+    kind: theorem
+    summary: The diagonal Airy energy identity ∫_0^infty Ai(x+t)^2 dt = Ai'(x)^2 - x Ai(x)^2.
+    file: Airy1GumbelContrib/AiryKernel/AiryKernel.lean
+    status: reusable
+    keywords: [airy, energy-identity, wronskian]
+  - id: airy1-gumbel-lean-contrib/backward-airy
+    decl: backwardAiry
+    kind: definition
+    summary: The backward-Airy kernel g_T(s) = e^{-2T^3/3 - T s} Ai(s + T^2), solving the backward heat equation (backwardAiry_pde).
+    file: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean
+    status: reusable
+    keywords: [airy, heat-equation, backward-kernel]
+  - id: airy1-gumbel-lean-contrib/heat-airy-convolution
+    decl: heat_airy_conv_tail
+    kind: theorem
+    summary: Heat-Airy convolution identities of Quastel-Remenik (Prop. 1.2 and (1.9)), including the tail form ∫ G_T(A - s) g_T(s) ds = sqrt(4 pi T) ∫_A^infty Ai, with G_T the Gaussian tail and g_T the backward-Airy kernel.
+    file: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean
+    status: reusable
+    keywords: [airy, heat-kernel, convolution, quastel-remenik]
+  - id: airy1-gumbel-lean-contrib/reflected-heat-kernel
+    decl: AiryConj.heatKernel_reflected_eq
+    kind: theorem
+    summary: Reflection identity for the conjugate heat kernel Q_{M,T} — the piecewise kernel (free off {x,z <= M}, reflected on it) equals the method-of-images difference of free heat kernels.
+    file: Airy1GumbelContrib/AiryKernel/Conjugates.lean
+    status: reusable
+    keywords: [heat-kernel, reflection, method-of-images, conjugate-kernel]
+  - id: airy1-gumbel-lean-contrib/conjugate-kernels
+    decl: AiryConj.vKernel
+    kind: definition
+    summary: The conjugate kernels v and w of the Airy_1 maximum upper bound (the setup of the V- and W-kernel bounds, after Quastel-Remenik), with backwardAiryPair and the weight phi(x) = sqrt(1+x^2).
+    file: Airy1GumbelContrib/AiryKernel/Conjugates.lean
+    status: reusable
+    keywords: [airy, conjugate-kernel, hilbert-schmidt, quastel-remenik]
+  - id: airy1-gumbel-lean-contrib/conjugate-v-l2-bound
+    decl: AiryConj.vKernel_sq_integral_le
+    kind: theorem
+    summary: "Hilbert-Schmidt bound for the v-kernel: for T > 0 there is C > 0 with ||V_{T,a}||_2^2 <= C (1+M)^2 (1+a^3) e^{2Ta^2-4Ma} for all M > 0, a >= T+1, via the shear substitution and Gaussian moments."
+    file: Airy1GumbelContrib/AiryKernel/ConjugateV.lean
+    status: reusable
+    keywords: [airy, hilbert-schmidt, conjugate-kernel, quastel-remenik]
+  - id: airy1-gumbel-lean-contrib/conjugate-w-l2-bound
+    decl: AiryConj.wKernel_sq_integral_le
+    kind: theorem
+    summary: "Hilbert-Schmidt bound for the w-kernel: there is C > 0 with ||W_{T,a}||_2^2 <= C e^{(2/3)a^3 - 2Ta^2} for T > 0, a >= T+1, via integrability of exp(beta u) Ai(u)^2 for beta >= 1 (integrable_exp_mul_airyAiReal_sq)."
+    file: Airy1GumbelContrib/AiryKernel/ConjugateW.lean
+    status: reusable
+    keywords: [airy, hilbert-schmidt, heat-kernel, quastel-remenik]
+  - id: airy1-gumbel-lean-contrib/conjugate-heat-2to2-bound
+    decl: AiryConj.eLpNorm_conjugateHeat_conv_le
+    kind: theorem
+    summary: "L^2 convolution bound for the conjugate heat kernel: ||p~_{L,a} * f||_2 <= e^{L a^2} ||f||_2 (Cauchy-Schwarz/Tonelli; includes the Laplace identity: the integral of e^{-a v} p_L(v) dv equals e^{L a^2})."
+    file: Airy1GumbelContrib/AiryKernel/Conjugate2to2.lean
+    status: reusable
+    keywords: [heat-kernel, convolution, young-inequality, lp-spaces]
+  - id: airy1-gumbel-lean-contrib/trace-kernel-product
+    decl: AiryConj.trace_kernelOperator_comp
+    kind: theorem
+    summary: Trace of a product of two L^2(R) kernel operators equals the double integral of K(x,z) K'(z,x); with kernelOperator_adjoint and a countable Hilbert basis of L^2(R) (exists_countable_hilbertBasis_L2R).
+    file: Airy1GumbelContrib/AiryKernel/TraceProduct.lean
+    status: reusable
+    keywords: [trace-class, kernel-operator, hilbert-schmidt, fredholm-determinant]
+  - id: airy1-gumbel-lean-contrib/two-interval-decomp
+    decl: AiryTwoInt.twoIntKCup_decomp
+    kind: theorem
+    summary: The two-interval operator decomposition K~_cup = K~_1 + K~_2 - C~_r as an identity of conjugated kernels, via Chapman-Kolmogorov, the off-diagonal heat-Airy identity heatAiryConv_offset, and the kernel-composition calculus.
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalOps.lean
+    status: reusable
+    keywords: [airy, fredholm-determinant, two-interval, operator-algebra]
+  - id: airy1-gumbel-lean-contrib/two-interval-trace-cancellation
+    decl: AiryTwoInt.trace_twoIntKCup
+    kind: theorem
+    summary: Trace cancellation Tr K~_1 + Tr K~_2 - Tr K~_cup = Tr C~_r, conditional on explicit MemLp and IsTraceClass hypotheses (all discharged in trace_twoIntKCup_discharged).
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalOps.lean
+    status: reusable
+    keywords: [trace-class, fredholm-determinant, two-interval, cancellation]
+  - id: airy1-gumbel-lean-contrib/heat-kernel-cdf-convolution
+    decl: AiryConj.heatKernel_conv_cdf
+    kind: theorem
+    summary: Gaussian convolution-CDF identity ∫_{z<=M} p_L(M+α-z) p_1(M-z+β) dz = p_{L+1}(α-β) Φ(-(α+Lβ)/sqrt(2L(L+1))), used for the FR and RR sector integrals of the two-interval trace.
+    file: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean
+    status: reusable
+    keywords: [gaussian, convolution, normal-cdf, saddle-point]
+  - id: airy1-gumbel-lean-contrib/saddle-bound
+    decl: AiryConj.saddleF_ge
+    kind: theorem
+    summary: Saddle bound F(delta) >= J_M(r) + (delta - delta*)^2/2 for M, r >= 1 and delta in the admissible range, with the exact critical identity F(delta*) = J_M(r); assumes 2 <= saddleR, which holds in the regime r <= chi sqrt(2M).
+    file: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean
+    status: reusable
+    keywords: [saddle-point, taylor-bound, airy, two-interval]
+  - id: airy1-gumbel-lean-contrib/uphi-hs-bound
+    decl: AiryConj.uphi_hs_le
+    kind: theorem
+    summary: Hilbert-Schmidt bound ||U_a Q_{M,T} P_L U_a Phi||_HS <= C_T (1+M+L)^K exp(L a^2 + T a^2 - a^3) for a = sqrt(2M) >= T+1, via a factorization through the v-kernel and a Young L^2 convolution bound.
+    file: Airy1GumbelContrib/AiryKernel/ConjugateUPhi.lean
+    status: reusable
+    keywords: [hilbert-schmidt, young-inequality, conjugate-kernel, airy]
+  - id: airy1-gumbel-lean-contrib/sharp-tail-trace-expansion
+    decl: AiryConj.trace_airyTilde_eq_heat_exact
+    kind: theorem
+    summary: For T > 0, M > 0, a >= T+1, the conjugated operator A~_{M,T} = V W has trace -2T Ai'(2M) + ∫_{2M}^infty Ai(u) du + errorMT(M,T); via the unweighted kernel integral and a heat-kernel split.
+    file: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean
+    status: reusable
+    keywords: [airy, fredholm-determinant, trace-class, sharp-tail]
+  - id: airy1-gumbel-lean-contrib/sharp-tail-remainder-bound
+    decl: AiryConj.errorMT_abs_le
+    kind: theorem
+    summary: "Remainder bound: for T > 0 there is C with |errorMT M T| <= C M^{-3/4} exp(-2TM - (2/3)(2M)^{3/2}) for M >= 1, the kappa M^{3/2} exponent of rho(M)."
+    file: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean
+    status: reusable
+    keywords: [airy, remainder, asymptotic, sharp-tail]
+  - id: airy1-gumbel-lean-contrib/two-interval-trace-formula
+    decl: AiryTwoInt.trace_crKerT_eq
+    kind: theorem
+    summary: Two-interval trace formula Tr C~_r = ∫∫ A_r(x,w) W_{S,a}(w,x), from the pointwise kernel factorization C~_r = A_r W_{S,a} (crKerT_eq_compKernel_aRKer_wSKer) and kernelOperator_compKernel; conditional on explicit MemLp data.
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalTrace.lean
+    status: reusable
+    keywords: [trace-class, two-interval, fredholm-determinant, airy]
+  - id: airy1-gumbel-lean-contrib/two-interval-sector-decomposition
+    decl: AiryTwoInt.trace_crKerT_eq_sectors
+    kind: theorem
+    summary: Four-sector trace decomposition Tr C~_r = Tr C_r^RR + Tr C_r^RF + Tr C_r^FR + Tr C_r^FF, via the weight cancellation Tr C~_r = Tr C_r and a four-level Tonelli chain (conditional on the MemLp data).
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalTrace.lean
+    status: reusable
+    keywords: [two-interval, trace-class, sector-decomposition, airy]
+  - id: airy1-gumbel-lean-contrib/two-interval-membership
+    decl: AiryTwoInt.isTraceClass_kcupKerT
+    kind: theorem
+    summary: Trace-class membership of K~_cup for r > 0, M > 0, r + 3 <= a (likewise K~_1, K~_2, C~_r in the same file), via the V, W, L^2-convolution and U-Phi bounds and the dominations 0 <= Q P_r Q <= Q P_L and 0 <= D_r <= Q P_L + P_L Q.
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalMembership.lean
+    status: reusable
+    keywords: [trace-class, hilbert-schmidt, two-interval, membership]
+  - id: airy1-gumbel-lean-contrib/two-interval-trace-cancellation-discharged
+    decl: AiryTwoInt.trace_twoIntKCup_discharged
+    kind: theorem
+    summary: Trace cancellation Tr K~_1 + Tr K~_2 - Tr K~_cup = Tr C~_r for r > 0, M > 0, r + 3 <= a, with all MemLp and IsTraceClass hypotheses proved.
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalMembership.lean
+    status: reusable
+    keywords: [trace-class, two-interval, cancellation, fredholm-determinant]
+  - id: airy1-gumbel-lean-contrib/sharp-tail-expansion
+    decl: AiryConj.piT_sub_traceLead_isLittleO
+    kind: theorem
+    summary: "Two-term sharp tail: for T > 0, pi_T(M) = 1 - det_1(1 - A~_{M,T}) satisfies pi_T(M) = T rho(M) + rho(M)/(4M) + o(rho(M)/M) as M -> infinity."
+    file: Airy1GumbelContrib/AiryKernel/TailAsymptotic.lean
+    status: reusable
+    keywords: [airy, sharp-tail, asymptotics, fredholm-determinant]
+  - id: airy1-gumbel-lean-contrib/airy-derivative-rate
+    decl: AiryConj.neg_deriv_airyAiReal_sub_lead_isBigO
+    kind: theorem
+    summary: Airy-derivative rate -Ai'(A) = (1/(2 sqrt pi)) A^{1/4} e^{-(2/3) A^{3/2}} (1 + O(A^{-3/2})), from O(1/z) Schlaefli rates via the airyBesselY1 derivative formula; with the exact constant identity 2*leadAi'(2M) = rho(M).
+    file: Airy1GumbelContrib/AiryKernel/TailAsymptotic.lean
+    status: reusable
+    keywords: [airy, derivative, asymptotics, schlaefli]
+  - id: airy1-gumbel-lean-contrib/fr-exponent-calculus
+    decl: AiryTwoInt.frI1Plus_exp_int_le
+    kind: theorem
+    summary: "FR-sector Gaussian mass bound: for M, r >= 1 and saddleR >= 2, ∫_{h1Dom} e^{-h1Exp} <= C (r+1)^{1/2} e^{-J_M(r)}, by an elementary d-split; with the h1Exp lower bounds and the G_1/G_{2,-} negative-Airy estimates."
+    file: Airy1GumbelContrib/TwoInterval/FRExponents.lean
+    status: reusable
+    keywords: [airy, two-interval, saddle-point, gaussian]
+  - id: airy1-gumbel-lean-contrib/heat-kernel-cdf-convolution-reflection
+    decl: AiryTwoInt.heatKernel_conv_cdf_Ioi
+    kind: theorem
+    summary: Reflected truncated heat-kernel convolution ∫_0^infty p_1(alpha+w) p_r(gamma+w) dw = p_{r+1}(gamma-alpha) Phi(-(r*alpha+gamma)/sqrt(2r(r+1))), with Chernoff bounds frI1_Jbound and frI2_Kbound.
+    file: Airy1GumbelContrib/TwoInterval/FRExponents.lean
+    status: reusable
+    keywords: [gaussian, convolution, normal-cdf, two-interval]
+  - id: airy1-gumbel-lean-contrib/detone-lin-rem-bound
+    decl: AiryTwoInt.joint_detOne_comb_abs_le
+    kind: theorem
+    summary: "|1 - det_1(K1) - det_1(K2) + det_1(Kcup) - Tr Cr| <= C M^K (1+r)^K e^{-2 kappa M^{3/2}} for M >= M_0(chi), 1 <= r <= chi sqrt(2M), r + 3 <= sqrt(2M) (two-interval determinants at a = sqrt(2M)), via HS bounds on the det_1 linearization remainder."
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean
+    status: reusable
+    keywords: [fredholm-determinant, hilbert-schmidt, two-interval, remainder]
+  - id: airy1-gumbel-lean-contrib/step-five-sums-o-rho
+    decl: AiryTwoInt.stepFive_first_sum_ratio_tendsto_zero
+    kind: theorem
+    summary: C M^K sum_{1<=r<=chi sqrt(2M)} (1+r)^K e^{-J_M(r)} = o(M^{1/4} e^{-kappa M^{3/2}}) as M -> infinity (kappa = 4 sqrt2/3), via exp(-J_M(r)) <= exp(-kappa M^{3/2}) exp(-2Mr) and a geometric majorant; a remainder sum of the separated-block estimate.
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalSumEst.lean
+    status: reusable
+    keywords: [airy, two-interval, little-o, summation, gumbel]
+  - id: airy1-gumbel-lean-contrib/sector-rr-trace-bound
+    decl: AiryTwoInt.trSectorRR_abs_le
+    kind: theorem
+    summary: "RR-sector trace bound: |Tr C_r^RR| <= C_1 e^{-J_M(r)} + C_2 e^{-c_2 M^2} for 1 <= r <= chi sqrt(2M), M >= M_0(chi), via a pair change of variables, a Chernoff-envelope dominator, and saddle/boundary estimates."
+    file: Airy1GumbelContrib/TwoInterval/SectorRR.lean
+    status: reusable
+    keywords: [airy, two-interval, sector-estimate, change-of-variables, saddle-point]
+  - id: airy1-gumbel-lean-contrib/sector-fr-trace-bound
+    decl: AiryTwoInt.abs_trSectorFR_le_absorbed
+    kind: theorem
+    summary: "FR-sector trace bound: |Tr C_r^FR| <= C_chi (1+r)^{1/2} e^{-J_M(r)} for 1 <= r <= chi sqrt(2M), M >= M_0(chi), via a two-part kernel split, exact Gaussian inner evaluations, and four piece bounds with the FR exponent calculus."
+    file: Airy1GumbelContrib/TwoInterval/SectorFR.lean
+    status: reusable
+    keywords: [airy, two-interval, sector-estimate, fredholm-determinant, saddle-point]
+  - id: airy1-gumbel-lean-contrib/sector-rf-trace-bound
+    decl: AiryTwoInt.abs_trSectorRF_le_absorbed
+    kind: theorem
+    summary: "RF-sector trace bound: |Tr C_r^RF| <= C_chi (1+r)^{1/2} e^{-J_M(r)} for 1 <= r <= chi sqrt(2M), M >= M_0(chi), via the involution trSectorRF_eq_trSectorFR reducing to the FR bound."
+    file: Airy1GumbelContrib/TwoInterval/SectorRF.lean
+    status: reusable
+    keywords: [airy, two-interval, sector-estimate, involution]
+  - id: airy1-gumbel-lean-contrib/sector-ff-trace-bound
+    decl: AiryTwoInt.trSectorFF_abs_le
+    kind: theorem
+    summary: "FF-sector trace bound: |Tr C_r^FF| <= C_chi e^{-J_M(r)} for 1 <= r <= chi sqrt(2M), M >= M_0, via a four-piece (x,w) split, semigroup inner collapses, and Gaussian saddle estimates."
+    file: Airy1GumbelContrib/TwoInterval/SectorFF.lean
+    status: reusable
+    keywords: [airy, two-interval, sector-estimate, fredholm-determinant, saddle-point]
+  - id: airy1-gumbel-lean-contrib/two-interval-trace-bound
+    decl: AiryTwoInt.abs_trace_crKerT_le_discharged
+    kind: theorem
+    summary: "Two-interval trace bound: |Tr C~_r| <= C_chi (1+r)^{1/2} e^{-J_M(r)} for 1 <= r <= chi sqrt(2M), M >= M_0, at a = sqrt(2M) with the MemLp inputs proved; assembled from the four sector bounds."
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalTraceBound.lean
+    status: reusable
+    keywords: [airy, two-interval, trace-estimate, fredholm-determinant, saddle-point]
+  - id: airy1-gumbel-lean-contrib/two-interval-trace-near-sign
+    decl: AiryTwoInt.trace_crKerT_ge_neg_discharged_a
+    kind: theorem
+    summary: "Near-sign lower bound for the two-interval trace: Tr C~_r >= -C e^{-a^4/64} (a = sqrt(2M), i.e. -C e^{-M^2/16}) for 1 <= r <= chi sqrt(2M), M >= M_0; via Gaussian barrier decay of Q P_r Q and Ai >= 0 on [0, infinity)."
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalTraceSign.lean
+    status: reusable
+    keywords: [airy, two-interval, trace-estimate, lower-bound, fredholm-determinant]
+  - id: airy1-gumbel-lean-contrib/touching-determinant-form
+    decl: AiryConj.touchDet_isEquivalent
+    kind: theorem
+    summary: "Touching estimate in determinant form: 2 pi_1(M) - pi_2(M) ~ rho(M)/(4M), with pi_T = 1 - det_1(1 - A~_{M,T}); from the two-term sharp tail at T = 1, 2 via 2 traceLead M 1 - traceLead M 2 = rho(M)/(4M). No two-interval input."
+    file: Airy1GumbelContrib/AiryKernel/Touching.lean
+    status: reusable
+    keywords: [airy, sharp-tail, touching, asymptotics, fredholm-determinant]
+  - id: airy1-gumbel-lean-contrib/trace-weight-independence
+    decl: AiryConj.trace_pow_airyTildeOp_indep
+    kind: theorem
+    summary: tr(A~_a^m) is independent of the conjugation weight a >= T+1 (m >= 1), so det_1(1 - A~) agrees across weights; in particular detOneAiryTilde M 1 equals the determinant at Quastel-Remenik's (2012) weight a = 2.
+    file: Airy1GumbelContrib/AiryKernel/TraceWeight.lean
+    status: reusable
+    keywords: [airy, trace-class, fredholm-determinant, conjugation]
+  - id: airy1-gumbel-lean-contrib/second-block-determinant
+    decl: AiryTwoInt.fredholmDetOne_k2KerT_eq_k1KerT
+    kind: theorem
+    summary: "det_1(1 - z K~_2) = det_1(1 - z K~_1) for every z (r > 0, M > 0, r + 3 <= a): the shifted block has the same determinant, via cyclicity and the heat-Airy identity."
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalShift.lean
+    status: reusable
+    keywords: [airy, two-interval, fredholm-determinant, cyclicity]
+  - id: airy1-gumbel-lean-contrib/entire-fredholm-determinant
+    decl: HilbertSchmidt.analyticOnNhd_fredholmDet
+    kind: theorem
+    summary: The entire Fredholm determinant fredholmDet (principal-minor series with a Hadamard bound) is analytic on the whole coupling plane, basis independent, satisfies det(1-AB) = det(1-BA), and equals fredholmDetOne on the small-norm disk; a rank-one example shows they differ off it.
+    file: Airy1GumbelContrib/FredholmDet/EntireDet.lean
+    status: reusable
+    keywords: [fredholm-determinant, trace-class, entire-function, hadamard]
+  - id: airy1-gumbel-lean-contrib/trace-norm
+    decl: HilbertSchmidt.traceENorm_add_le
+    kind: theorem
+    summary: "Trace norm as an infimum over Hilbert-Schmidt factorizations through any auxiliary space: triangle inequality, ideal property, |c|-homogeneity, ||BC||_1 <= ||B||_2 ||C||_2, ||A||_2 <= ||A||_1, |tr A| <= ||A||_1; finite on IsTraceClass."
+    file: Airy1GumbelContrib/FredholmDet/TraceNorm.lean
+    status: reusable
+    keywords: [trace-norm, trace-class, hilbert-schmidt, operator-ideal]
+  - id: airy1-gumbel-lean-contrib/determinant-lipschitz-bound
+    decl: HilbertSchmidt.norm_fredholmDetIn_sub_le_coupling
+    kind: theorem
+    summary: "|det(1-zA)| <= exp(|z| ||A||_1) and the Lipschitz bound |det(1-zQ1) - det(1-zQ2)| <= 2|z| ||Q1-Q2||_1 exp(2|z|(||Q1||_1 + ||Q2||_1)); continuity in trace norm and under HS convergence of factors."
+    file: Airy1GumbelContrib/FredholmDet/SimonBound.lean
+    status: reusable
+    keywords: [fredholm-determinant, trace-norm, lipschitz, continuity, hadamard]
+  - id: airy1-gumbel-lean-contrib/determinant-multiplicativity
+    decl: HilbertSchmidt.fredholmDet_add_sub_comp
+    kind: theorem
+    summary: "det(1-(A+B-AB)) = det(1-A) det(1-B) for finite trace norm (all couplings z), via right finite sections, Matrix.det_mul and the Lipschitz bound; corollary: 1-A invertible implies det(1-A) != 0; with a rank-one example."
+    file: Airy1GumbelContrib/FredholmDet/Multiplicativity.lean
+    status: reusable
+    keywords: [fredholm-determinant, trace-norm, multiplicativity, finite-sections]
+  - id: airy1-gumbel-lean-contrib/kernel-fredholm-coefficients
+    decl: AiryConj.fredholmDetCoeff_two_kernelOperator
+    kind: theorem
+    summary: "Taylor coefficients of the entire determinant: c1 = -tr A, c2 = ((tr A)^2 - tr A^2)/2; for a composite L2 kernel L, c2 = (1/2) ∫_{R^2} det[[L(x,x), L(x,y)], [L(y,x), L(y,y)]]. Coefficients of order n >= 3 are not treated."
+    file: Airy1GumbelContrib/FredholmDet/KernelDet.lean
+    status: reusable
+    keywords: [fredholm-determinant, kernel-operator, trace, fredholm-expansion]
+  - id: airy1-gumbel-lean-contrib/fdd-hitting-kernel
+    decl: AiryFdd.hitKerN_cons_eq_integral
+    kind: theorem
+    summary: n-time discrete hitting kernel H = p_S - Lambda e^{tau Delta} over a (level, gap) list (as in Quastel-Remenik), any real levels; 0 <= H <= p_S and the one-step recursion H(u,v) = ∫ p_g(u-w) H'(w,v) dw on u <= x_1.
+    file: Airy1GumbelContrib/Fdd/FddKernel.lean
+    status: reusable
+    keywords: [heat-kernel, hitting-kernel, airy1, fdd]
+  - id: airy1-gumbel-lean-contrib/fdd-v-kernel-l2
+    decl: AiryFdd.memLp_fddVKer
+    kind: theorem
+    summary: The weighted kernel e^{-au} H(u,v) e^{-av} phi(v) is in L2(R^2) for every n, all real levels, positive gaps and a > 0; via the union/Chernoff bound hitKerN_le_eBnd (induction on the list) and half-plane/quadrant dominators.
+    file: Airy1GumbelContrib/Fdd/FddVBound.lean
+    status: reusable
+    keywords: [hilbert-schmidt, l2-kernel, chernoff, heat-kernel, airy1, fdd]
+  - id: airy1-gumbel-lean-contrib/fdd-operator-trace-class
+    decl: AiryFdd.isTraceClass_fddOp
+    kind: theorem
+    summary: fddOp = T_V o T_W at weight a = 2S (padding 1) is trace class with finite trace norm; the V*W kernel is e^{-au} (H * g_S)(u,y) e^{ay} for any H (compKernel_fddVKer_wKernel).
+    file: Airy1GumbelContrib/Fdd/FddOp.lean
+    status: reusable
+    keywords: [trace-class, kernel-operator, airy1, fdd, quastel-remenik]
+  - id: airy1-gumbel-lean-contrib/airy1-fin-cdf
+    decl: AiryFdd.airy1FinCdf_singleton
+    kind: theorem
+    summary: airy1FinCdf I x is defined as det(I - J) with the entire Fredholm determinant (sorted times, positive gaps, F_empty = 1); for one time it is det(I - fddOp) at padding 1, whose kernel conjugates 1_{u>x} Ai(u+y). No probabilistic property is proved here.
+    file: Airy1GumbelContrib/Fdd/FddOp.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, quastel-remenik]
+  - id: airy1-gumbel-lean-contrib/two-interval-plemelj-assembly
+    decl: AiryTwoInt.twoInt_joint_ge_plemelj
+    kind: theorem
+    summary: "Plemelj lower bound for the joint exceedance: if Tr C >= -e1, tr(K1 K2) <= e2, ||C||_2 <= e3 and HS norms <= eta < 1, then X = 1 - d1 - d2 + dcup >= pi_1^2 - d1^2 (e1 + e2 + 2 eta e3 + e3^2/2 + eta^3/(1-eta)), d = det_1, pi_1 = 1 - d1."
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalPlemelj.lean
+    status: reusable
+    keywords: [airy, two-interval, fredholm-determinant, plemelj, trace-estimate]
+  - id: airy1-gumbel-lean-contrib/two-interval-crkert-hs-decay
+    decl: AiryTwoInt.hsNorm_crKerT_le_discharged
+    kind: theorem
+    summary: HS norm of C~_r at weight a = sqrt(2M) is <= C e^{-(2/3)a^3 - rM} for 1 <= r <= chi a, M >= M_0, via the two-barrier bound Q P_r Q <= (4 pi)^{-1/2} G(x) G(w) and the W-kernel bound.
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalN3.lean
+    status: reusable
+    keywords: [airy, two-interval, hilbert-schmidt, fredholm-determinant, trace-estimate]
+  - id: airy1-gumbel-lean-contrib/two-interval-decorrelation-trace
+    decl: AiryTwoInt.trace_k1k2_le_discharged
+    kind: theorem
+    summary: tr(K1~ K2~) <= C (1+2M^2)(1+256M) e^{-(4/3)a^3 - 2 a r^2} at a = sqrt(2M), 1 <= r <= chi a, M >= M_0; weight-free trace re-weighted by a two-weight HS split (a+r, a-r), forward heat-Airy identity, sharp asymmetric Q bound.
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalN2.lean
+    status: reusable
+    keywords: [airy, two-interval, trace-estimate, hilbert-schmidt, fredholm-determinant]
+  - id: airy1-gumbel-lean-contrib/two-interval-joint-sign
+    decl: AiryTwoInt.twoInt_joint_ge_assoc_eventually
+    kind: theorem
+    summary: "For 0 < chi < 1, eps > 0, eventually in M and uniformly for 1 <= r <= chi sqrt(2M): pi_1 = 1 - d1 >= rho(M)/2 and X = 1 - d1 - d2 + dcup >= (1 - eps) pi_1^2, hence X > 0; from the Plemelj bound with the two-interval trace and HS estimates."
+    file: Airy1GumbelContrib/TwoInterval/TwoIntervalSign.lean
+    status: reusable
+    keywords: [airy, two-interval, fredholm-determinant, plemelj, association]
+  - id: airy1-gumbel-lean-contrib/fredholm-det-trace-pow
+    decl: HilbertSchmidt.fredholmDet_eq_of_trace_pow_eq
+    kind: theorem
+    summary: For trace-class A, B with tr(A^m) = tr(B^m) for all m >= 1, det(1 - zA) = det(1 - zB) for every z (agreement with the Plemelj det_1 on a disk, then the identity theorem).
+    file: Airy1GumbelContrib/FredholmDet/TracePowDet.lean
+    status: reusable
+    keywords: [fredholm-determinant, trace, plemelj, identity-theorem]
+  - id: airy1-gumbel-lean-contrib/fdd-padding-weight-independence
+    decl: AiryFdd.airy1FinCdf_eq_fredholmDet_fddOpAt
+    kind: theorem
+    summary: H * g_S = Ai(u+y) - (Lambda * g_{S-tau})(u,y) is free of tau; equal levels and interior gaps give equal fdd operators at a common weight, and det is weight-free for a >= S+1; so airy1FinCdf I x = det(I - fddOpAt) at any padding and weight.
+    file: Airy1GumbelContrib/Fdd/FddIndep.lean
+    status: reusable
+    keywords: [fredholm-determinant, trace-class, airy1, fdd, quastel-remenik]
+  - id: airy1-gumbel-lean-contrib/airy1-fin-cdf-continuous
+    decl: AiryFdd.continuous_airy1FinCdf
+    kind: theorem
+    summary: For every finite time set I, x -> airy1FinCdf I x is jointly continuous in all levels (list form continuous_fddDetLev), via a uniform L2 majorant on bounded level sets, pointwise kernel convergence, dominated convergence, and HS convergence of V.
+    file: Airy1GumbelContrib/Fdd/FddCont.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, continuity, dominated-convergence]
+  - id: airy1-gumbel-lean-contrib/fdd-det-ereal-limit
+    decl: AiryFdd.tendsto_fddDetLev_ereal
+    kind: theorem
+    summary: With EReal levels (+infinity gives the identity projection), if every real level converges in EReal to a limit other than -infinity, the V kernels converge in L2 and the fdd determinant converges to det(I - T_V T_W) of the extended-level kernel.
+    file: Airy1GumbelContrib/Fdd/FddCont.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, hilbert-schmidt, dominated-convergence]
+  - id: airy1-gumbel-lean-contrib/fredholm-det-isometry
+    decl: HilbertSchmidt.fredholmDet_eq_of_isometry_intertwine
+    kind: theorem
+    summary: "If J : E -> F is a linear isometry, X trace class on F, X J = J Y and X = 0 on (range J)-perp, then det(1 - zX) = det(1 - zY) for every z (Hilbert-basis extension of J(b), minors reindexed): determinants on different Hilbert spaces."
+    file: Airy1GumbelContrib/FredholmDet/DetIsometry.lean
+    status: reusable
+    keywords: [fredholm-determinant, isometry, hilbert-basis, trace-class]
+  - id: airy1-gumbel-lean-contrib/fdd-goe-anchor
+    decl: AiryFdd.airy1FinCdf_singleton_eq_fsGOE
+    kind: theorem
+    summary: airy1FinCdf {t} x = det(I - B_{2x}) on L2(0,infinity), B_s(a,b) = Ai(a+b+s) (Ferrari-Spohn GOE form), via det(I - P_x B0 P_x) on L2(R) and the shift-extension isometry. The identity F_GOE = det(I - B) is cited, not proved.
+    file: Airy1GumbelContrib/Fdd/FddGOE.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, goe, ferrari-spohn]
+  - id: airy1-gumbel-lean-contrib/airy1-fin-cdf-drop-time
+    decl: AiryFdd.tendsto_airy1FinCdf_erase
+    kind: theorem
+    summary: For t in I, if x_t -> +infinity and the other levels converge, airy1FinCdf I x -> airy1FinCdf (I.erase t) (restricted x); by a Chapman-Kolmogorov merge at an interior or last time, and W_S V_n = W_{S-g} V_{n-1} with cyclicity at the first time.
+    file: Airy1GumbelContrib/Fdd/FddDrop.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, projectivity, chapman-kolmogorov]
+  - id: airy1-gumbel-lean-contrib/airy1-fin-cdf-tends-to-one
+    decl: AiryFdd.tendsto_airy1FinCdf_one
+    kind: theorem
+    summary: If every level of a finite time set tends to +infinity, airy1FinCdf I x -> 1 (all projections become the identity, the hitting kernel vanishes, det(1) = 1).
+    file: Airy1GumbelContrib/Fdd/FddDrop.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, normalisation]
+  - id: airy1-gumbel-lean-contrib/airy1-fin-cdf-shift
+    decl: AiryFdd.airy1FinCdf_shift_of_eq
+    kind: theorem
+    summary: "Time-shift invariance F_{I+c} = F_I: airy1FinCdf (I + c) y = airy1FinCdf I x when y(t + c) = x(t); sorting commutes with translation and gaps are translation invariant, so the (level, gap) entries coincide."
+    file: Airy1GumbelContrib/Fdd/FddShift.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, stationarity, shift-invariance]
+  - id: airy1-gumbel-lean-contrib/fdd-small-weight
+    decl: AiryFdd.airy1FinCdf_eq_fredholmDet_fddOpLt
+    kind: theorem
+    summary: airy1FinCdf I x = det(I - J) for the fdd operator at any padding tau > 0 and any weight a > S, using a relaxed W-kernel bound ∫∫ W_{T,a}^2 <= C e^{(2/3)T^3 - 2aT^2}/(a-T) for T < a <= T+1.
+    file: Airy1GumbelContrib/SmallWeight/FddSmallWeight.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, weight-independence, hilbert-schmidt]
+  - id: airy1-gumbel-lean-contrib/two-time-defect-forward
+    decl: AiryFdd.airy1FinCdf_twoTime_defect
+    kind: theorem
+    summary: "Forward two-time defect: for each m_0 there is C with |F_x(a) - F_{x,x+t}(a,b)| <= C exp(-(b-a)^2/(8t)) for all x, 0 < t <= 1, -m_0 <= a <= b (a fixed-level analogue of a Quastel-Remenik 2013 estimate; Gaussian split and determinant Lipschitz bound)."
+    file: Airy1GumbelContrib/SmallWeight/TwoTimeDefect.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, two-time, gaussian-tail, trace-norm]
+  - id: airy1-gumbel-lean-contrib/two-time-defect-weight-parametric
+    decl: AiryFdd.airy1FinCdf_twoTime_defect_le
+    kind: theorem
+    summary: "Weight-parametric forward defect: for padding tau > 0, weight w > t + tau and N >= ||W_{t+tau,w}||_2, |F_x(a) - F_{x,x+t}(a,b)| <= 2 sqrt(C_D) N e^{-(b-a)^2/8t} exp(2(sqrt(C_D) N + 2 sqrt(C_1) N)), explicit C_D(w,t,tau,m_0), C_1(w,t+tau,m_0)."
+    file: Airy1GumbelContrib/SmallWeight/TwoTimeDefect.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, two-time, explicit-constants]
+  - id: airy1-gumbel-lean-contrib/two-time-defect-reverse
+    decl: AiryFdd.airy1FinCdf_twoTime_defect_rev
+    kind: theorem
+    summary: "Reverse two-time defect: for each m_0 there is C with |F_{x+t}(b) - F_{x,x+t}(a,b)| <= C exp(-(a-b)^2/(8t)) for all x, 0 < t <= 1, -m_0 <= b <= a, via the first-time-top kernel and fredholmDet_swap_heat; no time reversal."
+    file: Airy1GumbelContrib/SmallWeight/TwoTimeDefectRev.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, two-time, gaussian-tail]
+  - id: airy1-gumbel-lean-contrib/small-weight-defect
+    decl: AiryFdd.smallWeight_defect_headline
+    kind: theorem
+    summary: There is K > 0 such that for all M >= 2, gaps 0 < t <= 1/(2M) and levels >= -2M, both two-time defects are <= exp(K M^{5/2}) exp(-(b-a)^2/(8t)) (padding tau = 1/M, weight w = 2(t+tau)), and K M^{5/2} = o(M^3).
+    file: Airy1GumbelContrib/SmallWeight/SmallWeightDefect.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, two-time, explicit-constants, gaussian-tail]
+  - id: airy1-gumbel-lean-contrib/mesh-fdd-identity
+    decl: AiryFdd.airy1FinCdf_meshSet
+    kind: theorem
+    summary: "On the dyadic mesh I_n = {x + kT/2^n : k < 2^n} at constant level M, T >= 1: airy1FinCdf I_n (M,...,M) = det(I - meshOp M T n), the fdd operator with entries (M, T/2^n) repeated 2^n times at weight 2T; its W factor is that of airyTildeOp M T (2T)."
+    file: Airy1GumbelContrib/Mesh/MeshLimit.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, dyadic-mesh, continuum-limit]
+  - id: airy1-gumbel-lean-contrib/mesh-limit-conditional
+    decl: AiryFdd.tendsto_airy1FinCdf_meshSet
+    kind: theorem
+    summary: "Under MeshHittingLimit M T (mesh hitting kernels H_n <= q_{M,T} a.e. and H_n -> q_{M,T} a.e.), T >= 1, M > 0: airy1FinCdf I_n (M,...,M) -> det(I - airyTildeOp M T (2T)), via L2 dominated convergence of the V kernels with W fixed."
+    file: Airy1GumbelContrib/Mesh/MeshLimit.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, dyadic-mesh, continuum-limit, dominated-convergence]
+  - id: airy1-gumbel-lean-contrib/brownian-skeleton-kernel
+    decl: AiryFdd.measure_skelSet
+    kind: theorem
+    summary: For a pre-Brownian B with measurable coordinates and step h = 2g, P(u + X_{jh} <= M for j <= k, u + X_{(k+1)h} in S) = ∫_S lamKerN (M,g) (replicate k (M,g)) (u,v) dv, X = B - B_0; weak Markov property and Tonelli, by induction on k.
+    file: Airy1GumbelContrib/Mesh/Skeleton.lean
+    status: reusable
+    keywords: [brownian-motion, markov-property, heat-kernel, dyadic-mesh, hitting-kernel]
+  - id: airy1-gumbel-lean-contrib/dyadic-reflection-cdf
+    decl: AiryFdd.measure_crossSet_inter_Iic
+    kind: theorem
+    summary: "Reflection principle in CDF form for Brownian motion with measurable coordinates: for u < M, v <= M, P(some dyadic grid point of u + X on [0,tau) exceeds M, u + X_tau <= v) = P(u + X_tau >= 2M - v); first-crossing flip and continuity, no strong Markov property."
+    file: Airy1GumbelContrib/Mesh/Reflection.lean
+    status: reusable
+    keywords: [brownian-motion, reflection-principle, dyadic-mesh, first-passage]
+  - id: airy1-gumbel-lean-contrib/crossing-law-density
+    decl: AiryFdd.measure_crossSet_inter
+    kind: theorem
+    summary: "For Brownian motion with measurable coordinates, tau = 2T, u < M: the law of u + X_tau on the dyadic crossing event has density q_{M,T}(u,v) (the reflected heat kernel p_T(2M-u-v) on v <= M, p_T(u-v) on v > M)."
+    file: Airy1GumbelContrib/Mesh/Reflection.lean
+    status: reusable
+    keywords: [brownian-motion, reflection-principle, heat-kernel, hitting-kernel]
+  - id: airy1-gumbel-lean-contrib/mesh-hitting-limit
+    decl: AiryFdd.meshHittingLimit_of_isBrownianReal
+    kind: theorem
+    summary: "Given a Brownian motion with measurable coordinates, MeshHittingLimit M T holds for every M and T > 0: meshHitKer M T n <= q_{M,T} a.e. on R^2 for all n, and meshHitKer M T n -> q_{M,T} a.e. (dyadic reflection principle)."
+    file: Airy1GumbelContrib/Mesh/Reflection.lean
+    status: reusable
+    keywords: [brownian-motion, reflection-principle, dyadic-mesh, hitting-kernel, continuum-limit]
+  - id: airy1-gumbel-lean-contrib/lamkern-append
+    decl: AiryFdd.lamKerN_append
+    kind: theorem
+    summary: "For positive gaps, the discrete killed kernel of a concatenated (level, gap) list e :: (L ++ y :: L') is the kernel composition of lamKerN e L and lamKerN y L' (Fubini via heat-kernel domination); lengthening the last gap by r composes with p_r."
+    file: Airy1GumbelContrib/Mesh/TwoBlockMesh.lean
+    status: reusable
+    keywords: [heat-kernel, hitting-kernel, kernel-composition, dyadic-mesh]
+  - id: airy1-gumbel-lean-contrib/two-block-kernel-limit
+    decl: AiryFdd.ae_tendsto_cupHitKer
+    kind: theorem
+    summary: Under MeshHittingLimit M 1 and r > 0, the two-block dyadic hitting kernel H = p_{2+r} - L_m * (P_r * L_m) satisfies 0 <= H <= D_r = P_1 P_r P_1 - Lam P_r Lam a.e. and converges a.e. to D_r (dominated convergence inside both compositions).
+    file: Airy1GumbelContrib/Mesh/TwoBlockMesh.lean
+    status: reusable
+    keywords: [hitting-kernel, dominated-convergence, dyadic-mesh, two-interval, continuum-limit]
+  - id: airy1-gumbel-lean-contrib/two-block-mesh-limit-conditional
+    decl: AiryFdd.tendsto_airy1FinCdf_cupSet
+    kind: theorem
+    summary: "Under MeshHittingLimit M 1, M > 0, r > 0, r + 3 <= a: the constant-level airy1FinCdf on the union of the dyadic meshes of [x, x+1] and [x+1+r, x+2+r] converges to det(I - K_cup(a, M, r)); the union has total time 2 + r."
+    file: Airy1GumbelContrib/Mesh/TwoBlockMesh.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, dyadic-mesh, two-interval, continuum-limit]
+  - id: airy1-gumbel-lean-contrib/trace-class-add
+    decl: HilbertSchmidt.IsTraceClass.add
+    kind: theorem
+    summary: "Trace class (HS factorization through E itself) is closed under addition: in finite dimension every operator is HS; in infinite dimension WithLp 2 (E x E) is isometric to E (adapted Hilbert basis), which carries the E+E factorization back to E."
+    file: Airy1GumbelContrib/FredholmDet/TraceClassAdd.lean
+    status: reusable
+    keywords: [trace-class, hilbert-schmidt, hilbert-basis, operator-ideal]
+  - id: airy1-gumbel-lean-contrib/fredholm-det-rect-sylvester
+    decl: HilbertSchmidt.fredholmDet_comp_comm_rect
+    kind: theorem
+    summary: "Rectangular Sylvester identity det_E(1 - zAB) = det_F(1 - zBA) for Hilbert-Schmidt A : F -> E, B : E -> F between different Hilbert spaces and every z; via corners on WithLp 2 (E x F) and the isometry transfer. Bounded-factor variants included."
+    file: Airy1GumbelContrib/FredholmDet/BlockDet.lean
+    status: reusable
+    keywords: [fredholm-determinant, sylvester, cyclicity, hilbert-schmidt, block-operator]
+  - id: airy1-gumbel-lean-contrib/fredholm-det-block-triangular
+    decl: HilbertSchmidt.fredholmDet_blockOp_upper
+    kind: theorem
+    summary: On WithLp 2 (E x F), det(1 - z[[A, X], [0, D]]) = det(1 - zA) det(1 - zD) for trace-class A, D and rectangular trace-class X, every z (lower-triangular twin fredholmDet_blockOp_lower); multiplicativity plus a square-zero trace-zero corner.
+    file: Airy1GumbelContrib/FredholmDet/BlockDet.lean
+    status: reusable
+    keywords: [fredholm-determinant, block-operator, triangular, trace-class]
+  - id: airy1-gumbel-lean-contrib/fredholm-det-block-schur
+    decl: HilbertSchmidt.fredholmDet_blockOp_schur'
+    kind: theorem
+    summary: Block Schur step det(1 - [[A, B], [C, D]]) = det(1 - A) det(1 - (D + C R B)) for trace-class A, D, rectangular trace-class B, C and R (1 - A) = 1 (Neumann-series form fredholmDet_blockOp_schur_of_norm_lt_one); used for the two-time factorization.
+    file: Airy1GumbelContrib/FredholmDet/BlockDet.lean
+    status: reusable
+    keywords: [fredholm-determinant, block-operator, schur-complement, lu-factorization]
+  - id: airy1-gumbel-lean-contrib/two-time-block-bridge
+    decl: AiryFdd.airy1FinCdf_pair_eq_blockDet
+    kind: theorem
+    summary: "For times t0 < t1 with gap d > 0 and levels x1, x2, airy1FinCdf {t0,t1} = det(I - [[B, Q], [K21, D]]) on L2 + L2: B = P_1 B0 P_1, Q = P_1 B0 Pbar_1 e^{d Lap} P_2, K21 = P_2 e^{-d Lap} B0 P_1, D = P_2 e^{-d Lap} B0 Pbar_1 e^{d Lap} P_2."
+    file: Airy1GumbelContrib/TwoTime/TwoTimeBridge.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, two-time, block-operator, sylvester]
+  - id: airy1-gumbel-lean-contrib/two-time-fddop-block-det
+    decl: AiryFdd.fredholmDet_fddOp_two_level
+    kind: theorem
+    summary: The two-time fdd operator factors as R o C (bounded row; rectangular trace-class column composed with W at weight 2(d+1)); the bounded-factor rectangular Sylvester identity gives det(1 - z fddOp) = det(1 - z blockOp B Q K21 D) for every z.
+    file: Airy1GumbelContrib/TwoTime/TwoTimeBridge.lean
+    status: reusable
+    keywords: [fredholm-determinant, fdd, block-operator, trace-class, hilbert-schmidt]
+  - id: airy1-gumbel-lean-contrib/two-time-schur-factorisation
+    decl: AiryFdd.airy1FinCdf_pair_eq_singleton_mul_schur
+    kind: theorem
+    summary: "For t0 < t1, gap d > 0, levels x1, x2 and any left inverse R of 1 - B (B = goeOp x1): airy1FinCdf {t0,t1} = F_{t0}(x1) det(I - Z), Z = D + K21 R Q trace class; Neumann form with R = (1 - B)^{-1} when norm B < 1."
+    file: Airy1GumbelContrib/TwoTime/TwoTimeSchur.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, fdd, two-time, schur-complement, block-operator]
+  - id: airy1-gumbel-lean-contrib/two-time-excess-bound
+    decl: AiryFdd.abs_airy1FinCdf_pair_const_sub_sq_le
+    kind: theorem
+    summary: "At times {0,d} and equal levels w, with f = airy1FinCdf {0} w, B = goeOp w and R a left inverse of 1 - B: |F - f^2| <= |f| 2 ||Z - B||_1 exp(2(||Z||_1 + ||B||_1)), where F - f^2 = f (det(I - Z) - det(I - B)) and Z - B = (D - B) + K21 R Q."
+    file: Airy1GumbelContrib/TwoTime/TwoTimeSchur.lean
+    status: reusable
+    keywords: [fredholm-determinant, airy1, two-time, excess, simon-bound, trace-norm]
+  - id: airy1-gumbel-lean-contrib/two-time-d-minus-b
+    decl: AiryFdd.dOp_sub_goeOp
+    kind: theorem
+    summary: At equal levels w and gap d > 0, D - B = -(K21 T), where K21 T is a single L2 kernel operator (composition of K21 with T = P e^{d Lap} P, which is not HS), via the heat-Airy semigroup.
+    file: Airy1GumbelContrib/TwoTime/TwoTimeKernel.lean
+    status: reusable
+    keywords: [airy1, two-time, kernel-identity, heat-semigroup]
+  - id: airy1-gumbel-lean-contrib/two-time-k21-trace-norm
+    decl: AiryFdd.traceENorm_k21Op_le
+    kind: theorem
+    summary: For w >= 0, d > 0, the trace norm of K21 = P e^{-d Lap} B0 P is at most C exp(-Psi(d,w) + 16(1+w+d^2)), Psi = (2/3)(2w+d^2)^{3/2} + 2wd + (2/3)d^3, via the heat split at tuned weight gamma = s + sqrt(2w+s^2).
+    file: Airy1GumbelContrib/TwoTime/TwoTimeEst.lean
+    status: reusable
+    keywords: [airy1, two-time, trace-norm, two-point-bound]
+  - id: airy1-gumbel-lean-contrib/two-time-excess-trace-norm
+    decl: AiryFdd.traceENorm_twoTimeExcess_le_rate
+    kind: theorem
+    summary: There is C > 0 such that for w >= 0, d > 0 and every bounded R with norm <= 2, the trace norm of (D - B) + K21 R Q is at most C exp(-I(w) - 2wd + 20(1+w+d^2)), I(w) = (2/3)(2w)^{3/2}.
+    file: Airy1GumbelContrib/TwoTime/TwoTimeEst.lean
+    status: reusable
+    keywords: [airy1, two-time, trace-norm, two-point-bound]
+  - id: airy1-gumbel-lean-contrib/two-time-qd-nonvanishing
+    decl: AiryFdd.exists_dKer_ne_zero
+    kind: theorem
+    summary: For all levels x1, x2 and d > 0 there are u, m past the cuts with qKer(u, m) != 0 and dKer(u, m) != 0 (the inner integral of G(u+y) 1_{y<=x1} p_d(y-m) tends, after normalising, to G(u+x1) as m -> infinity).
+    file: Airy1GumbelContrib/TwoTime/TwoTimeNonvanishing.lean
+    status: reusable
+    keywords: [airy1, two-time, block-operator, nonvanishing, laplace-method]
+  - id: airy1-gumbel-lean-contrib/two-time-excess-trace-norm-sharp
+    decl: AiryFdd.traceENorm_twoTimeExcess_le_sharp
+    kind: theorem
+    summary: There is C > 0 such that for w >= 1/2, d > 0 and bounded R with norm <= 2, the trace norm of (D - B) + K21 R Q is at most C(1+w+d)^2 exp(-Psi(d,w)) (heat time 1/(1+w+d)^2, ||Q|| <= C(1+d); polynomial prefactor not optimised).
+    file: Airy1GumbelContrib/TwoTime/TwoTimeSharp.lean
+    status: reusable
+    keywords: [airy1, two-time, trace-norm, sharp]
+  - id: airy1-gumbel-lean-contrib/two-time-excess-trace-norm-sqrt
+    decl: AiryFdd.traceENorm_twoTimeExcess_le_sqrt
+    kind: theorem
+    summary: There is C > 0 with, for w >= 1/2, d > 0 and bounded R with norm <= 2, trace norm of (D - B) + K21 R Q <= C sqrt(1+w+d) sqrt(1+d) exp(-Psi(d,w)) (sharp exponent Psi; prefactor not claimed optimal).
+    file: Airy1GumbelContrib/TwoTime/TwoTimeSharpSqrt.lean
+    status: reusable
+    keywords: [airy1, two-time, trace-norm, sharp]
+  - id: airy1-gumbel-lean-contrib/two-time-excess-trace-norm-d
+    decl: AiryFdd.traceENorm_twoTimeExcess_le_d
+    kind: theorem
+    summary: There is C > 0 with, for w >= 1/2, d > 0 and bounded R with norm <= 2, trace norm of (D - B) + K21 R Q <= C sqrt(1+d) exp(-Psi(d,w)) (sharp exponent Psi; sqrt(1+d) from the norm bound on Q; not claimed optimal).
+    file: Airy1GumbelContrib/TwoTime/TwoTimeSharpD.lean
+    status: reusable
+    keywords: [airy1, two-time, trace-norm, sharp]
+  - id: airy1-gumbel-lean-contrib/two-time-qd-operator-nonvanishing
+    decl: AiryFdd.dOp_ne_zero
+    kind: theorem
+    summary: For all levels x1, x2 and d > 0, dOp is a nonzero operator on L2(R) (a zero kernel operator kills rational interval integrals of a.e. section; the inner integral is continuous in m past the cut); qOp_ne_zero, in the same file, does the same for qOp.
+    file: Airy1GumbelContrib/TwoTime/TwoTimeOpNonvanishing.lean
+    status: reusable
+    keywords: [airy1, two-time, block-operator, nonvanishing, kernel-operator]
+  - id: airy1-gumbel-lean-contrib/airy-contour
+    decl: AiryContour.airyContour_eq_airyAi
+    kind: theorem
+    summary: "Contour form of Ai (DLMF 9.5.4): for every c > 0 and z in C, Ai(z) = (1/2pi) * integral over s in R of exp((c+is)^3/3 - z(c+is)); real form airyAiReal_eq_integral. Proof: Airy ODE for the integral, ray deformation for the initial data, Taylor uniqueness."
+    file: Airy1GumbelContrib/Airy/AiryContour.lean
+    status: reusable
+    keywords: [airy, contour-integral, special-function, uniqueness]
+  - id: airy1-gumbel-lean-contrib/airy-fourier
+    decl: AiryFourier.fourier_airyAiDist
+    kind: theorem
+    summary: "Fourier transform of Ai (Mathlib F, kernel exp(-2 pi i x xi)): F Ai = exp(i(2 pi xi)^3/3) in tempered distributions; weak form for integrable phi with integrable F phi. Proof: Gaussian regularisation, contour form on Re t = delta^2, Fubini, dominated convergence."
+    file: Airy1GumbelContrib/Airy/AiryFourier.lean
+    status: reusable
+    keywords: [airy, fourier-transform, tempered-distribution, special-function]
+  - id: airy1-gumbel-lean-contrib/airy-transform-isometry
+    decl: AiryTransform.integral_norm_sq_airyTransformCLM
+    kind: theorem
+    summary: "Airy transform on Schwartz space: B0 f(x) = integral Ai(x+y) f(y) dy equals F^-1(psi F(f(-.))), psi = exp(i(2 pi xi)^3/3) (airyTransformCLM_apply), and integral |B0 f|^2 = integral |f|^2 for f in S(R, C); via the weak Fourier form of Ai, inversion, Plancherel."
+    file: Airy1GumbelContrib/Airy/AiryTransform.lean
+    status: reusable
+    keywords: [airy, airy-transform, fourier-multiplier, plancherel, isometry]
+  - id: airy1-gumbel-lean-contrib/airy-transform-l2-contraction
+    decl: AiryTransform.eLpNorm_airyTransformFun_le
+    kind: theorem
+    summary: "Airy transform on L1 cap L2: for k in L1(R) cap L2(R, C), the L2 norm of u -> integral Ai(u+y) k(y) dy is at most the L2 norm of k (real form eLpNorm_integral_airyAiReal_mul_le); by Fatou from the Schwartz isometry via compact-support and truncation approximations."
+    file: Airy1GumbelContrib/Airy/AiryTransformL2.lean
+    status: reusable
+    keywords: [airy, airy-transform, l2-contraction, fatou]
+  - id: airy1-gumbel-lean-contrib/two-time-q-norm-le-one
+    decl: AiryFdd.norm_qOp_le_one
+    kind: theorem
+    summary: For all levels x1, x2 and every d > 0, the operator norm of the two-time block qOp on L2(R) is at most 1, via Q = P_1 B0 Pbar_1 exp(d Laplacian) P_2, heat contraction and the L1 cap L2 Airy-transform bound.
+    file: Airy1GumbelContrib/TwoTime/TwoTimeQNorm.lean
+    status: reusable
+    keywords: [airy1, two-time, block-operator, operator-norm, airy-transform]
+  - id: airy1-gumbel-lean-contrib/two-time-excess-trace-norm-e
+    decl: AiryFdd.traceENorm_twoTimeExcess_le_e
+    kind: theorem
+    summary: There is C > 0 with, for w >= 1/2, d > 0 and bounded R with norm <= 2, trace norm of (D - B) + K21 R Q <= C exp(-Psi(d,w)); uses norm_qOp_le_one (L1 cap L2 Airy contraction, not full unitarity); C not optimal.
+    file: Airy1GumbelContrib/TwoTime/TwoTimeSharpE.lean
+    status: reusable
+    keywords: [airy1, two-time, trace-norm, sharp]

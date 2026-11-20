@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it by its release version or exact commit, together with the paper."
+title: "airy1-gumbel-lean: Lean companion to Gumbel fluctuations of the maximum of the Airy_1 process"
+type: software
+license: Apache-2.0
+version: "0.1.0"
+repository-code: "https://github.com/chenle02/airy1-gumbel-lean"
+authors:
+  - family-names: "Chen"
+    given-names: "Le"
+    orcid: "https://orcid.org/0000-0001-8010-136X"
+    affiliation: "Auburn University"
+abstract: >-
+  Lean 4 proof that the maximum over [0, T] of a constructed Airy_1 process,
+  centred and scaled as in the paper, converges to the Gumbel law as T tends
+  to infinity, assuming three named inputs: the finite-dimensional Airy_1
+  laws, a cubic GOE left-tail bound, and cubic strong mixing. The mesoscopic
+  step uses a two-time Fredholm determinant bound instead of the paper's
+  association and covariance argument. This checks the paper's main theorem
+  along that route and the listed component results; it does not certify the
+  whole manuscript.
+keywords:
+  - Lean 4
+  - Airy process
+  - KPZ universality
+  - extreme value theory
+  - Gumbel distribution
+  - Fredholm determinant
+  - formal verification
+references:
+  - type: article
+    title: "Gumbel Fluctuations of the Maximum of the Airy_1 Process"
+    identifiers:
+      - type: other
+        value: "arXiv:2611.23658"
+        description: "arXiv preprint"
+    url: "https://arxiv.org/abs/2611.23658"
+    authors:
+      - family-names: "Chen"
+        given-names: "Le"
+        orcid: "https://orcid.org/0000-0001-8010-136X"
+        affiliation: "Auburn University"
+      - family-names: "Pu"
+        given-names: "Fei"

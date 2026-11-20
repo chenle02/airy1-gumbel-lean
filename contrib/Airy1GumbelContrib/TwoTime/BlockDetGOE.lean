@@ -1,0 +1,51 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.FredholmDet.BlockDet
+import Airy1GumbelContrib.Fdd.FddGOE
+
+/-! # Block determinants on `L²(ℝ) ⊕ L²(ℝ)`: instance check with the GOE operator
+
+The abstract block layer (`FredholmDet/BlockDet.lean`) instantiated at
+`E = F = L²(ℝ)` with the concrete trace-class kernel operator `goeOp` of `Fdd/`: this checks
+that the `WithLp 2 (L² × L²)` instances, the corner trace-class constructors and the corner
+Hilbert–Schmidt bookkeeping all resolve on the space used by the two-time block determinant
+(`TwoTime/`).
+
+* `fredholmDet_blockOp_goeOp_upper`: `det(1 − z[[G_x, G_w], [0, G_y]]) = det(1 − zG_x)·det(1 − zG_y)`
+  for any off-diagonal trace-class block (here `G_w`).
+* `fredholmDet_blockOp_goeOp_eq_mul_airy1FinCdf`: at `z = 1` this is the product of the two
+  one-point Airy₁ distribution functions `F(a)·F(b)` (via `airy1FinCdf_singleton_eq_goe`).
+* `fredholmDet_comp_comm_rect_goeOp`: rectangular Sylvester across the two summands.
+-/
+
+namespace AiryFdd
+
+open HilbertSchmidt MeasureTheory
+
+/-- Block upper-triangular determinant on `L²(ℝ) ⊕ L²(ℝ)` with GOE-operator blocks. -/
+theorem fredholmDet_blockOp_goeOp_upper (x w y z : ℝ) :
+    fredholmDet (blockOp (goeOp x) (goeOp w) 0 (goeOp y)) z =
+      fredholmDet (goeOp x) z * fredholmDet (goeOp y) z :=
+  fredholmDet_blockOp_upper (isTraceClass_goeOp x) (isTraceClass_goeOp w).isRectTraceClass
+    (isTraceClass_goeOp y) z
+
+/-- At `z = 1` the block-triangular GOE determinant is the product of two one-point Airy₁
+distribution functions. -/
+theorem fredholmDet_blockOp_goeOp_eq_mul_airy1FinCdf (a w b : ℝ) :
+    fredholmDet (blockOp (goeOp a) (goeOp w) 0 (goeOp b)) 1 =
+      airy1FinCdf {0} (fun _ => a) * airy1FinCdf {0} (fun _ => b) := by
+  rw [airy1FinCdf_singleton_eq_goe, airy1FinCdf_singleton_eq_goe]
+  exact fredholmDet_blockOp_goeOp_upper a w b 1
+
+/-- Rectangular Sylvester on the concrete space: `det(1 − z G_x G_y) = det(1 − z G_y G_x)`
+re-derived through the product `L²(ℝ) ⊕ L²(ℝ)` (agrees with `fredholmDet_comp_comm` of
+`FredholmDet/`). -/
+theorem fredholmDet_comp_comm_rect_goeOp (x y z : ℝ) :
+    fredholmDet (goeOp x ∘L goeOp y) z = fredholmDet (goeOp y ∘L goeOp x) z :=
+  fredholmDet_comp_comm_rect (isTraceClass_goeOp x).isHilbertSchmidt
+    (isTraceClass_goeOp y).isHilbertSchmidt z
+
+end AiryFdd

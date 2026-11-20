@@ -1,0 +1,464 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.FredholmDet.EntireDet
+import Airy1GumbelContrib.FredholmDet.TraceNorm
+import Airy1GumbelContrib.AiryKernel.TraceWeight
+
+/-! # Kernel-operator compatibility of the entire Fredholm determinant
+
+The determinant layer (`fredholmDet A z`, the principal-minor series of
+`FredholmDet/EntireDet.lean`) is basis-level; the Quastel–Remenik records and the Airy₁ finite-dimensional
+distributions (`Fdd/`) are determinants of **integral operators** on `L²(ℝ)`.  This file links the two
+at the level of the first two Taylor coefficients of `z ↦ det(1 − zA)`.
+
+## Main results
+
+Abstract (any `RCLike 𝕜`, any Hilbert basis `b`):
+
+* `fredholmDetCoeff_zero`: `c₀ = 1`;
+* `fredholmDetCoeff_one`: `c₁ = −∑ᵢ ⟪bᵢ, A bᵢ⟫` (no hypothesis), and for trace-class `A`
+  `fredholmDetCoeff_one_eq_neg_trace`: `c₁ = −tr A`;
+* `fredholmDetCoeff_two` (trace class): `c₂ = ((tr A)² − tr A²)/2`, the classical second
+  coefficient (Simon, *Trace Ideals*, 2nd ed., eq. (3.5)/(5.12) at `n = 2`; Plemelj–Smithies).
+
+Here `cₙ = fredholmDetCoeff b A n` are the coefficients of the convergent power series
+`det_b(1 − zA) = ∑ₙ cₙ zⁿ` (`hasSum_fredholmDetCoeff`).
+
+Kernel operators on `L²(ℝ)` (namespace `AiryConj`), for a kernel `L = K ⋆ K'` that is the
+composite (`compKernel`) of two `L²(ℝ²)` kernels — the form of every Quastel–Remenik operator:
+
+* `trace_kernelOperator_of_eq_compKernel`: `tr T_L = ∫ L(x, x) dx` (trace link: the trace of
+  the determinant layer is the kernel's diagonal integral);
+* `fredholmDetCoeff_one_kernelOperator`: `c₁ = −∫ L(x, x) dx`;
+* `fredholmDetCoeff_two_kernelOperator`:
+  `c₂ = ½ ∫_{ℝ²} det [L(xᵢ, xⱼ)]_{i,j ≤ 2} d(x₁, x₂)`,
+  i.e. the `n = 1, 2` terms of the Fredholm expansion
+  `det(1 − zT_L) = ∑ₙ (−z)ⁿ/n! ∫_{ℝⁿ} det[L(xᵢ, xⱼ)] dx`.
+
+Quastel–Remenik tie-in: `isTraceClass_kcupOp`, `traceENorm_kcupOp_ne_top`,
+`traceENorm_airyTildeOp_ne_top` (so the SimonBound / Multiplicativity layer applies to the
+Quastel–Remenik operators), and the coefficient formulas for `airyTildeOp` and the two-interval `K̃∪`
+(`fredholmDetCoeff_{one,two}_airyTildeOp`, `fredholmDetCoeff_{one,two}_kcupOp`).
+
+## Method and what is not proved
+
+* `c₁`: the size-one subsets are the singletons (`tsum_range`), and a `1 × 1` minor is the
+  diagonal entry.
+* `c₂`: with `aᵢⱼ = ⟪bᵢ, A bⱼ⟫`, the family `f(i, j) = aᵢᵢaⱼⱼ − aᵢⱼaⱼᵢ` is absolutely summable
+  on `ι × ι` (diagonal: trace class; off-diagonal: AM–GM against the Hilbert–Schmidt square
+  sum).  Summing `f` fiberwise over `(i, j) ↦ {i, j}` (`HasSum.tsum_fiberwise`) gives
+  `2 ∑_{|s| = 2} det A[s, s]` (each two-set has two ordered preimages, the diagonal
+  contributes `0`); Parseval (`HilbertBasis.tsum_inner_mul_inner`) collapses
+  `∑ⱼ aᵢⱼ aⱼᵢ` to `⟪bᵢ, A² bᵢ⟫`.  No eigenvalues, no `LinearMap.det`: every finite
+  determinant is `Matrix.det` on an explicit two-element subtype.
+* Kernel side: `trace_kernelOperator_comp` (`AiryKernel/`) (`tr(T_K T_{K'}) = ∫∫ K(x,z) K'(z,x)`)
+  and `kernelOperator_compKernel` (`TwoInterval/`) (`T_{K⋆K'} = T_K T_{K'}`) already give the trace
+  link; the `2 × 2` integral is split by `integral_prod_mul` and `integral_prod`, with
+  integrability from Hölder (`MemLp.integrable_mul`).
+* **Not proved:** the general-`n` identity `cₙ = (−1)ⁿ/n! ∫_{ℝⁿ} det[L(xᵢ, xⱼ)]` (needs an
+  `n`-variable Parseval / Cauchy–Binet expansion of `∫ det` over `ℝⁿ` and the matching
+  combinatorics over `n`-subsets; estimated 1–2k lines).  The `n = 1, 2` cases are what the
+  QR records' `exp(−tr)` normalisation and the second-order (Plemelj) term use.
+-/
+
+open Filter Topology MeasureTheory
+open scoped ENNReal NNReal InnerProduct InnerProductSpace
+open scoped Classical
+
+namespace HilbertSchmidt
+
+variable {𝕜 : Type*} [RCLike 𝕜]
+variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E]
+
+section Coefficients
+
+variable {ι : Type*}
+
+omit [CompleteSpace E] in
+/-- A `1 × 1` principal minor is the diagonal matrix element. -/
+theorem detMinor_singleton (b : HilbertBasis ι 𝕜 E) (A : E →L[𝕜] E) (i : ι) :
+    detMinor b A {i} = ⟪b i, A (b i)⟫_𝕜 := by
+  let _ : Unique ({i} : Finset ι) :=
+    ⟨⟨⟨i, Finset.mem_singleton_self i⟩⟩, fun j => Subtype.ext (Finset.mem_singleton.1 j.2)⟩
+  unfold detMinor
+  rw [Matrix.det_unique]
+  rfl
+
+omit [CompleteSpace E] in
+/-- The zeroth coefficient is `1`. -/
+theorem fredholmDetCoeff_zero (b : HilbertBasis ι 𝕜 E) (A : E →L[𝕜] E) :
+    fredholmDetCoeff b A 0 = 1 := by
+  unfold fredholmDetCoeff
+  have hset : (Finset.card ⁻¹' {0} : Set (Finset ι)) = {∅} := by
+    ext s
+    simp only [Set.mem_preimage, Set.mem_singleton_iff, Finset.card_eq_zero]
+  rw [pow_zero, one_mul, hset, tsum_singleton]
+  exact detMinor_empty b A
+
+omit [CompleteSpace E] in
+/-- **First coefficient**: `c₁ = −∑ᵢ ⟪bᵢ, A bᵢ⟫` (no hypothesis on `A`: both sides are the
+same `tsum` up to the singleton reindexing). -/
+theorem fredholmDetCoeff_one (b : HilbertBasis ι 𝕜 E) (A : E →L[𝕜] E) :
+    fredholmDetCoeff b A 1 = -∑' i, ⟪b i, A (b i)⟫_𝕜 := by
+  unfold fredholmDetCoeff
+  have hset : (Finset.card ⁻¹' {1} : Set (Finset ι)) =
+      Set.range (fun i : ι => ({i} : Finset ι)) := by
+    ext s
+    simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_range, Finset.card_eq_one]
+    exact ⟨fun ⟨a, h⟩ => ⟨a, h.symm⟩, fun ⟨a, h⟩ => ⟨a, h.symm⟩⟩
+  rw [pow_one, neg_one_mul, hset,
+    tsum_range (fun s : Finset ι => detMinor b A s) (Finset.singleton_injective)]
+  simp only [detMinor_singleton]
+
+/-- `c₁ = −tr A` for trace-class `A` (any basis). -/
+theorem fredholmDetCoeff_one_eq_neg_trace {A : E →L[𝕜] E} (hA : IsTraceClass A)
+    (b : HilbertBasis ι 𝕜 E) : fredholmDetCoeff b A 1 = -trace A := by
+  rw [fredholmDetCoeff_one, trace_eq_tsum_inner hA b]
+
+omit [CompleteSpace E] in
+/-- A `2 × 2` principal minor: if `s` has two elements then `s = {x, y}` with `x ≠ y` and
+`det A[s, s] = a_{xx} a_{yy} − a_{xy} a_{yx}`. -/
+theorem detMinor_of_card_eq_two (b : HilbertBasis ι 𝕜 E) (A : E →L[𝕜] E) {s : Finset ι}
+    (hs : s.card = 2) :
+    ∃ x y : ι, x ≠ y ∧ s = {x, y} ∧
+      detMinor b A s = ⟪b x, A (b x)⟫_𝕜 * ⟪b y, A (b y)⟫_𝕜
+        - ⟪b x, A (b y)⟫_𝕜 * ⟪b y, A (b x)⟫_𝕜 := by
+  have hcard : Fintype.card s = 2 := by rw [Fintype.card_coe]; exact hs
+  set e : Fin 2 ≃ s := (Fintype.equivFinOfCardEq hcard).symm with he
+  refine ⟨(e 0).1, (e 1).1, ?_, ?_, ?_⟩
+  · intro h
+    have : e 0 = e 1 := Subtype.ext h
+    exact absurd (e.injective this) (by decide)
+  · have hxy : (e 0).1 ≠ (e 1).1 := by
+      intro h
+      have : e 0 = e 1 := Subtype.ext h
+      exact absurd (e.injective this) (by decide)
+    symm
+    apply Finset.eq_of_subset_of_card_le
+    · intro z hz
+      rcases Finset.mem_insert.1 hz with rfl | hz
+      · exact (e 0).2
+      · rw [Finset.mem_singleton.1 hz]; exact (e 1).2
+    · rw [hs, Finset.card_pair_eq_two_iff.2 hxy]
+  · unfold detMinor
+    rw [← Matrix.det_submatrix_equiv_self e, Matrix.det_fin_two]
+    rfl
+
+omit [CompleteSpace E] in
+/-- The fiber sum over ordered pairs `(i, j)` with `{i, j} = s` of the symmetric family
+`f(i, j) = aᵢᵢaⱼⱼ − aᵢⱼaⱼᵢ`: twice the minor if `|s| = 2`, and `0` otherwise. -/
+theorem tsum_fiber_pair (b : HilbertBasis ι 𝕜 E) (A : E →L[𝕜] E) (s : Finset ι) :
+    ∑' p : (fun p : ι × ι => ({p.1, p.2} : Finset ι)) ⁻¹' {s},
+        (⟪b p.1.1, A (b p.1.1)⟫_𝕜 * ⟪b p.1.2, A (b p.1.2)⟫_𝕜
+          - ⟪b p.1.1, A (b p.1.2)⟫_𝕜 * ⟪b p.1.2, A (b p.1.1)⟫_𝕜)
+      = if s.card = 2 then 2 * detMinor b A s else 0 := by
+  set f : ι × ι → 𝕜 := fun p => ⟪b p.1, A (b p.1)⟫_𝕜 * ⟪b p.2, A (b p.2)⟫_𝕜
+    - ⟪b p.1, A (b p.2)⟫_𝕜 * ⟪b p.2, A (b p.1)⟫_𝕜 with hf
+  have hfib : ((fun p : ι × ι => ({p.1, p.2} : Finset ι)) ⁻¹' {s}) =
+      ↑((s ×ˢ s).filter (fun p : ι × ι => ({p.1, p.2} : Finset ι) = s)) := by
+    ext p
+    simp only [Set.mem_preimage, Set.mem_singleton_iff, Finset.coe_filter, Finset.mem_product]
+    constructor
+    · intro h
+      refine ⟨⟨?_, ?_⟩, h⟩ <;> rw [← h] <;> simp
+    · exact fun h => h.2
+  show ∑' p : (fun p : ι × ι => ({p.1, p.2} : Finset ι)) ⁻¹' {s}, f p = _
+  rw [hfib, Finset.tsum_subtype' _ f]
+  by_cases hs : s.card = 2
+  · simp only [hs, ↓reduceIte]
+    obtain ⟨x, y, hxy, rfl, hdet⟩ := detMinor_of_card_eq_two b A hs
+    rw [Finset.sum_filter, Finset.sum_product, Finset.sum_pair hxy, Finset.sum_pair hxy,
+      Finset.sum_pair hxy, hdet]
+    have h1 : ({x, x} : Finset ι) ≠ {x, y} := by
+      intro h
+      have hy : y ∈ ({x, x} : Finset ι) := h ▸ Finset.mem_insert_of_mem
+        (Finset.mem_singleton_self y)
+      simp only [Finset.mem_insert, Finset.mem_singleton, or_self] at hy
+      exact hxy hy.symm
+    have h2 : ({y, y} : Finset ι) ≠ {x, y} := by
+      intro h
+      have hx : x ∈ ({y, y} : Finset ι) := h ▸ Finset.mem_insert_self x {y}
+      simp only [Finset.mem_insert, Finset.mem_singleton, or_self] at hx
+      exact hxy hx
+    have h3 : ({y, x} : Finset ι) = {x, y} := Finset.pair_comm y x
+    simp only [h1, h2, h3, ↓reduceIte, hf]
+    ring
+  · simp only [hs, ↓reduceIte]
+    apply Finset.sum_eq_zero
+    intro p hp
+    rw [Finset.mem_filter] at hp
+    by_cases hp12 : p.1 = p.2
+    · simp only [hf, hp12, sub_self]
+    · exact absurd (by rw [← hp.2]; exact Finset.card_pair_eq_two_iff.2 hp12) hs
+
+/-- **Second coefficient** (Plemelj–Smithies at `n = 2`): for trace-class `A`,
+`c₂ = ((∑ᵢ aᵢᵢ)² − ∑ᵢ ⟪bᵢ, A² bᵢ⟫)/2`. -/
+theorem fredholmDetCoeff_two {A : E →L[𝕜] E} (hA : IsTraceClass A) (b : HilbertBasis ι 𝕜 E) :
+    fredholmDetCoeff b A 2 =
+      ((∑' i, ⟪b i, A (b i)⟫_𝕜) ^ 2 - ∑' i, ⟪b i, (A ∘L A) (b i)⟫_𝕜) / 2 := by
+  set a : ι → ι → 𝕜 := fun i j => ⟪b i, A (b j)⟫_𝕜 with ha
+  have hdiag : Summable fun i => ‖a i i‖ := summable_norm_inner_diagonal hA b
+  have h1 : Summable fun p : ι × ι => a p.1 p.1 * a p.2 p.2 :=
+    summable_mul_of_summable_norm hdiag hdiag
+  have hsq : Summable fun p : ι × ι => ‖a p.2 p.1‖ ^ 2 :=
+    summable_norm_sq_inner_snd hA.isHilbertSchmidt b b
+  have hsq' : Summable fun p : ι × ι => ‖a p.1 p.2‖ ^ 2 := hsq.prod_symm
+  have h2 : Summable fun p : ι × ι => a p.1 p.2 * a p.2 p.1 := by
+    refine Summable.of_norm (((hsq'.add hsq).div_const 2).of_nonneg_of_le
+      (fun p => norm_nonneg _) (fun p => ?_))
+    rw [norm_mul]
+    nlinarith [sq_nonneg (‖a p.1 p.2‖ - ‖a p.2 p.1‖)]
+  have hfs : Summable fun p : ι × ι => a p.1 p.1 * a p.2 p.2 - a p.1 p.2 * a p.2 p.1 :=
+    h1.sub h2
+  -- fiberwise regrouping over `(i, j) ↦ {i, j}`
+  have hgroup := hfs.hasSum.tsum_fiberwise (fun p : ι × ι => ({p.1, p.2} : Finset ι))
+  have hgroup' : HasSum (fun s : Finset ι => if s.card = 2 then 2 * detMinor b A s else 0)
+      (∑' p : ι × ι, (a p.1 p.1 * a p.2 p.2 - a p.1 p.2 * a p.2 p.1)) :=
+    hgroup.congr_fun fun s => (tsum_fiber_pair b A s).symm
+  have hcoef : fredholmDetCoeff b A 2 * 2 =
+      ∑' p : ι × ι, (a p.1 p.1 * a p.2 p.2 - a p.1 p.2 * a p.2 p.1) := by
+    rw [← hgroup'.tsum_eq, fredholmDetCoeff, tsum_subtype]
+    rw [show (-1 : 𝕜) ^ 2 = 1 by norm_num, one_mul, ← tsum_mul_right]
+    refine tsum_congr fun s => ?_
+    by_cases hs : s.card = 2
+    · simp only [hs, ↓reduceIte]
+      rw [Set.indicator_of_mem (show s ∈ Finset.card ⁻¹' {2} from hs)]
+      ring
+    · simp only [hs, ↓reduceIte]
+      rw [Set.indicator_of_notMem (show s ∉ Finset.card ⁻¹' {2} from hs), zero_mul]
+  have hprod : ∑' p : ι × ι, a p.1 p.1 * a p.2 p.2 = (∑' i, a i i) ^ 2 := by
+    rw [sq, tsum_mul_tsum_of_summable_norm hdiag hdiag]
+  have hcross : ∑' p : ι × ι, a p.1 p.2 * a p.2 p.1 = ∑' i, ⟪b i, (A ∘L A) (b i)⟫_𝕜 := by
+    rw [h2.tsum_prod]
+    refine tsum_congr fun i => ?_
+    calc ∑' j, a i j * a j i
+        = ∑' j, ⟪(A†) (b i), b j⟫_𝕜 * ⟪b j, A (b i)⟫_𝕜 := tsum_congr fun j => by
+          rw [ContinuousLinearMap.adjoint_inner_left]
+      _ = ⟪(A†) (b i), A (b i)⟫_𝕜 := b.tsum_inner_mul_inner _ _
+      _ = ⟪b i, (A ∘L A) (b i)⟫_𝕜 := by
+          rw [ContinuousLinearMap.adjoint_inner_left, ContinuousLinearMap.comp_apply]
+  rw [h1.tsum_sub h2, hprod, hcross] at hcoef
+  rw [eq_div_iff two_ne_zero]
+  exact hcoef
+
+/-- `c₂ = ((tr A)² − tr A²)/2` for trace-class `A` (any basis). -/
+theorem fredholmDetCoeff_two_eq_trace {A : E →L[𝕜] E} (hA : IsTraceClass A)
+    (b : HilbertBasis ι 𝕜 E) :
+    fredholmDetCoeff b A 2 = ((trace A) ^ 2 - trace (A ∘L A)) / 2 := by
+  have hAA : IsTraceClass (A ∘L A) :=
+    IsHilbertSchmidt.isTraceClass_comp hA.isHilbertSchmidt hA.isHilbertSchmidt
+  rw [fredholmDetCoeff_two hA b, trace_eq_tsum_inner hA b, trace_eq_tsum_inner hAA b]
+
+/-- Second-order Taylor data of the entire determinant: for trace-class `A`,
+`det(1 − zA) = ∑ₙ cₙ zⁿ` with `c₀ = 1`, `c₁ = −tr A`, `c₂ = ((tr A)² − tr A²)/2`. -/
+theorem fredholmDet_taylor_two {A : E →L[𝕜] E} (hA : IsTraceClass A) (z : 𝕜) :
+    HasSum (fun n => fredholmDetCoeff (canonicalBasis 𝕜 E) A n * z ^ n) (fredholmDet A z) ∧
+      fredholmDetCoeff (canonicalBasis 𝕜 E) A 0 = 1 ∧
+      fredholmDetCoeff (canonicalBasis 𝕜 E) A 1 = -trace A ∧
+      fredholmDetCoeff (canonicalBasis 𝕜 E) A 2 = ((trace A) ^ 2 - trace (A ∘L A)) / 2 :=
+  ⟨hasSum_fredholmDetCoeff hA _ z, fredholmDetCoeff_zero _ A,
+    fredholmDetCoeff_one_eq_neg_trace hA _, fredholmDetCoeff_two_eq_trace hA _⟩
+
+end Coefficients
+
+end HilbertSchmidt
+
+namespace AiryConj
+
+open Real Set
+open HilbertSchmidt
+
+section KernelLink
+
+variable {L K K' : ℝ × ℝ → ℝ}
+
+/-- **Trace link (composition form)**: `tr(T_K T_{K'}) = ∫ (K ⋆ K')(x, x) dx`, the diagonal
+integral of the composite kernel. -/
+theorem trace_kernelOperator_comp_eq_integral_diag (hK : MemLp K 2 (volume.prod volume))
+    (hK' : MemLp K' 2 (volume.prod volume)) :
+    trace (kernelOperator hK ∘L kernelOperator hK') = ∫ x : ℝ, compKernel K K' (x, x) :=
+  trace_kernelOperator_comp hK hK'
+
+/-- The kernel operator of a composite kernel `L = K ⋆ K'` (both `L²`) is trace class. -/
+theorem isTraceClass_kernelOperator_of_eq_compKernel (hL : MemLp L 2 (volume.prod volume))
+    (hK : MemLp K 2 (volume.prod volume)) (hK' : MemLp K' 2 (volume.prod volume))
+    (hLK : L = compKernel K K') : IsTraceClass (kernelOperator hL) := by
+  subst hLK
+  rw [AiryTwoInt.kernelOperator_compKernel hK hK' hL]
+  exact ⟨kernelOperator hK, kernelOperator hK', isHilbertSchmidt_kernelOperator hK,
+    isHilbertSchmidt_kernelOperator hK', rfl⟩
+
+/-- **Trace link**: for a composite kernel `L = K ⋆ K'` of two `L²(ℝ²)` kernels,
+`tr T_L = ∫ L(x, x) dx`. -/
+theorem trace_kernelOperator_of_eq_compKernel (hL : MemLp L 2 (volume.prod volume))
+    (hK : MemLp K 2 (volume.prod volume)) (hK' : MemLp K' 2 (volume.prod volume))
+    (hLK : L = compKernel K K') : trace (kernelOperator hL) = ∫ x : ℝ, L (x, x) := by
+  subst hLK
+  rw [AiryTwoInt.kernelOperator_compKernel hK hK' hL]
+  exact trace_kernelOperator_comp hK hK'
+
+/-- The diagonal `x ↦ (K ⋆ K')(x, x)` of a composite of two `L²` kernels is integrable. -/
+theorem integrable_compKernel_diag (hK : MemLp K 2 (volume.prod volume))
+    (hK' : MemLp K' 2 (volume.prod volume)) :
+    Integrable (fun x : ℝ => compKernel K K' (x, x)) := by
+  have h : Integrable (fun p : ℝ × ℝ => K p * kernelFlip K' p) (volume.prod volume) :=
+    MemLp.integrable_mul hK (memLp_kernelFlip hK')
+  exact h.integral_prod_left
+
+/-- `(x, y) ↦ L(x, y) L(y, x)` is integrable on `ℝ²` for an `L²` kernel. -/
+theorem integrable_mul_flip (hL : MemLp L 2 (volume.prod volume)) :
+    Integrable (fun p : ℝ × ℝ => L (p.1, p.2) * L (p.2, p.1)) (volume.prod volume) :=
+  MemLp.integrable_mul hL (memLp_kernelFlip hL)
+
+/-- **First Fredholm coefficient** of a composite kernel operator:
+`c₁ = −∫ L(x, x) dx` (the `n = 1` term `(−1)¹/1! ∫ det[L(x₁, x₁)]`). -/
+theorem fredholmDetCoeff_one_kernelOperator (hL : MemLp L 2 (volume.prod volume))
+    (hK : MemLp K 2 (volume.prod volume)) (hK' : MemLp K' 2 (volume.prod volume))
+    (hLK : L = compKernel K K') {ι : Type*}
+    (b : HilbertBasis ι ℝ (Lp ℝ 2 (volume : Measure ℝ))) :
+    fredholmDetCoeff b (kernelOperator hL) 1 = -∫ x : ℝ, L (x, x) := by
+  rw [fredholmDetCoeff_one_eq_neg_trace
+      (isTraceClass_kernelOperator_of_eq_compKernel hL hK hK' hLK) b,
+    trace_kernelOperator_of_eq_compKernel hL hK hK' hLK]
+
+/-- **Second Fredholm coefficient**, trace form:
+`c₂ = ((∫ L(x, x))² − ∫∫ L(x, y) L(y, x))/2`. -/
+theorem fredholmDetCoeff_two_kernelOperator_trace (hL : MemLp L 2 (volume.prod volume))
+    (hK : MemLp K 2 (volume.prod volume)) (hK' : MemLp K' 2 (volume.prod volume))
+    (hLK : L = compKernel K K') {ι : Type*}
+    (b : HilbertBasis ι ℝ (Lp ℝ 2 (volume : Measure ℝ))) :
+    fredholmDetCoeff b (kernelOperator hL) 2 =
+      ((∫ x : ℝ, L (x, x)) ^ 2 - ∫ x : ℝ, ∫ y : ℝ, L (x, y) * L (y, x)) / 2 := by
+  rw [fredholmDetCoeff_two_eq_trace
+      (isTraceClass_kernelOperator_of_eq_compKernel hL hK hK' hLK) b,
+    trace_kernelOperator_of_eq_compKernel hL hK hK' hLK, trace_kernelOperator_comp hL hL]
+
+/-- The `2 × 2` Fredholm integral: `∫_{ℝ²} det[L(xᵢ, xⱼ)] = (∫ L(x, x))² − ∫∫ L(x, y) L(y, x)`
+for a composite kernel `L = K ⋆ K'`. -/
+theorem integral_det_two (hL : MemLp L 2 (volume.prod volume))
+    (hK : MemLp K 2 (volume.prod volume)) (hK' : MemLp K' 2 (volume.prod volume))
+    (hLK : L = compKernel K K') :
+    ∫ p : ℝ × ℝ, Matrix.det !![L (p.1, p.1), L (p.1, p.2); L (p.2, p.1), L (p.2, p.2)]
+        ∂(volume.prod volume)
+      = (∫ x : ℝ, L (x, x)) ^ 2 - ∫ x : ℝ, ∫ y : ℝ, L (x, y) * L (y, x) := by
+  have hd : Integrable (fun x : ℝ => L (x, x)) := by
+    subst hLK; exact integrable_compKernel_diag hK hK'
+  have hdd : Integrable (fun p : ℝ × ℝ => L (p.1, p.1) * L (p.2, p.2)) (volume.prod volume) :=
+    hd.mul_prod hd
+  simp only [Matrix.det_fin_two_of]
+  rw [integral_sub hdd (integrable_mul_flip hL),
+    integral_prod_mul (fun x : ℝ => L (x, x)) (fun y : ℝ => L (y, y)),
+    integral_prod _ (integrable_mul_flip hL), sq]
+
+/-- **Second Fredholm coefficient**, Fredholm-expansion form:
+`c₂ = (1/2!) ∫_{ℝ²} det[L(xᵢ, xⱼ)]_{i,j ≤ 2}` (the `n = 2` term, sign `(−1)² = 1`). -/
+theorem fredholmDetCoeff_two_kernelOperator (hL : MemLp L 2 (volume.prod volume))
+    (hK : MemLp K 2 (volume.prod volume)) (hK' : MemLp K' 2 (volume.prod volume))
+    (hLK : L = compKernel K K') {ι : Type*}
+    (b : HilbertBasis ι ℝ (Lp ℝ 2 (volume : Measure ℝ))) :
+    fredholmDetCoeff b (kernelOperator hL) 2 =
+      (1 / 2) * ∫ p : ℝ × ℝ,
+        Matrix.det !![L (p.1, p.1), L (p.1, p.2); L (p.2, p.1), L (p.2, p.2)]
+          ∂(volume.prod volume) := by
+  rw [fredholmDetCoeff_two_kernelOperator_trace hL hK hK' hLK b,
+    integral_det_two hL hK hK' hLK]
+  ring
+
+end KernelLink
+
+section QR
+
+variable {M T a : ℝ}
+
+/-- The one-block QR operator `Ã` has finite trace norm (input to the SimonBound /
+Multiplicativity layer). -/
+theorem traceENorm_airyTildeOp_ne_top (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a) :
+    traceENorm (airyTildeOp M T a hT hM ha) ≠ ⊤ :=
+  (isTraceClass_airyTildeOp hT hM ha).traceENorm_ne_top
+
+/-- `c₁(Ã) = −∫ K̃(x, x) dx` for the conjugated one-block kernel
+`K̃ = e^{-a x} K₁(x, y) e^{a y}`. -/
+theorem fredholmDetCoeff_one_airyTildeOp (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a)
+    {ι : Type*} (b : HilbertBasis ι ℝ (Lp ℝ 2 (volume : Measure ℝ))) :
+    fredholmDetCoeff b (airyTildeOp M T a hT hM ha) 1 =
+      -∫ x : ℝ, expConjKernel a (airyKerIter M T 0) (x, x) := by
+  rw [airyTildeOp_eq_kernelOperator hT hM ha]
+  exact fredholmDetCoeff_one_kernelOperator _ (vKernel_memLp hT hM ha) (memLp_wKernel hT ha)
+    (compKernel_vKernel_wKernel T a M).symm b
+
+/-- `c₂(Ã) = ½ ∫_{ℝ²} det[K̃(xᵢ, xⱼ)]` for the conjugated one-block kernel. -/
+theorem fredholmDetCoeff_two_airyTildeOp (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a)
+    {ι : Type*} (b : HilbertBasis ι ℝ (Lp ℝ 2 (volume : Measure ℝ))) :
+    fredholmDetCoeff b (airyTildeOp M T a hT hM ha) 2 =
+      (1 / 2) * ∫ p : ℝ × ℝ, Matrix.det
+        !![expConjKernel a (airyKerIter M T 0) (p.1, p.1),
+            expConjKernel a (airyKerIter M T 0) (p.1, p.2);
+          expConjKernel a (airyKerIter M T 0) (p.2, p.1),
+            expConjKernel a (airyKerIter M T 0) (p.2, p.2)] ∂(volume.prod volume) := by
+  rw [airyTildeOp_eq_kernelOperator hT hM ha]
+  exact fredholmDetCoeff_two_kernelOperator _ (vKernel_memLp hT hM ha) (memLp_wKernel hT ha)
+    (compKernel_vKernel_wKernel T a M).symm b
+
+/-- Weight-free form of `c₂(Ã)`: `((tr Ã)² − ∫∫ K₁(x, z) K₁(z, x))/2`, with the unweighted
+one-block kernel `K₁ = airyKerOne M T` (via `trace_pow_add_two_airyTildeOp`). -/
+theorem fredholmDetCoeff_two_airyTildeOp_weightFree (hT : 0 < T) (hM : 0 < M)
+    (ha : T + 1 ≤ a) {ι : Type*} (b : HilbertBasis ι ℝ (Lp ℝ 2 (volume : Measure ℝ))) :
+    fredholmDetCoeff b (airyTildeOp M T a hT hM ha) 2 =
+      ((trace (airyTildeOp M T a hT hM ha)) ^ 2
+        - ∫ x : ℝ, ∫ z : ℝ, airyKerIter M T 0 (x, z) * airyKerOne M T (z, x)) / 2 := by
+  rw [fredholmDetCoeff_two_eq_trace (isTraceClass_airyTildeOp hT hM ha) b,
+    ← trace_pow_add_two_airyTildeOp hT hM ha 0, pow_two (airyTildeOp M T a hT hM ha),
+    ContinuousLinearMap.mul_def]
+
+end QR
+
+section KCup
+
+variable {M r a : ℝ}
+
+/-- The two-interval QR operator `K̃∪ = T_{kcupKerT}`, packaged with its
+`L²` proof. -/
+noncomputable def kcupOp (hr : 0 < r) (hM : 0 < M) (hadr : r + 3 ≤ a) :
+    Lp ℝ 2 (volume : Measure ℝ) →L[ℝ] Lp ℝ 2 (volume : Measure ℝ) :=
+  kernelOperator (AiryTwoInt.memLp_kcupKerT hr hM hadr)
+
+/-- `K̃∪` is trace class. -/
+theorem isTraceClass_kcupOp (hr : 0 < r) (hM : 0 < M) (hadr : r + 3 ≤ a) :
+    IsTraceClass (kcupOp hr hM hadr) :=
+  AiryTwoInt.isTraceClass_kcupKerT hr hM hadr _
+
+/-- `K̃∪` has finite trace norm (input to the SimonBound / Multiplicativity layer). -/
+theorem traceENorm_kcupOp_ne_top (hr : 0 < r) (hM : 0 < M) (hadr : r + 3 ≤ a) :
+    traceENorm (kcupOp hr hM hadr) ≠ ⊤ :=
+  (isTraceClass_kcupOp hr hM hadr).traceENorm_ne_top
+
+/-- **Trace link for `K̃∪`**: `tr K̃∪ = ∫ K̃∪(x, x) dx`. -/
+theorem trace_kcupOp (hr : 0 < r) (hM : 0 < M) (hadr : r + 3 ≤ a) :
+    trace (kcupOp hr hM hadr) = ∫ x : ℝ, AiryTwoInt.kcupKerT a M r (x, x) :=
+  trace_kernelOperator_of_eq_compKernel _ (AiryTwoInt.memLp_vdRKer hr hM hadr)
+    (AiryTwoInt.memLp_wSKer hr hadr) (AiryTwoInt.kcupKerT_eq_compKernel_vdRKer_wSKer a M r)
+
+/-- `c₁(K̃∪) = −∫ K̃∪(x, x) dx`. -/
+theorem fredholmDetCoeff_one_kcupOp (hr : 0 < r) (hM : 0 < M) (hadr : r + 3 ≤ a)
+    {ι : Type*} (b : HilbertBasis ι ℝ (Lp ℝ 2 (volume : Measure ℝ))) :
+    fredholmDetCoeff b (kcupOp hr hM hadr) 1 = -∫ x : ℝ, AiryTwoInt.kcupKerT a M r (x, x) :=
+  fredholmDetCoeff_one_kernelOperator _ (AiryTwoInt.memLp_vdRKer hr hM hadr)
+    (AiryTwoInt.memLp_wSKer hr hadr) (AiryTwoInt.kcupKerT_eq_compKernel_vdRKer_wSKer a M r) b
+
+/-- `c₂(K̃∪) = ½ ∫_{ℝ²} det[K̃∪(xᵢ, xⱼ)]`. -/
+theorem fredholmDetCoeff_two_kcupOp (hr : 0 < r) (hM : 0 < M) (hadr : r + 3 ≤ a)
+    {ι : Type*} (b : HilbertBasis ι ℝ (Lp ℝ 2 (volume : Measure ℝ))) :
+    fredholmDetCoeff b (kcupOp hr hM hadr) 2 =
+      (1 / 2) * ∫ p : ℝ × ℝ, Matrix.det
+        !![AiryTwoInt.kcupKerT a M r (p.1, p.1), AiryTwoInt.kcupKerT a M r (p.1, p.2);
+          AiryTwoInt.kcupKerT a M r (p.2, p.1), AiryTwoInt.kcupKerT a M r (p.2, p.2)]
+          ∂(volume.prod volume) :=
+  fredholmDetCoeff_two_kernelOperator _ (AiryTwoInt.memLp_vdRKer hr hM hadr)
+    (AiryTwoInt.memLp_wSKer hr hadr) (AiryTwoInt.kcupKerT_eq_compKernel_vdRKer_wSKer a M r) b
+
+end KCup
+
+end AiryConj

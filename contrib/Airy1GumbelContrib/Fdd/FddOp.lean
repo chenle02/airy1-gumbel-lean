@@ -1,0 +1,233 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.Fdd.FddVBound
+import Airy1GumbelContrib.AiryKernel.TraceWeight
+import Airy1GumbelContrib.FredholmDet.TraceNorm
+import Airy1GumbelContrib.FredholmDet.EntireDet
+
+/-!
+# The `n`-time fdd operator and the candidate CDF `airy1FinCdf`
+
+* `compKernel_fddVKer_wKernel`: `V ⋆ W_{S,a} = e^{−au} (H ⋆ g_S)(u, y) e^{ay}` for any `H`
+  (the `φ^{±1}`, `e^{∓az}` factors cancel; generalises `compKernel_vKernel_wKernel`).
+* `fddOp e L … = T_V ∘ T_W` at weight `a = 2S` (QR's `U`), trace class (`isTraceClass_fddOp`)
+  with finite trace norm (`traceENorm_fddOp_ne_top`).
+* `airy1FinCdf I x = det(I − J̃)` (entire `fredholmDet` at `z = 1`): `I` is sorted
+  (`Finset.sort`), consecutive gaps are positive by construction (`fddEntries_pos`), the
+  padding is `τ = 1` (so `S ≥ 1` and `a = 2S ≥ S + 1`); `airy1FinCdf ∅ x = 1`.
+* Sanity checks: `airy1FinCdf_empty`, `airy1FinCdf_singleton`, and
+  `compKernel_fddVKer_one_level` (the one-time composite kernel is the conjugate of
+  `1_{u > x} Ai(u + y)`, i.e. QR Thm 1 at `n = 1`).
+
+Not here (later modules): padding/weight independence, continuity, drop lemmas,
+and any probabilistic statement about `airy1FinCdf`.
+-/
+
+namespace AiryFdd
+
+open MeasureTheory Real Set Filter
+open HilbertSchmidt
+
+/-- Fidelity: with `H = Q_{M,T}` this is literally the `vKernel` of `AiryKernel/`. -/
+theorem fddVKer_qMT (T a M : ℝ) :
+    fddVKer (fun p => AiryConj.qMT M T p.1 p.2) a = AiryConj.vKernel T a M := rfl
+
+/-- Fidelity: the `V W` composite is the `e^{∓a}`-conjugate of
+`H ⋆ g_S`; the `φ^{±1}` and `e^{∓az}` factors cancel pointwise — exactly as in
+`compKernel_vKernel_wKernel`, for an arbitrary `H`. -/
+theorem compKernel_fddVKer_wKernel (H : ℝ × ℝ → ℝ) (S a : ℝ) :
+    AiryConj.compKernel (fddVKer H a) (AiryConj.wKernel S a)
+      = AiryConj.expConjKernel a (AiryConj.compKernel H (AiryConj.backwardAiryPair S)) := by
+  funext p
+  obtain ⟨x, y⟩ := p
+  show ∫ z : ℝ, fddVKer H a (x, z) * AiryConj.wKernel S a (z, y)
+    = Real.exp (-a * x) * (∫ z : ℝ, H (x, z) * backwardAiry S (z + y)) * Real.exp (a * y)
+  have h : ∀ z : ℝ, fddVKer H a (x, z) * AiryConj.wKernel S a (z, y)
+      = Real.exp (-a * x) * (H (x, z) * backwardAiry S (z + y)) * Real.exp (a * y) := by
+    intro z
+    have hφ : AiryConj.phiWeight z ≠ 0 := (AiryConj.phiWeight_pos z).ne'
+    have e : Real.exp (-a * z) * Real.exp (a * z) = 1 := by
+      rw [← Real.exp_add, show -a * z + a * z = 0 by ring, Real.exp_zero]
+    simp only [fddVKer, AiryConj.wKernel]
+    calc Real.exp (-a * x) * H (x, z) * Real.exp (-a * z) * AiryConj.phiWeight z
+          * ((AiryConj.phiWeight z)⁻¹ * Real.exp (a * z) * backwardAiry S (z + y)
+            * Real.exp (a * y))
+        = Real.exp (-a * x) * (H (x, z) * backwardAiry S (z + y)) * Real.exp (a * y)
+          * (Real.exp (-a * z) * Real.exp (a * z))
+          * (AiryConj.phiWeight z * (AiryConj.phiWeight z)⁻¹) := by ring
+      _ = _ := by rw [e, mul_inv_cancel₀ hφ, mul_one, mul_one]
+  simp_rw [h]
+  rw [integral_mul_const, integral_const_mul]
+
+/-! ## The fdd operator -/
+
+/-- The weighted `V` kernel of the fdd is `L²` at the canonical weight `a = 2S`. -/
+theorem memLp_fddVKer_two_mul (e : ℝ × ℝ) (L : List (ℝ × ℝ)) (he : 0 < e.2)
+    (hL : ∀ y ∈ L, 0 < y.2) :
+    MemLp (fddVKer (hitKerN e L) (2 * gapSum e L)) 2 (volume.prod volume) :=
+  memLp_fddVKer e L he hL (by have := gapSum_pos L e he hL; positivity)
+
+/-- `W_{S,2S}` is `L²` once `1 ≤ S` (the `memLp_wKernel` condition `S + 1 ≤ 2S`). -/
+theorem memLp_wKernel_two_mul (e : ℝ × ℝ) (L : List (ℝ × ℝ)) (he : 0 < e.2)
+    (hL : ∀ y ∈ L, 0 < y.2) (h1 : 1 ≤ gapSum e L) :
+    MemLp (AiryConj.wKernel (gapSum e L) (2 * gapSum e L)) 2 (volume.prod volume) :=
+  AiryConj.memLp_wKernel (gapSum_pos L e he hL) (by linarith)
+
+/-- **The `n`-time fdd operator** `J̃ = T_V ∘ T_W` on `L²(ℝ)` at weight `a = 2S`
+(QR's conjugation `U f = e^{-2S x} f`), for a nonempty list of `(level, gap)` entries with
+positive gaps and total time `S ≥ 1` (padding `τ = 1`). -/
+noncomputable def fddOp (e : ℝ × ℝ) (L : List (ℝ × ℝ)) (he : 0 < e.2)
+    (hL : ∀ y ∈ L, 0 < y.2) (h1 : 1 ≤ gapSum e L) :
+    Lp ℝ 2 (volume : Measure ℝ) →L[ℝ] Lp ℝ 2 (volume : Measure ℝ) :=
+  kernelOperator (memLp_fddVKer_two_mul e L he hL) ∘L
+    kernelOperator (memLp_wKernel_two_mul e L he hL h1)
+
+/-- The fdd operator is trace class (a product of two Hilbert–Schmidt operators). -/
+theorem isTraceClass_fddOp (e : ℝ × ℝ) (L : List (ℝ × ℝ)) (he : 0 < e.2)
+    (hL : ∀ y ∈ L, 0 < y.2) (h1 : 1 ≤ gapSum e L) :
+    IsTraceClass (fddOp e L he hL h1) :=
+  ⟨_, _, isHilbertSchmidt_kernelOperator _, isHilbertSchmidt_kernelOperator _, rfl⟩
+
+/-- The fdd operator has finite trace norm. -/
+theorem traceENorm_fddOp_ne_top (e : ℝ × ℝ) (L : List (ℝ × ℝ)) (he : 0 < e.2)
+    (hL : ∀ y ∈ L, 0 < y.2) (h1 : 1 ≤ gapSum e L) :
+    traceENorm (fddOp e L he hL h1) ≠ ⊤ :=
+  (isTraceClass_fddOp e L he hL h1).traceENorm_ne_top
+
+/-! ## From a finite time set to `(level, gap)` entries -/
+
+/-- `(level, gap)` entries for a list of times: consecutive differences, padding `τ = 1`
+after the last time. -/
+def fddEntries (lev : ℝ → ℝ) : List ℝ → List (ℝ × ℝ)
+  | [] => []
+  | [t] => [(lev t, 1)]
+  | t :: s :: L => (lev t, s - t) :: fddEntries lev (s :: L)
+
+/-- For a nondecreasing duplicate-free list of times, every gap is positive. -/
+theorem fddEntries_pos (lev : ℝ → ℝ) :
+    ∀ ts : List ℝ, ts.Pairwise (· ≤ ·) → ts.Nodup → ∀ y ∈ fddEntries lev ts, 0 < y.2
+  | [], _, _, y, hy => by simp [fddEntries] at hy
+  | [t], _, _, y, hy => by
+    simp only [fddEntries, List.mem_singleton] at hy
+    rw [hy]; exact one_pos
+  | t :: s :: L, hp, hn, y, hy => by
+    have hts : t ≤ s := (List.pairwise_cons.1 hp).1 s List.mem_cons_self
+    have hne : t ≠ s := fun h => (List.nodup_cons.1 hn).1 (h ▸ List.mem_cons_self)
+    simp only [fddEntries, List.mem_cons] at hy
+    rcases hy with rfl | hy
+    · exact sub_pos.2 (lt_of_le_of_ne hts hne)
+    · exact fddEntries_pos lev (s :: L) (List.pairwise_cons.1 hp).2 (List.nodup_cons.1 hn).2 y
+        (by simpa [fddEntries] using hy)
+
+/-- The last gap of the entries is the padding `1`. -/
+theorem fddEntries_lastGap (lev : ℝ → ℝ) :
+    ∀ (ts : List ℝ) (e : ℝ × ℝ) (L : List (ℝ × ℝ)), fddEntries lev ts = e :: L →
+      lastGap e L = 1
+  | [], _, _, h => by simp [fddEntries] at h
+  | [t], e, L, h => by
+    simp only [fddEntries, List.cons.injEq] at h
+    obtain ⟨rfl, rfl⟩ := h
+    rfl
+  | t :: s :: L', e, L, h => by
+    simp only [fddEntries, List.cons.injEq] at h
+    obtain ⟨rfl, hL⟩ := h
+    cases hfs : fddEntries lev (s :: L') with
+    | nil => cases s' : L' <;> simp [fddEntries, s'] at hfs
+    | cons y M =>
+      rw [hfs] at hL
+      subst hL
+      exact fddEntries_lastGap lev (s :: L') y M hfs
+
+/-- With positive gaps and last gap `1`, the total time is at least `1`. -/
+theorem one_le_gapSum {e : ℝ × ℝ} {L : List (ℝ × ℝ)} (he : 0 < e.2) (hL : ∀ y ∈ L, 0 < y.2)
+    (hlast : lastGap e L = 1) : 1 ≤ gapSum e L :=
+  hlast ▸ lastGap_le_gapSum L e he hL
+
+/-- The Fredholm-determinant value attached to an entry list (`1` for the empty list). -/
+noncomputable def cdfOfEntries : (L : List (ℝ × ℝ)) → (∀ y ∈ L, 0 < y.2) →
+    (∀ e L', L = e :: L' → lastGap e L' = 1) → ℝ
+  | [], _, _ => 1
+  | e :: L, hpos, hlast =>
+      fredholmDet (fddOp e L (hpos e List.mem_cons_self)
+        (fun y hy => hpos y (List.mem_cons_of_mem _ hy))
+        (one_le_gapSum (hpos e List.mem_cons_self)
+          (fun y hy => hpos y (List.mem_cons_of_mem _ hy)) (hlast e L rfl))) 1
+
+theorem cdfOfEntries_nil {L : List (ℝ × ℝ)} (h : L = []) (hpos : ∀ y ∈ L, 0 < y.2)
+    (hlast : ∀ e L', L = e :: L' → lastGap e L' = 1) : cdfOfEntries L hpos hlast = 1 := by
+  subst h; rfl
+
+theorem cdfOfEntries_cons {L : List (ℝ × ℝ)} {e : ℝ × ℝ} {L' : List (ℝ × ℝ)}
+    (h : L = e :: L') (hpos : ∀ y ∈ L, 0 < y.2) (hlast : ∀ e L', L = e :: L' → lastGap e L' = 1)
+    (he : 0 < e.2) (hL' : ∀ y ∈ L', 0 < y.2) (h1 : 1 ≤ gapSum e L') :
+    cdfOfEntries L hpos hlast = fredholmDet (fddOp e L' he hL' h1) 1 := by
+  subst h; rfl
+
+/-- The level at time `t` (the `else` branch is never reached for `t ∈ I`). -/
+noncomputable def levelFn (I : Finset ℝ) (x : I → ℝ) (t : ℝ) : ℝ :=
+  if h : t ∈ I then x ⟨t, h⟩ else 0
+
+/-- The `(level, gap)` entries of a finite time set (sorted increasingly, padding `1`). -/
+noncomputable def finEntries (I : Finset ℝ) (x : I → ℝ) : List (ℝ × ℝ) :=
+  fddEntries (levelFn I x) (I.sort (· ≤ ·))
+
+theorem finEntries_pos (I : Finset ℝ) (x : I → ℝ) : ∀ y ∈ finEntries I x, 0 < y.2 :=
+  fddEntries_pos _ _ (Finset.pairwise_sort I _) (Finset.sort_nodup I _)
+
+theorem finEntries_lastGap (I : Finset ℝ) (x : I → ℝ) :
+    ∀ e L', finEntries I x = e :: L' → lastGap e L' = 1 :=
+  fddEntries_lastGap _ _
+
+/-- **The candidate `n`-time Airy₁ CDF** `F_I(x) = det(I − J̃)` (QR Thm 1, path-integral form):
+sort `I`, take consecutive gaps (positive by construction) and padding `τ = 1`,
+and evaluate the entire Fredholm determinant of `fddOp` at `z = 1`.  The empty time set
+gives `1`; there is no other junk branch. -/
+noncomputable def airy1FinCdf (I : Finset ℝ) (x : I → ℝ) : ℝ :=
+  cdfOfEntries (finEntries I x) (finEntries_pos I x) (finEntries_lastGap I x)
+
+/-! ## Sanity checks (the definition is the intended object) -/
+
+/-- `F_∅ = 1`. -/
+theorem airy1FinCdf_empty (x : (∅ : Finset ℝ) → ℝ) : airy1FinCdf ∅ x = 1 :=
+  cdfOfEntries_nil (by simp [finEntries, fddEntries]) _ _
+
+/-- One time: `F_{{t}}(x) = det(I − J̃)` for the one-level operator at level `x_t`,
+padding `1`. -/
+theorem airy1FinCdf_singleton (t : ℝ) (x : ({t} : Finset ℝ) → ℝ) :
+    airy1FinCdf {t} x
+      = fredholmDet (fddOp (x ⟨t, Finset.mem_singleton_self t⟩, 1) [] one_pos
+          (fun _ h => absurd h List.not_mem_nil) le_rfl) 1 := by
+  refine cdfOfEntries_cons ?_ _ _ _ _ _
+  simp [finEntries, fddEntries, levelFn]
+
+/-- One level: the hitting kernel is `1_{u > x} p_τ(u − v)`. -/
+theorem hitKerN_one (x τ : ℝ) (p : ℝ × ℝ) :
+    hitKerN (x, τ) [] p = (Ioi x).indicator (fun _ => (1 : ℝ)) p.1 * heatKernel τ (p.1 - p.2) :=
+  hitKer1_eq x τ p
+
+/-- **The `n = 1` case** (sanity): the one-time composite kernel is the conjugate of
+`1_{u > x} Ai(u + y)`, i.e. `V ⋆ W = e^{-au} 1_{u > x} Ai(u + y) e^{ay}` — exactly the kernel of
+`U (P_x B₀) U⁻¹` with `P_x = 1_{(x,∞)}` (QR Thm 1 at `n = 1`: `F = det(I − P_x B₀)`). -/
+theorem compKernel_fddVKer_one_level (x a : ℝ) :
+    AiryConj.compKernel (fddVKer (hitKerN (x, 1) []) a) (AiryConj.wKernel 1 a)
+      = AiryConj.expConjKernel a
+          (fun p => (Ioi x).indicator (fun _ => (1 : ℝ)) p.1 * airyAiReal (p.1 + p.2)) := by
+  rw [compKernel_fddVKer_wKernel]
+  congr 1
+  funext p
+  obtain ⟨u, y⟩ := p
+  show ∫ z : ℝ, hitKerN (x, 1) [] (u, z) * backwardAiry 1 (z + y) = _
+  simp_rw [hitKerN_one, mul_assoc]
+  rw [integral_const_mul]
+  congr 1
+  have h := MeasureTheory.integral_add_right_eq_self (μ := volume)
+    (fun s : ℝ => heatKernel 1 (u + y - s) * backwardAiry 1 s) y
+  rw [← heat_airy_conv 1 one_pos (u + y), ← h]
+  refine integral_congr_ae (Eventually.of_forall fun z => ?_)
+  simp only
+  rw [show u + y - (z + y) = u - z by ring]
+
+end AiryFdd

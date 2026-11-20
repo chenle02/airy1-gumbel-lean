@@ -1,0 +1,467 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.TwoInterval.TwoIntervalTraceBound
+
+/-!
+# Near-sign lower bound for the two-interval trace `Tr C̃_r`
+
+Part of the two-interval determinant analysis (`TwoInterval/`).  The bound
+`abs_trace_crKerT_le_discharged` (TwoIntervalTraceBound.lean) bounds `|Tr C̃_r|`
+from above.  This module proves a **one-sided lower bound with a quartic exponent**:
+
+  `Tr C̃_r ≥ −C e^{−M²/16} = −C e^{−a⁴/64}`,   `a = √(2M)`,
+
+eventually in `M`, uniformly for `1 ≤ r ≤ χa` (`0 < χ < 1`) — the quantifier pattern
+of `abs_trace_crKerT_le_discharged`, on the same object
+`trace (kernelOperator hcr)`, `hcr : MemLp (crKerT (√(2M)) M r) 2 _`.  Since
+`ρ(M)² ≈ e^{−(4/3)a³}`, the bound says `Tr C̃_r ≥ −o(ρ²)`.
+
+## The argument
+
+By the identities (`trace_crKerT_eq`, the pointwise weight cancellation
+`aRKer_mul_wSKer`),
+`Tr C̃_r = ∫∫ (QP_rQ)(x, w) · g_S(w + x) dx dw`, `S = 2 + r`,
+`g_S(s) = e^{−(2/3)S³ − Ss} Ai(s + S²)`, with the integrand integrable on `ℝ²`.
+
+* `(QP_rQ)(x, w) ≥ 0` (`qPrQKer_nonneg`), and `Ai ≥ 0` on `[0, ∞)`
+  (`airyAiReal_pos_of_nonneg`), so the integrand is `≥ 0` where `w + x + S² ≥ 0`.
+* Gaussian off-diagonal decay of `Q` at the barrier: for `x ≤ M`,
+  `Q(x, y) ≤ (4π)^{−1/2} e^{−(M−x)²/4}` for every `y` (`qKerTwo_le_gauss_left`;
+  same in the second variable).  Integrating the other factors against heat-kernel
+  mass `1` gives `(QP_rQ)(x, w) ≤ (4π)^{−1/2} e^{−(M−x)²/4}` for `x ≤ M`
+  (`qPrQKer_le_gauss_left`) and the same with `w` (`qPrQKer_le_gauss_right`).
+  No Fubini swap is needed.
+* On `w + x + S² < 0` write `P = M − x`, `Q' = M − w`; then
+  `P + Q' > L := 2M + S² ≥ 0`, so `m := max(P, Q') > L/2 ≥ 0` and the variable
+  realizing `m` is `≤ M`.  With `|Ai| ≤ C_A` on `(−∞, 0]`
+  (`airyAiReal_abs_le_nonpos`), the negative part of the integrand is at most
+  `(4π)^{−1/2} C_A exp(−m²/4 + S(P + Q'))`, and the exponent satisfies
+  (`exponent_main`)
+  `−m²/4 + S(P + Q') ≤ −L²/32 + 16S² + 16 − |P| − |Q'|`.
+* `e^{−|t|} ≤ 2(1 + t²)⁻¹` (`exp_neg_abs_le_two_inv`), and `∫(1 + t²)⁻¹ = π`.
+  Hence the negative part integrates to at most
+  `4 (4π)^{−1/2} C_A π² exp(−(2M + S²)²/32 + 16S² + 16)` (`trace_crKerT_ge_neg`),
+  and `(2M + S²)² ≥ 4M²`, `S² ≤ 4M + 8` on the admissible range give
+  `e^{−M²/16}` for `M ≥ 1100` (`trace_crKerT_ge_neg_discharged`).
+
+## Remarks on the route
+
+(i) A two-variable bound `A_r(x,w) ≤ C e^{−((M−x)²+(M−w)²)/8}` with
+    `(M−x)+(M−w) ≥ a²+S²` does not hold as stated when one of `x, w` exceeds `M`
+    (then that variable has no Gaussian factor).  We instead use the one-variable
+    bound at the variable realizing `max(M−x, M−w) ≥ 0`, and the exponential factor
+    `e^{−S(w+x)} = e^{−2MS} e^{S(P+Q')}` supplies the decay `e^{−|P|}` on the side
+    `P < 0` (this needs `S ≥ 1`).  The domination is then a product
+    `k(x) k(w)`, so the 2D integral factorizes (`integral_prod_mul`).
+(ii) Exponent: a heuristic `a⁴/16 + O(a³)` becomes the explicit, cruder
+    `−(2M+S²)²/32 + 16S² + 16 ≤ −M²/8 + 64M + 144`, absorbed into
+    `−M²/16 = −a⁴/64` for `M ≥ 1100`.  Any fixed `c > 0` is enough for
+    `e^{−c a⁴} = o(ρ²)`.
+(iii) The conditional form `trace_crKerT_ge_neg` holds for every `r > 0`, `M ≥ 0`,
+    at any weight parameter `a` for which the `MemLp` data `hA`, `hW`, `hcr`
+    hold; the range `r ≤ χa` is used only for `S² ≤ 4M + 8` in the discharged form.
+-/
+
+namespace AiryTwoInt
+
+open MeasureTheory Real Set Filter
+open scoped Topology BigOperators ENNReal NNReal InnerProduct InnerProductSpace
+open HilbertSchmidt
+open AiryConj
+
+/-! ## Gaussian decay of `Q` and of `QP_rQ` at the barrier -/
+
+/-- `p_1(v) ≤ (4π)^{−1/2} e^{−d²/4}` whenever `d² ≤ v²`. -/
+theorem heatKernel_one_le_of_sq_le {d v : ℝ} (h : d ^ 2 ≤ v ^ 2) :
+    heatKernel 1 v ≤ (4 * Real.pi * 1) ^ (-1/2 : ℝ) * Real.exp (-d ^ 2 / (4 * 1)) := by
+  unfold heatKernel
+  apply mul_le_mul_of_nonneg_left _ (Real.rpow_nonneg (by positivity) _)
+  apply Real.exp_le_exp.mpr
+  have h4 : (0:ℝ) < 4 * 1 := by norm_num
+  rw [div_le_div_iff_of_pos_right h4]
+  linarith
+
+/-- **Barrier decay of `Q` in the first variable**: for `x ≤ M` and every `y`,
+`Q(x, y) ≤ (4π)^{−1/2} e^{−(M−x)²/4}` (reflected sector: `2M − x − y ≥ M − x ≥ 0`;
+free sector: `y > M`, so `y − x > M − x ≥ 0`). -/
+theorem qKerTwo_le_gauss_left {M x : ℝ} (hx : x ≤ M) (y : ℝ) :
+    qKerTwo M (x, y)
+      ≤ (4 * Real.pi * 1) ^ (-1/2 : ℝ) * Real.exp (-(M - x) ^ 2 / (4 * 1)) := by
+  show AiryConj.qMT M 1 x y ≤ _
+  unfold AiryConj.qMT
+  split_ifs with h
+  · apply heatKernel_one_le_of_sq_le
+    nlinarith [mul_nonneg (sub_nonneg.2 h.2) (by linarith : (0:ℝ) ≤ 3 * M - 2 * x - y)]
+  · apply heatKernel_one_le_of_sq_le
+    have hy : M < y := by
+      by_contra hy
+      exact h ⟨hx, not_lt.mp hy⟩
+    nlinarith [mul_nonneg (sub_nonneg.2 hy.le) (by linarith : (0:ℝ) ≤ y + M - 2 * x)]
+
+/-- **Barrier decay of `Q` in the second variable**: for `w ≤ M` and every `z`,
+`Q(z, w) ≤ (4π)^{−1/2} e^{−(M−w)²/4}`. -/
+theorem qKerTwo_le_gauss_right {M w : ℝ} (hw : w ≤ M) (z : ℝ) :
+    qKerTwo M (z, w)
+      ≤ (4 * Real.pi * 1) ^ (-1/2 : ℝ) * Real.exp (-(M - w) ^ 2 / (4 * 1)) := by
+  show AiryConj.qMT M 1 z w ≤ _
+  unfold AiryConj.qMT
+  split_ifs with h
+  · apply heatKernel_one_le_of_sq_le
+    nlinarith [mul_nonneg (sub_nonneg.2 h.1) (by linarith : (0:ℝ) ≤ 3 * M - 2 * w - z)]
+  · apply heatKernel_one_le_of_sq_le
+    have hz : M < z := by
+      by_contra hz
+      exact h ⟨not_lt.mp hz, hw⟩
+    nlinarith [mul_nonneg (sub_nonneg.2 hz.le) (by linarith : (0:ℝ) ≤ z + M - 2 * w)]
+
+/-- Heat-kernel mass `1`, reflected argument: `∫ z, p_t(y − z) = 1`. -/
+theorem integral_heatKernel_sub_left (ht : 0 < t) (y : ℝ) :
+    ∫ z : ℝ, heatKernel t (y - z) = 1 := by
+  rw [integral_sub_left_eq_self (fun v => heatKernel t v) volume y]
+  exact integral_heatKernel ht
+
+/-- Heat-kernel mass `1`, translated argument: `∫ y, p_t(y − w) = 1`. -/
+theorem integral_heatKernel_sub_right (ht : 0 < t) (w : ℝ) :
+    ∫ y : ℝ, heatKernel t (y - w) = 1 := by
+  rw [integral_sub_right_eq_self (fun v => heatKernel t v) w]
+  exact integral_heatKernel ht
+
+/-- **Barrier decay of `QP_rQ` in the second variable**: for `w ≤ M`,
+`(QP_rQ)(x, w) ≤ (4π)^{−1/2} e^{−(M−w)²/4}` (bound the right `Q`, then integrate the
+heat kernel and the left `Q ≤ p_1` against mass `1`). -/
+theorem qPrQKer_le_gauss_right (hr : 0 < r) {M w : ℝ} (hw : w ≤ M) (x : ℝ) :
+    qPrQKer M r (x, w)
+      ≤ (4 * Real.pi * 1) ^ (-1/2 : ℝ) * Real.exp (-(M - w) ^ 2 / (4 * 1)) := by
+  set β : ℝ := (4 * Real.pi * 1) ^ (-1/2 : ℝ) * Real.exp (-(M - w) ^ 2 / (4 * 1)) with hβ
+  have hβ0 : 0 ≤ β := by positivity
+  have hin : ∀ y : ℝ, AiryConj.compKernel (heatKerTwo r) (qKerTwo M) (y, w) ≤ β := by
+    intro y
+    rw [compKernel_heatKerTwo_qKerTwo_apply]
+    have hint : Integrable fun z : ℝ => heatKernel r (y - z) * β :=
+      ((integrable_heatKernel hr).comp_sub_left y).mul_const β
+    calc (∫ z : ℝ, heatKernel r (y - z) * qKerTwo M (z, w))
+        ≤ ∫ z : ℝ, heatKernel r (y - z) * β :=
+          integral_mono_of_nonneg (Eventually.of_forall fun z =>
+            mul_nonneg (heatKernel_pos hr _).le (qKerTwo_nonneg M _)) hint
+            (Eventually.of_forall fun z =>
+              mul_le_mul_of_nonneg_left (qKerTwo_le_gauss_right hw z) (heatKernel_pos hr _).le)
+      _ = β := by rw [integral_mul_const, integral_heatKernel_sub_left hr y, one_mul]
+  rw [qPrQKer_apply]
+  have hint2 : Integrable fun y : ℝ => heatKernel 1 (x - y) * β :=
+    ((integrable_heatKernel one_pos).comp_sub_left x).mul_const β
+  calc (∫ y : ℝ, qKerTwo M (x, y) * AiryConj.compKernel (heatKerTwo r) (qKerTwo M) (y, w))
+      ≤ ∫ y : ℝ, heatKernel 1 (x - y) * β :=
+        integral_mono_of_nonneg (Eventually.of_forall fun y =>
+          mul_nonneg (qKerTwo_nonneg M _) (compKernel_heatKerTwo_qKerTwo_nonneg hr M y w)) hint2
+          (Eventually.of_forall fun y =>
+            mul_le_mul (qKerTwo_le M (x, y)) (hin y)
+              (compKernel_heatKerTwo_qKerTwo_nonneg hr M y w) (heatKernel_pos one_pos _).le)
+    _ = β := by rw [integral_mul_const, integral_heatKernel_sub_left one_pos x, one_mul]
+
+/-- **Barrier decay of `QP_rQ` in the first variable**: for `x ≤ M`,
+`(QP_rQ)(x, w) ≤ (4π)^{−1/2} e^{−(M−x)²/4}` (bound the left `Q`, then
+`(P_rQ)(y, w) ≤ p_{r+1}(y − w)` has mass `1` in `y`). -/
+theorem qPrQKer_le_gauss_left (hr : 0 < r) {M x : ℝ} (hx : x ≤ M) (w : ℝ) :
+    qPrQKer M r (x, w)
+      ≤ (4 * Real.pi * 1) ^ (-1/2 : ℝ) * Real.exp (-(M - x) ^ 2 / (4 * 1)) := by
+  set β : ℝ := (4 * Real.pi * 1) ^ (-1/2 : ℝ) * Real.exp (-(M - x) ^ 2 / (4 * 1)) with hβ
+  have hβ0 : 0 ≤ β := by positivity
+  have hr1 : (0:ℝ) < r + 1 := by linarith
+  rw [qPrQKer_apply]
+  have hint : Integrable fun y : ℝ => β * heatKernel (r + 1) (y - w) :=
+    ((integrable_heatKernel hr1).comp_sub_right w).const_mul β
+  calc (∫ y : ℝ, qKerTwo M (x, y) * AiryConj.compKernel (heatKerTwo r) (qKerTwo M) (y, w))
+      ≤ ∫ y : ℝ, β * heatKernel (r + 1) (y - w) :=
+        integral_mono_of_nonneg (Eventually.of_forall fun y =>
+          mul_nonneg (qKerTwo_nonneg M _) (compKernel_heatKerTwo_qKerTwo_nonneg hr M y w)) hint
+          (Eventually.of_forall fun y =>
+            mul_le_mul (qKerTwo_le_gauss_left hx y) (compKernel_heatKerTwo_qKerTwo_le hr M y w)
+              (compKernel_heatKerTwo_qKerTwo_nonneg hr M y w) hβ0)
+    _ = β := by rw [integral_const_mul, integral_heatKernel_sub_right hr1 w, mul_one]
+
+/-! ## Exponent bookkeeping -/
+
+/-- One-variable exponent split: for `S ≥ 1`,
+`S t − (t⁺)²/16 ≤ 8S² + 8 − |t|` (for `t ≥ 0` by `(t − 16S)² ≥ 0` and
+`(t − 16)² ≥ 0`; for `t < 0` because `S t ≤ t`). -/
+theorem exponent_split_aux {S t : ℝ} (hS : 1 ≤ S) :
+    S * t - (max t 0) ^ 2 / 16 ≤ 8 * S ^ 2 + 8 - |t| := by
+  rcases le_or_gt 0 t with ht | ht
+  · rw [max_eq_left ht, abs_of_nonneg ht]
+    nlinarith [sq_nonneg (t - 16 * S), sq_nonneg (t - 16)]
+  · rw [max_eq_right ht.le, abs_of_neg ht]
+    nlinarith [mul_nonneg (sub_nonneg.2 hS) (neg_nonneg.2 ht.le), sq_nonneg S]
+
+/-- **The quartic exponent inequality**: if `Q ≤ P` and `P + Q ≥ L ≥ 0`, then for
+`S ≥ 1`, `−P²/4 + S(P + Q) ≤ −L²/32 + (16S² + 16) − |P| − |Q|`. -/
+theorem exponent_main {S L P Q : ℝ} (hS : 1 ≤ S) (hL : 0 ≤ L) (hQP : Q ≤ P)
+    (hPQ : L ≤ P + Q) :
+    -P ^ 2 / 4 + S * (P + Q) ≤ -L ^ 2 / 32 + (16 * S ^ 2 + 16) - |P| - |Q| := by
+  have hP0 : 0 ≤ P := by linarith
+  have hPsq : L ^ 2 ≤ 4 * P ^ 2 := by nlinarith
+  have hQm : (max Q 0) ^ 2 ≤ P ^ 2 := by
+    have h1 : 0 ≤ max Q 0 := le_max_right _ _
+    have h2 : max Q 0 ≤ P := max_le hQP hP0
+    nlinarith
+  have ha := exponent_split_aux (t := P) hS
+  have hb := exponent_split_aux (t := Q) hS
+  rw [max_eq_left hP0] at ha
+  have hSPQ : S * (P + Q) = S * P + S * Q := by ring
+  rw [hSPQ]
+  linarith
+
+/-- `e^{−|t|} ≤ 2 (1 + t²)⁻¹` (from `e^{|t|} ≥ 1 + |t| + t²/2`). -/
+theorem exp_neg_abs_le_two_inv (t : ℝ) : Real.exp (-|t|) ≤ 2 * (1 + t ^ 2)⁻¹ := by
+  have h := Real.quadratic_le_exp_of_nonneg (abs_nonneg t)
+  rw [sq_abs] at h
+  have hpos : (0:ℝ) < 1 + t ^ 2 := by positivity
+  have hE : 1 + t ^ 2 ≤ 2 * Real.exp |t| := by linarith [abs_nonneg t]
+  rw [show 2 * (1 + t ^ 2)⁻¹ = 2 / (1 + t ^ 2) by ring, le_div_iff₀ hpos]
+  calc Real.exp (-|t|) * (1 + t ^ 2) ≤ Real.exp (-|t|) * (2 * Real.exp |t|) :=
+        mul_le_mul_of_nonneg_left hE (Real.exp_pos _).le
+    _ = 2 * (Real.exp (-|t|) * Real.exp |t|) := by ring
+    _ = 2 := by rw [← Real.exp_add, neg_add_cancel, Real.exp_zero, mul_one]
+
+/-! ## The pointwise near-sign bound -/
+
+/-- The common tail of the two cases of `neg_qPrQKer_mul_bAiryKer_le`: given a barrier
+bound `(QP_rQ)(x, w) ≤ (4π)^{−1/2} e^{−m²/4}` and the exponent inequality at `m`,
+the negative part of the trace integrand on `w + x + S² < 0` is dominated by the
+product function. -/
+theorem neg_qPrQKer_mul_bAiryKer_le_of (hr : 0 < r) (hM : 0 ≤ M) {CA m x w : ℝ}
+    (hCA : ∀ u : ℝ, u ≤ 0 → |airyAiReal u| ≤ CA)
+    (hs : w + x + (2 + r) ^ 2 < 0)
+    (hq : qPrQKer M r (x, w)
+      ≤ (4 * Real.pi * 1) ^ (-1/2 : ℝ) * Real.exp (-m ^ 2 / (4 * 1)))
+    (hexp : -m ^ 2 / 4 + (2 + r) * ((M - x) + (M - w))
+      ≤ -(2 * M + (2 + r) ^ 2) ^ 2 / 32 + (16 * (2 + r) ^ 2 + 16) - |x - M| - |w - M|) :
+    -(qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x))
+      ≤ 4 * (4 * Real.pi * 1) ^ (-1/2 : ℝ) * CA
+        * Real.exp (-(2 * M + (2 + r) ^ 2) ^ 2 / 32 + (16 * (2 + r) ^ 2 + 16))
+        * ((1 + (x - M) ^ 2)⁻¹ * (1 + (w - M) ^ 2)⁻¹) := by
+  set S : ℝ := 2 + r with hS
+  have hS0 : 0 ≤ S := by linarith
+  set c₀ : ℝ := (4 * Real.pi * 1) ^ (-1/2 : ℝ) with hc₀
+  have hc₀0 : 0 ≤ c₀ := Real.rpow_nonneg (by positivity) _
+  have hCA0 : 0 ≤ CA := (abs_nonneg _).trans (hCA 0 le_rfl)
+  set E0 : ℝ := Real.exp (-(2/3) * S ^ 3 - S * (w + x)) with hE0
+  set A : ℝ := airyAiReal (w + x + S ^ 2) with hA
+  have hAle : |A| ≤ CA := hCA _ hs.le
+  have hq0 : 0 ≤ qPrQKer M r (x, w) := qPrQKer_nonneg hr M _
+  set E' : ℝ := Real.exp (-(2 * M + S ^ 2) ^ 2 / 32 + (16 * S ^ 2 + 16)) with hE'
+  rw [bAiryKer_eq]
+  -- step 1: the Airy factor
+  have h1 : -(qPrQKer M r (x, w) * (E0 * A)) ≤ qPrQKer M r (x, w) * (E0 * CA) := by
+    have hle : -(E0 * A) ≤ E0 * CA := by
+      have : -A ≤ CA := (neg_le_abs A).trans hAle
+      have hE00 : 0 ≤ E0 := (Real.exp_pos _).le
+      nlinarith
+    nlinarith [mul_le_mul_of_nonneg_left hle hq0]
+  -- step 2: the barrier bound and the exponent
+  have h2 : qPrQKer M r (x, w) * (E0 * CA)
+      ≤ c₀ * CA * Real.exp (-m ^ 2 / (4 * 1) + (-(2/3) * S ^ 3 - S * (w + x))) := by
+    rw [Real.exp_add]
+    calc qPrQKer M r (x, w) * (E0 * CA)
+        ≤ (c₀ * Real.exp (-m ^ 2 / (4 * 1))) * (E0 * CA) :=
+          mul_le_mul_of_nonneg_right hq (mul_nonneg (Real.exp_pos _).le hCA0)
+      _ = c₀ * CA * (Real.exp (-m ^ 2 / (4 * 1)) * E0) := by ring
+  have hexp' : -m ^ 2 / (4 * 1) + (-(2/3) * S ^ 3 - S * (w + x))
+      ≤ (-(2 * M + S ^ 2) ^ 2 / 32 + (16 * S ^ 2 + 16)) + (-|x - M|) + (-|w - M|) := by
+    have hS3 : 0 ≤ S ^ 3 := pow_nonneg hS0 3
+    have hMS : 0 ≤ M * S := mul_nonneg hM hS0
+    have hlin : S * ((M - x) + (M - w)) = 2 * (M * S) - S * (w + x) := by ring
+    have hm4 : -m ^ 2 / (4 * 1) = -m ^ 2 / 4 := by norm_num
+    rw [hm4]
+    linarith
+  have h3 : c₀ * CA * Real.exp (-m ^ 2 / (4 * 1) + (-(2/3) * S ^ 3 - S * (w + x)))
+      ≤ c₀ * CA * (E' * Real.exp (-|x - M|) * Real.exp (-|w - M|)) := by
+    apply mul_le_mul_of_nonneg_left _ (mul_nonneg hc₀0 hCA0)
+    rw [hE', ← Real.exp_add, ← Real.exp_add]
+    exact Real.exp_le_exp.mpr hexp'
+  have h4 : c₀ * CA * (E' * Real.exp (-|x - M|) * Real.exp (-|w - M|))
+      ≤ c₀ * CA * (E' * (2 * (1 + (x - M) ^ 2)⁻¹) * (2 * (1 + (w - M) ^ 2)⁻¹)) := by
+    apply mul_le_mul_of_nonneg_left _ (mul_nonneg hc₀0 hCA0)
+    have hE'0 : 0 ≤ E' := (Real.exp_pos _).le
+    apply mul_le_mul (mul_le_mul_of_nonneg_left (exp_neg_abs_le_two_inv _) hE'0)
+      (exp_neg_abs_le_two_inv _) (Real.exp_pos _).le
+    exact mul_nonneg hE'0 (by positivity)
+  calc -(qPrQKer M r (x, w) * (E0 * A))
+      ≤ c₀ * CA * (E' * (2 * (1 + (x - M) ^ 2)⁻¹) * (2 * (1 + (w - M) ^ 2)⁻¹)) :=
+        h1.trans (h2.trans (h3.trans h4))
+    _ = 4 * c₀ * CA * E' * ((1 + (x - M) ^ 2)⁻¹ * (1 + (w - M) ^ 2)⁻¹) := by
+        ring
+
+/-- **The pointwise near-sign bound**: the negative
+part of the unweighted trace integrand `(QP_rQ)(x, w) g_S(w + x)` is dominated by
+`4 (4π)^{−1/2} C_A e^{−(2M+S²)²/32 + 16S² + 16} (1+(x−M)²)⁻¹ (1+(w−M)²)⁻¹`.
+On `w + x + S² ≥ 0` the integrand is `≥ 0`; otherwise the barrier bound is applied
+at the variable realizing `max(M − x, M − w)`. -/
+theorem neg_qPrQKer_mul_bAiryKer_le (hr : 0 < r) (hM : 0 ≤ M) {CA : ℝ}
+    (hCA : ∀ u : ℝ, u ≤ 0 → |airyAiReal u| ≤ CA) (x w : ℝ) :
+    -(qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x))
+      ≤ 4 * (4 * Real.pi * 1) ^ (-1/2 : ℝ) * CA
+        * Real.exp (-(2 * M + (2 + r) ^ 2) ^ 2 / 32 + (16 * (2 + r) ^ 2 + 16))
+        * ((1 + (x - M) ^ 2)⁻¹ * (1 + (w - M) ^ 2)⁻¹) := by
+  have hCA0 : 0 ≤ CA := (abs_nonneg _).trans (hCA 0 le_rfl)
+  have hS1 : (1:ℝ) ≤ 2 + r := by linarith
+  have hL : (0:ℝ) ≤ 2 * M + (2 + r) ^ 2 := by positivity
+  by_cases hs : 0 ≤ w + x + (2 + r) ^ 2
+  · have hnn : 0 ≤ qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x) := by
+      rw [bAiryKer_eq]
+      exact mul_nonneg (qPrQKer_nonneg hr M _)
+        (mul_nonneg (Real.exp_pos _).le (airyAiReal_pos_of_nonneg hs).le)
+    have hrhs : 0 ≤ 4 * (4 * Real.pi * 1) ^ (-1/2 : ℝ) * CA
+        * Real.exp (-(2 * M + (2 + r) ^ 2) ^ 2 / 32 + (16 * (2 + r) ^ 2 + 16))
+        * ((1 + (x - M) ^ 2)⁻¹ * (1 + (w - M) ^ 2)⁻¹) := by positivity
+    linarith
+  · rw [not_le] at hs
+    have hPQ : 2 * M + (2 + r) ^ 2 ≤ (M - x) + (M - w) := by linarith
+    have habsx : |M - x| = |x - M| := abs_sub_comm _ _
+    have habsw : |M - w| = |w - M| := abs_sub_comm _ _
+    rcases le_total (M - w) (M - x) with hQP | hPQ'
+    · -- `M − x` is the larger gap: `x ≤ M`
+      have hx : x ≤ M := by linarith
+      apply neg_qPrQKer_mul_bAiryKer_le_of hr hM hCA hs (m := M - x)
+        (qPrQKer_le_gauss_left hr hx w)
+      have h := exponent_main hS1 hL hQP hPQ
+      rw [habsx, habsw] at h
+      linarith
+    · -- `M − w` is the larger gap: `w ≤ M`
+      have hw : w ≤ M := by linarith
+      apply neg_qPrQKer_mul_bAiryKer_le_of hr hM hCA hs (m := M - w)
+        (qPrQKer_le_gauss_right hr hw x)
+      have h := exponent_main hS1 hL hPQ' (by linarith)
+      rw [habsx, habsw] at h
+      linarith
+
+/-! ## The integrated lower bound -/
+
+/-- `∫ (1 + (x − M)²)⁻¹ dx = π`. -/
+theorem integral_inv_one_add_sq_sub (M : ℝ) : ∫ x : ℝ, (1 + (x - M) ^ 2)⁻¹ = Real.pi := by
+  rw [integral_sub_right_eq_self (fun v : ℝ => (1 + v ^ 2)⁻¹) M]
+  exact integral_univ_inv_one_add_sq
+
+/-- **Near-sign bound, conditional form**: at any weight parameter `a` for which the `MemLp`
+data `hA`, `hW`, `hcr` hold, and for every `r > 0`, `M ≥ 0`,
+`Tr C̃_r ≥ −C exp(−(2M + (2+r)²)²/32 + 16(2+r)² + 16)` with an absolute constant
+`C > 0` (explicitly `C = 4 (4π)^{−1/2} max(C_A, 1) π²`, `C_A` the bound of
+`airyAiReal_abs_le_nonpos`). -/
+theorem trace_crKerT_ge_neg :
+    ∃ C : ℝ, 0 < C ∧ ∀ (a M r : ℝ), 0 < r → 0 ≤ M →
+      (hA : MemLp (aRKer a M r) 2 (volume.prod volume)) →
+      (hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume)) →
+      (hcr : MemLp (crKerT a M r) 2 (volume.prod volume)) →
+      -(C * Real.exp (-(2 * M + (2 + r) ^ 2) ^ 2 / 32 + (16 * (2 + r) ^ 2 + 16)))
+        ≤ trace (kernelOperator hcr) := by
+  obtain ⟨CA, hCA⟩ := airyAiReal_abs_le_nonpos
+  set CA' : ℝ := max CA 1 with hCA'
+  have hCA'1 : (1:ℝ) ≤ CA' := le_max_right _ _
+  have hCA'b : ∀ u : ℝ, u ≤ 0 → |airyAiReal u| ≤ CA' :=
+    fun u hu => (hCA u hu).trans (le_max_left _ _)
+  set c₀ : ℝ := (4 * Real.pi * 1) ^ (-1/2 : ℝ) with hc₀
+  have hc₀pos : 0 < c₀ := Real.rpow_pos_of_pos (by positivity) _
+  refine ⟨4 * c₀ * CA' * Real.pi ^ 2, by positivity, ?_⟩
+  intro a M r hr hM hA hW hcr
+  rw [trace_crKerT_eq hr a M hA hW hcr]
+  set F : ℝ × ℝ → ℝ :=
+    Function.uncurry fun x w : ℝ => aRKer a M r (x, w) * wSKer (2 + r) a (w, x) with hF
+  have hFint : Integrable F (volume.prod volume) :=
+    integrable_uncurry_aRKer_mul_wSKer_flip a M r hA hW
+  have hprod : (∫ x : ℝ, ∫ w : ℝ, aRKer a M r (x, w) * wSKer (2 + r) a (w, x))
+      = ∫ z, F z ∂(volume.prod volume) := (integral_prod F hFint).symm
+  rw [hprod]
+  set E' : ℝ := Real.exp (-(2 * M + (2 + r) ^ 2) ^ 2 / 32 + (16 * (2 + r) ^ 2 + 16)) with hE'
+  set K0 : ℝ := 4 * c₀ * CA' * E' with hK0
+  set k : ℝ → ℝ := fun x => (1 + (x - M) ^ 2)⁻¹ with hk
+  have hkint : Integrable k := integrable_inv_one_add_sq.comp_sub_right M
+  have hkval : ∫ x : ℝ, k x = Real.pi := integral_inv_one_add_sq_sub M
+  set H : ℝ × ℝ → ℝ := fun z => K0 * (k z.1 * k z.2) with hH
+  have hHint : Integrable H (volume.prod volume) := (hkint.mul_prod hkint).const_mul K0
+  have hle : ∀ z : ℝ × ℝ, -H z ≤ F z := by
+    rintro ⟨x, w⟩
+    have hFxw : F (x, w) = qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x) := by
+      show aRKer a M r (x, w) * wSKer (2 + r) a (w, x) = _
+      rw [aRKer_mul_wSKer a M r x w x]
+      have hex : Real.exp (-a * x) * Real.exp (a * x) = 1 := by
+        rw [← Real.exp_add, show -a * x + a * x = (0 : ℝ) by ring, Real.exp_zero]
+      calc Real.exp (-a * x) * (qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x)) * Real.exp (a * x)
+          = (Real.exp (-a * x) * Real.exp (a * x))
+            * (qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x)) := by ring
+        _ = qPrQKer M r (x, w) * bAiryKer (2 + r) (w, x) := by rw [hex, one_mul]
+    rw [hFxw]
+    exact neg_le.mp (neg_qPrQKer_mul_bAiryKer_le hr hM hCA'b x w)
+  have hHval : ∫ z, H z ∂(volume.prod volume) = K0 * (Real.pi * Real.pi) := by
+    show ∫ z, K0 * (k z.1 * k z.2) ∂(volume.prod volume) = _
+    rw [integral_const_mul, integral_prod_mul, hkval]
+  calc -(4 * c₀ * CA' * Real.pi ^ 2 * E')
+      = ∫ z, -H z ∂(volume.prod volume) := by
+        rw [integral_neg, hHval, hK0]
+        ring
+    _ ≤ ∫ z, F z ∂(volume.prod volume) := integral_mono hHint.neg hFint hle
+
+/-- **Near-sign bound, discharged form**: at `a = √(2M)`, eventually in `M`
+and uniformly for `1 ≤ r ≤ χ√(2M)` (`0 < χ < 1`) — the quantifier pattern and the
+object of `abs_trace_crKerT_le_discharged` —
+`Tr C̃_r ≥ −C e^{−M²/16}` (`= −C e^{−a⁴/64}`, see
+`trace_crKerT_ge_neg_discharged_a`).  The data `hA`/`hW` are discharged by
+`memLp_aRKer`/`memLp_wSKer` under `exists_admissible_M₀`; the exponent of
+`trace_crKerT_ge_neg` is absorbed using `(2M + S²)² ≥ 4M²`, `S² ≤ 4M + 8` and
+`M ≥ 1100`. -/
+theorem trace_crKerT_ge_neg_discharged {χ : ℝ} (hχ0 : 0 < χ) (hχ : χ < 1) :
+    ∃ C M₀ : ℝ, 0 < C ∧ ∀ {M r : ℝ}, M₀ ≤ M → 1 ≤ r →
+      r ≤ χ * Real.sqrt (2*M) →
+      (hcr : MemLp (crKerT (Real.sqrt (2*M)) M r) 2 (volume.prod volume)) →
+      -(C * Real.exp (-M ^ 2 / 16)) ≤ trace (kernelOperator hcr) := by
+  obtain ⟨C, hC, hN1⟩ := trace_crKerT_ge_neg
+  obtain ⟨Ma, hMa⟩ := exists_admissible_M₀ hχ0 hχ
+  refine ⟨C, max Ma 1100, hC, ?_⟩
+  intro M r hM hr hrM hcr
+  have hMa' : Ma ≤ M := le_trans (le_max_left _ _) hM
+  have hM1100 : (1100:ℝ) ≤ M := le_trans (le_max_right _ _) hM
+  obtain ⟨hadr, ha2, hM1⟩ := hMa M r hMa' hr hrM
+  have hr0 : (0:ℝ) < r := lt_of_lt_of_le one_pos hr
+  have hMpos : (0:ℝ) < M := lt_of_lt_of_le one_pos hM1
+  have h := hN1 (Real.sqrt (2*M)) M r hr0 hMpos.le
+    (memLp_aRKer hr0 hMpos ha2) (memLp_wSKer hr0 hadr) hcr
+  -- exponent absorption
+  have h2M : (0:ℝ) ≤ 2 * M := by linarith
+  have hsq : Real.sqrt (2*M) ^ 2 = 2 * M := Real.sq_sqrt h2M
+  have hsqrt0 : 0 ≤ Real.sqrt (2*M) := Real.sqrt_nonneg _
+  have hrle : r ≤ Real.sqrt (2*M) := by
+    calc r ≤ χ * Real.sqrt (2*M) := hrM
+      _ ≤ 1 * Real.sqrt (2*M) := mul_le_mul_of_nonneg_right hχ.le hsqrt0
+      _ = Real.sqrt (2*M) := one_mul _
+  have hr2 : r ^ 2 ≤ 2 * M := by
+    rw [← hsq]
+    exact pow_le_pow_left₀ hr0.le hrle 2
+  have hS2 : (2 + r) ^ 2 ≤ 4 * M + 8 := by nlinarith [sq_nonneg (r - 2)]
+  have hS0 : 0 ≤ (2 + r) ^ 2 := sq_nonneg _
+  have hLsq : 4 * M ^ 2 ≤ (2 * M + (2 + r) ^ 2) ^ 2 := by nlinarith
+  have hexp : -(2 * M + (2 + r) ^ 2) ^ 2 / 32 + (16 * (2 + r) ^ 2 + 16) ≤ -M ^ 2 / 16 := by
+    nlinarith
+  have hmono : C * Real.exp (-(2 * M + (2 + r) ^ 2) ^ 2 / 32 + (16 * (2 + r) ^ 2 + 16))
+      ≤ C * Real.exp (-M ^ 2 / 16) :=
+    mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr hexp) hC.le
+  linarith
+
+/-- **Near-sign bound in the weight variable `a = √(2M)`**: `Tr C̃_r ≥ −C e^{−a⁴/64}` eventually in
+`M`, uniformly for `1 ≤ r ≤ χa` — the form `exp(−c a⁴)`, `c = 1/64`: since `ρ(M)² ≈ e^{−(4/3)a³}`, this is `o(ρ²)`. -/
+theorem trace_crKerT_ge_neg_discharged_a {χ : ℝ} (hχ0 : 0 < χ) (hχ : χ < 1) :
+    ∃ C M₀ : ℝ, 0 < C ∧ ∀ {M r : ℝ}, M₀ ≤ M → 1 ≤ r →
+      r ≤ χ * Real.sqrt (2*M) →
+      (hcr : MemLp (crKerT (Real.sqrt (2*M)) M r) 2 (volume.prod volume)) →
+      -(C * Real.exp (-(Real.sqrt (2*M)) ^ 4 / 64)) ≤ trace (kernelOperator hcr) := by
+  obtain ⟨C, M₀, hC, H⟩ := trace_crKerT_ge_neg_discharged hχ0 hχ
+  refine ⟨C, max M₀ 0, hC, ?_⟩
+  intro M r hM hr hrM hcr
+  have hM0 : (0:ℝ) ≤ M := le_trans (le_max_right _ _) hM
+  have h4 : Real.sqrt (2*M) ^ 4 = 4 * M ^ 2 := by
+    rw [show (4:ℕ) = 2 * 2 from rfl, pow_mul, Real.sq_sqrt (by linarith)]
+    ring
+  rw [h4, show -(4 * M ^ 2) / 64 = -M ^ 2 / 16 by ring]
+  exact H (le_trans (le_max_left _ _) hM) hr hrM hcr
+
+end AiryTwoInt

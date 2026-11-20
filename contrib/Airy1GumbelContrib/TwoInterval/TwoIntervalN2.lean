@@ -1,0 +1,938 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.TwoInterval.TwoIntervalN3
+import Airy1GumbelContrib.TwoInterval.TwoIntervalShift
+
+/-!
+# Decorrelation of the two blocks: `tr(K̃₁K̃₂)`
+
+Part of the two-interval determinant analysis (`TwoInterval/`). This module proves the upper bound
+
+  `tr(K̃₁K̃₂) ≤ C (1+2M²)(1+256M) e^{−(4/3)a³ − 2ar²}`,   `a = √(2M)`
+  (`trace_k1k2_le_discharged`).
+
+The bound is on the trace of the composition `kernelOperator hk1 ∘L kernelOperator hk2` of
+the conjugated one-block kernels `k1KerT a M`, `k2KerT a M r` (the `hN2` input of
+`twoInt_joint_ge_plemelj`). It holds eventually in `M`, uniformly for `1 ≤ r ≤ χa`.
+Since `π₁² ≍ ρ² ≍ M^{1/2} e^{−(4/3)a³}`, the gain `e^{−2ar²} ≤ e^{−2a}` makes it `o(π₁²)`.
+
+## Why a two-weight split
+
+The true size is `ρ² e^{−2ar² + O(log a)}` (Laplace numerics), so at `r = 1` the margin over
+`ρ²` is only `e^{−2a}`. Any Hilbert–Schmidt split losing `e^{O(a)}` fails, and a split at one
+common weight gives exactly `−(4/3)a³` (no gain). The trace is weight-free, and a cyclic
+product of four Hilbert–Schmidt factors admits **two** independent weights:
+
+  `tr(K̃₁K̃₂) = ∫∫ (QP_rB₀)(x, z)(QP_{−S}B₀)(z, x) = tr(X_b G_b)`,
+  `X_b = V_{b₀→b₁} W_{−r,b₁}`,  `G_b = V_{b₁→b₀} W_{S,b₀}`.
+
+The Hankel factors `W` need equal weights on both sides; `V` carries the asymmetric weights
+`e^{−αx} Q(x, y) e^{−βy} φ(y)` (`vAsym`). At `(b₀, b₁) = (a + r, a − r)` the product of the
+four sharp factor bounds is exactly `e^{−(4/3)a³ − 2ar²}` at `a² = 2M`.
+
+## Ingredients
+
+* **Forward heat–Airy identity** (`heatAiryConv_any`): `P_t P_{−S}B₀ = P_{−(S−t)}B₀` for every
+  `S` (the completed-square proof of `heatAiryConv_offset` never needs `t ≤ S`). Hence
+  `W_{1,a}(U_aP_{1+r}U_a⁻¹) = W_{−r,a}` (`kernelOperator_wKernel_one_comp_conjHeatCLM`),
+  i.e. `W₁P_{1+r} = P_rB₀`.
+* **The Hilbert–Schmidt bound for `W_{T,a}` for every real `T`** (`wKernel_sq_integral_le_any`, `hsNorm_wKernel_le_any`):
+  the proof in `AiryKernel/` never uses `T > 0`; at `T = −r` it is the Hankel bound for `g_{−r}`.
+* **Sharp asymmetric `Q` bound** (`vAsym_sq_integral_le`, `_swap`):
+  `∫∫ vAsym² ≤ C (1+2M²)(1+32m²) e^{−2(α+β)M + 2m²}`, `m = max(α, β)`, `|α − β| ≥ 1`,
+  `min(α, β) ≥ 1`. The bound comes from a four-sector exponent bound (`gFun_le`), a
+  Gaussian profile in the heavier variable, and polynomial absorption into half the Gaussian
+  (`poly_absorb`); it is sharp up to a polynomial, with no `e^{O(a)}` loss.
+* **Assembly**: `trace_k1k2_eq_integral` (operator chain, then the weight-free integral),
+  `trace_k1k2_le` (re-weighting, `norm_trace_comp_le`, `hsNorm_comp_le`), and the discharged
+  `trace_k1k2_le_discharged`.
+
+## Remark on the choice of weights
+
+One could try an `r`-dependent single weight `b` with weight-independence of
+traces. Here the weight-independence is pointwise (the trace is a weight-free double
+integral), and the decisive freedom is the *second* weight: `(a + r, a − r)`, and
+`χ < 1/2`-type admissibility restrictions do not arise (`b₁ = a − r ≥ 3`, `b₀ − b₁ = 2r ≥ 2`).
+-/
+
+namespace AiryTwoInt
+
+open MeasureTheory Real Set Filter
+open scoped Topology BigOperators ENNReal NNReal InnerProduct InnerProductSpace
+open HilbertSchmidt
+open AiryConj
+
+/-! ## Part 1: the forward heat–Airy identity and `W_{1,a} (U_aP_{1+r}U_a⁻¹) = W_{−r,a}` -/
+
+/-- **The heat–Airy identity for every `S`** (QR12 Prop. 1.2, `P_t P_{−S}B₀ = P_{−(S−t)}B₀`,
+also forward in time): `∫ u, p_t(w − u) g_S(u) du = g_{S−t}(w)` for every `t > 0` and
+every real `S`. The completed-square proof of `heatAiryConv_offset` never uses `t ≤ S`. -/
+theorem heatAiryConv_any {t : ℝ} (ht : 0 < t) (S w : ℝ) :
+    ∫ u : ℝ, heatKernel t (w - u) * backwardAiry S u = backwardAiry (S - t) w := by
+  have hsplit : ∀ u : ℝ, heatKernel t (w - u) * backwardAiry S u
+      = Real.exp (-(2/3) * S^3)
+        * (heatKernel t (w - u) * (Real.exp (-(S * u)) * airyAiReal (u + S^2))) := by
+    intro u
+    unfold backwardAiry
+    rw [show -(2/3) * S^3 - S * u = -(2/3) * S^3 + -(S * u) by ring, Real.exp_add]
+    ring
+  rw [integral_congr_ae (Eventually.of_forall hsplit), integral_const_mul]
+  have habs : ∀ u : ℝ, heatKernel t (w - u) * (Real.exp (-(S * u)) * airyAiReal (u + S^2))
+      = Real.exp (-((S - t) * w) + t * (S - t)^2)
+        * (heatKernel t ((w - 2 * t * (S - t)) - u)
+          * (Real.exp (-(t * u)) * airyAiReal (u + S^2))) := by
+    intro u
+    rw [show -(S * u) = -((S - t) * u) + -(t * u) by ring, Real.exp_add,
+      show heatKernel t (w - u) * (Real.exp (-((S - t) * u)) * Real.exp (-(t * u))
+          * airyAiReal (u + S^2))
+        = (heatKernel t (w - u) * Real.exp (-((S - t) * u)))
+          * (Real.exp (-(t * u)) * airyAiReal (u + S^2)) by ring,
+      heatKernel_mul_exp_neg_eq t (S - t) w u]
+    ring
+  rw [integral_congr_ae (Eventually.of_forall habs), integral_const_mul,
+    heat_airy_conv_translate ht (S^2) (w - 2 * t * (S - t))]
+  unfold backwardAiry
+  rw [show w - 2 * t * (S - t) + S^2 - t^2 = w + (S - t)^2 by ring]
+  have hmul : Real.exp (-(2/3) * S^3) * Real.exp (-((S - t) * w) + t * (S - t)^2)
+      * Real.exp (t * S^2 - t^3 / 3) = Real.exp (-(2/3) * (S - t)^3 - (S - t) * w) := by
+    rw [← Real.exp_add, ← Real.exp_add]
+    congr 1
+    ring
+  rw [show Real.exp (-(2/3) * S^3) * (Real.exp (-((S - t) * w) + t * (S - t)^2)
+        * (Real.exp (t * S^2 - t^3 / 3) * airyAiReal (w + (S - t)^2)))
+      = (Real.exp (-(2/3) * S^3) * Real.exp (-((S - t) * w) + t * (S - t)^2)
+        * Real.exp (t * S^2 - t^3 / 3)) * airyAiReal (w + (S - t)^2) by ring, hmul]
+
+/-- The kernel form of `heatAiryConv_any`: `P_t (P_{−S}B₀) = P_{−(S−t)}B₀` for every `S`. -/
+theorem heatKerTwo_comp_bAiryKer_any {t : ℝ} (ht : 0 < t) (S : ℝ) :
+    AiryConj.compKernel (heatKerTwo t) (bAiryKer S) = bAiryKer (S - t) := by
+  funext p
+  show (∫ z : ℝ, heatKernel t (p.1 - z) * backwardAiry S (z + p.2))
+      = backwardAiry (S - t) (p.1 + p.2)
+  have hsub : (∫ z : ℝ, heatKernel t (p.1 - z) * backwardAiry S (z + p.2))
+      = ∫ u : ℝ, heatKernel t (p.1 + p.2 - u) * backwardAiry S u := by
+    rw [← MeasureTheory.integral_add_right_eq_self (μ := volume)
+      (fun u : ℝ => heatKernel t (p.1 + p.2 - u) * backwardAiry S u) p.2]
+    apply integral_congr_ae
+    filter_upwards with z
+    have h : p.1 - z = p.1 + p.2 - (z + p.2) := by ring
+    rw [h]
+  rw [hsub]
+  exact heatAiryConv_any ht S (p.1 + p.2)
+
+/-- `compKernel (W_{S,a}) (uConj a (heatKerTwo t)) = W_{S−t,a}` for every `S` and `t > 0`. -/
+theorem compKernel_wKernel_uConjHeat_any {t : ℝ} (ht : 0 < t) (S a : ℝ) :
+    AiryConj.compKernel (AiryConj.wKernel S a) (uConj a (heatKerTwo t))
+      = AiryConj.wKernel (S - t) a := by
+  funext p
+  obtain ⟨z, y⟩ := p
+  show (∫ w : ℝ, AiryConj.wKernel S a (z, w) * uConj a (heatKerTwo t) (w, y))
+    = AiryConj.wKernel (S - t) a (z, y)
+  have hpt : ∀ w : ℝ, AiryConj.wKernel S a (z, w) * uConj a (heatKerTwo t) (w, y)
+      = ((AiryConj.phiWeight z)⁻¹ * Real.exp (a * z) * Real.exp (a * y))
+        * (heatKerTwo t (y, w) * bAiryKer S (w, z)) := by
+    intro w
+    have he : Real.exp (a * w) * Real.exp (-a * w) = 1 := by
+      rw [← Real.exp_add, show a * w + -a * w = (0:ℝ) by ring, Real.exp_zero]
+    have hh : heatKernel t (w - y) = heatKernel t (y - w) := by
+      rw [show w - y = -(y - w) by ring, heatKernel_even]
+    unfold AiryConj.wKernel uConj heatKerTwo bAiryKer
+    simp only
+    rw [hh, show z + w = w + z by ring]
+    calc (AiryConj.phiWeight z)⁻¹ * Real.exp (a * z) * backwardAiry S (w + z)
+          * Real.exp (a * w) * (Real.exp (-a * w) * heatKernel t (y - w) * Real.exp (a * y))
+        = ((AiryConj.phiWeight z)⁻¹ * Real.exp (a * z) * Real.exp (a * y))
+          * (heatKernel t (y - w) * backwardAiry S (w + z))
+          * (Real.exp (a * w) * Real.exp (-a * w)) := by ring
+      _ = _ := by rw [he, mul_one]
+  rw [integral_congr_ae (Eventually.of_forall hpt), integral_const_mul]
+  have hconv := congrFun (heatKerTwo_comp_bAiryKer_any (S := S) ht) (y, z)
+  rw [show (∫ w : ℝ, heatKerTwo t (y, w) * bAiryKer S (w, z))
+      = AiryConj.compKernel (heatKerTwo t) (bAiryKer S) (y, z) from rfl, hconv]
+  unfold AiryConj.wKernel bAiryKer
+  simp only
+  rw [show y + z = z + y by ring]
+  ring
+
+/-! ## Part 2: the Hilbert–Schmidt bound for `W_{T,a}` for every real `T` -/
+
+/-- **The Hilbert–Schmidt bound for `W_{T,a}` for every real `T`** (`wKernel_sq_integral_le` never uses
+`0 < T`): `∫∫ W_{T,a}² ≤ C e^{(2/3)a³ − 2Ta²}` whenever `T + 1 ≤ a`. At `T = −r` this is
+the Hankel bound for `g_{−r}` (the kernel of `P_rB₀`). -/
+theorem wKernel_sq_integral_le_any :
+    ∃ C : ℝ, 0 < C ∧ ∀ T a : ℝ, T + 1 ≤ a →
+      Integrable (fun p : ℝ × ℝ => (wKernel T a p) ^ 2) (volume.prod volume) ∧
+      ∫ p : ℝ × ℝ, (wKernel T a p) ^ 2 ∂(volume.prod volume) ≤
+        C * Real.exp ((2 / 3) * a ^ 3 - 2 * T * a ^ 2) := by
+  obtain ⟨Cl, hCl⟩ := airyAiReal_laplace
+  refine ⟨Real.pi * (|Cl| + 1), by positivity, fun T a ha => ?_⟩
+  have hβ : 1 ≤ a - T := by linarith
+  have hGint : Integrable (fun u : ℝ => Real.exp (2*(a-T)*u) * (airyAiReal u)^2) volume :=
+    integrable_exp_mul_airyAiReal_sq hβ
+  have hIw : ∫⁻ z : ℝ, ENNReal.ofReal ((1 + z^2)⁻¹) ∂volume = ENNReal.ofReal Real.pi := by
+    have h1 : ENNReal.ofReal (∫ z : ℝ, (1 + z^2)⁻¹)
+        = ∫⁻ z : ℝ, ENNReal.ofReal ((1 + z^2)⁻¹) ∂volume :=
+      ofReal_integral_eq_lintegral_ofReal integrable_inv_one_add_sq
+        (ae_of_all volume fun z => by positivity)
+    rw [integral_univ_inv_one_add_sq] at h1
+    exact h1.symm
+  have hXnn : (0:ℝ) ≤ (|Cl| + 1) * Real.exp ((2/3)*(a-T)^3) := by positivity
+  have hIu_le : ∫⁻ u : ℝ, ENNReal.ofReal (Real.exp (2*(a-T)*u) * (airyAiReal u)^2) ∂volume
+      ≤ ENNReal.ofReal ((|Cl| + 1) * Real.exp ((2/3)*(a-T)^3)) := by
+    have h1 : ENNReal.ofReal (∫ u : ℝ, Real.exp (2*(a-T)*u) * (airyAiReal u)^2)
+        = ∫⁻ u : ℝ, ENNReal.ofReal (Real.exp (2*(a-T)*u) * (airyAiReal u)^2) ∂volume :=
+      ofReal_integral_eq_lintegral_ofReal hGint
+        (ae_of_all volume fun u => mul_nonneg (Real.exp_pos _).le (sq_nonneg _))
+    rw [← h1]
+    exact ENNReal.ofReal_le_ofReal ((hCl (a - T) hβ).trans
+      (mul_le_mul_of_nonneg_right (by linarith [le_abs_self Cl]) (Real.exp_pos _).le))
+  have hLbound : ∫⁻ p : ℝ × ℝ, ENNReal.ofReal ((wKernel T a p)^2) ∂(volume.prod volume)
+      ≤ ENNReal.ofReal (Real.exp ((2/3)*T^3 - 2*a*T^2)) *
+        (ENNReal.ofReal Real.pi * ENNReal.ofReal ((|Cl| + 1) * Real.exp ((2/3)*(a-T)^3))) := by
+    rw [lintegral_wKernel_sq T a, hIw]
+    exact mul_le_mul_right (mul_le_mul_right hIu_le _) _
+  have hRtop : ENNReal.ofReal (Real.exp ((2/3)*T^3 - 2*a*T^2)) *
+        (ENNReal.ofReal Real.pi * ENNReal.ofReal ((|Cl| + 1) * Real.exp ((2/3)*(a-T)^3))) < ∞ :=
+    ENNReal.mul_lt_top ENNReal.ofReal_lt_top
+      (ENNReal.mul_lt_top ENNReal.ofReal_lt_top ENNReal.ofReal_lt_top)
+  have hfin : ∫⁻ p : ℝ × ℝ, ENNReal.ofReal ((wKernel T a p)^2) ∂(volume.prod volume) < ∞ :=
+    hLbound.trans_lt hRtop
+  have hcontW : Continuous fun p : ℝ × ℝ => (wKernel T a p)^2 := (continuous_wKernel T a).pow 2
+  have hInt : Integrable (fun p : ℝ × ℝ => (wKernel T a p)^2) (volume.prod volume) :=
+    ⟨hcontW.aestronglyMeasurable,
+      (hasFiniteIntegral_iff_ofReal (ae_of_all volume fun p => sq_nonneg _)).mpr hfin⟩
+  refine ⟨hInt, ?_⟩
+  have hval : ∫ p : ℝ × ℝ, (wKernel T a p)^2 ∂(volume.prod volume)
+      = (∫⁻ p : ℝ × ℝ, ENNReal.ofReal ((wKernel T a p)^2) ∂(volume.prod volume)).toReal :=
+    integral_eq_lintegral_of_nonneg_ae (ae_of_all volume fun p => sq_nonneg _)
+      hcontW.aestronglyMeasurable
+  rw [hval]
+  calc (∫⁻ p : ℝ × ℝ, ENNReal.ofReal ((wKernel T a p)^2) ∂(volume.prod volume)).toReal
+      ≤ (ENNReal.ofReal (Real.exp ((2/3)*T^3 - 2*a*T^2)) *
+          (ENNReal.ofReal Real.pi *
+            ENNReal.ofReal ((|Cl| + 1) * Real.exp ((2/3)*(a-T)^3)))).toReal :=
+        ENNReal.toReal_mono hRtop.ne hLbound
+    _ = Real.exp ((2/3)*T^3 - 2*a*T^2) * (Real.pi * ((|Cl| + 1) * Real.exp ((2/3)*(a-T)^3))) := by
+        rw [ENNReal.toReal_mul, ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.exp_pos _).le,
+          ENNReal.toReal_ofReal Real.pi_pos.le, ENNReal.toReal_ofReal hXnn]
+    _ = Real.pi * (|Cl| + 1) * Real.exp ((2/3)*a^3 - 2*T*a^2) := by
+        have hexp : Real.exp ((2/3)*T^3 - 2*a*T^2) * Real.exp ((2/3)*(a-T)^3)
+            = Real.exp ((2/3)*a^3 - 2*T*a^2) := by
+          rw [← Real.exp_add]; congr 1; ring
+        calc Real.exp ((2/3)*T^3 - 2*a*T^2) * (Real.pi * ((|Cl| + 1) * Real.exp ((2/3)*(a-T)^3)))
+            = (Real.pi * (|Cl| + 1)) *
+              (Real.exp ((2/3)*T^3 - 2*a*T^2) * Real.exp ((2/3)*(a-T)^3)) := by ring
+          _ = (Real.pi * (|Cl| + 1)) * Real.exp ((2/3)*a^3 - 2*T*a^2) := by rw [hexp]
+
+/-- `W_{T,a}` is `L²` for every real `T` with `T + 1 ≤ a`. -/
+theorem memLp_wKernel_any {T a : ℝ} (ha : T + 1 ≤ a) :
+    MemLp (wKernel T a) 2 (volume.prod volume) := by
+  obtain ⟨C, -, hC⟩ := wKernel_sq_integral_le_any
+  exact memLp_of_sq_integrable (continuous_wKernel T a).measurable (hC T a ha).1
+
+/-- The HS norm of `W_{T,a}`: `‖W_{T,a}‖₂ ≤ √C e^{a³/3 − Ta²}` for every real `T`, `T+1 ≤ a`. -/
+theorem hsNorm_wKernel_le_any :
+    ∃ C : ℝ, 0 < C ∧ ∀ (T a : ℝ) (ha : T + 1 ≤ a),
+      hsNorm (kernelOperator (memLp_wKernel_any ha)) ≤ C * Real.exp (a ^ 3 / 3 - T * a ^ 2) := by
+  obtain ⟨C, hC, H⟩ := wKernel_sq_integral_le_any
+  refine ⟨Real.sqrt C, Real.sqrt_pos.mpr hC, fun T a ha => ?_⟩
+  obtain ⟨hint, hbd⟩ := H T a ha
+  refine (AiryConj.hsNorm_kernelOperator_le_sqrt _ hint).trans ?_
+  refine (Real.sqrt_le_sqrt hbd).trans (le_of_eq ?_)
+  rw [Real.sqrt_mul hC.le, Real.sqrt_eq_rpow (Real.exp _), ← Real.exp_mul]
+  congr 2
+  ring
+
+/-- **The operator identity `W_{1,a} ∘ (U_aP_{1+r}U_a⁻¹) = W_{−r,a}`** (`W₁P_{1+r} = P_rB₀`
+conjugated; the forward-in-time case `t = 1 + r > S = 1` of the heat–Airy identity). -/
+theorem kernelOperator_wKernel_one_comp_conjHeatCLM (hr : 0 < r) {a : ℝ} (ha : 2 ≤ a) :
+    kernelOperator (memLp_wKernel_any (T := 1) (a := a) (by linarith))
+      ∘L conjHeatCLM (1 + r) (by linarith : (0:ℝ) < 1 + r) a
+      = kernelOperator (memLp_wKernel_any (T := -r) (a := a) (by linarith)) := by
+  have hid : AiryConj.compKernel (AiryConj.wKernel 1 a) (uConj a (heatKerTwo (1 + r)))
+      = AiryConj.wKernel (-r) a := by
+    rw [compKernel_wKernel_uConjHeat_any (by linarith : (0:ℝ) < 1 + r) 1 a,
+      show (1:ℝ) - (1 + r) = -r by ring]
+  have hwr : MemLp (AiryConj.wKernel (-r) a) 2 (volume.prod volume) :=
+    memLp_wKernel_any (by linarith)
+  have hcomp : MemLp (AiryConj.compKernel (AiryConj.wKernel 1 a)
+      (uConj a (heatKerTwo (1 + r)))) 2 (volume.prod volume) := by
+    rw [hid]; exact hwr
+  rw [← kernelOperator_compKernel_uConjHeat_right (by linarith : (0:ℝ) < 1 + r) a
+    (AiryConj.continuous_wKernel 1 a).measurable _ hcomp]
+  exact kernelOperator_congr hid hcomp _
+
+
+/-! ## Part 3: the asymmetric-weight `Q` kernel and its sharp `L²` bound -/
+
+/-- The asymmetric-weight Hilbert–Schmidt factor `e^{−αx} Q(x, y) e^{−βy} φ(y)`
+(at `α = β = a` this is the `vKernel 1 a M` of `AiryKernel/`, `vAsym_self`). -/
+noncomputable def vAsym (α β M : ℝ) : ℝ × ℝ → ℝ :=
+  fun p => Real.exp (-α * p.1) * qKerTwo M p * Real.exp (-β * p.2) * AiryConj.phiWeight p.2
+
+theorem vAsym_self (a M : ℝ) : vAsym a a M = AiryConj.vKernel 1 a M := by
+  funext p; rfl
+
+theorem measurable_vAsym (α β M : ℝ) : Measurable (vAsym α β M) := by
+  unfold vAsym
+  have h1 : Measurable fun p : ℝ × ℝ => Real.exp (-α * p.1) :=
+    (Real.continuous_exp.comp (continuous_const.mul continuous_fst)).measurable
+  have h2 : Measurable fun p : ℝ × ℝ => Real.exp (-β * p.2) :=
+    (Real.continuous_exp.comp (continuous_const.mul continuous_snd)).measurable
+  have h3 : Measurable fun p : ℝ × ℝ => AiryConj.phiWeight p.2 :=
+    (AiryConj.continuous_phiWeight.comp continuous_snd).measurable
+  exact ((h1.mul (measurable_qKerTwo M)).mul h2).mul h3
+
+/-- `Q` is symmetric. -/
+theorem qKerTwo_symm (M x y : ℝ) : qKerTwo M (x, y) = qKerTwo M (y, x) := by
+  show AiryConj.qMT M 1 x y = AiryConj.qMT M 1 y x
+  unfold AiryConj.qMT
+  by_cases h : x ≤ M ∧ y ≤ M
+  · rw [ite_eq_left h, ite_eq_left (⟨h.2, h.1⟩ : y ≤ M ∧ x ≤ M), show 2 * M - x - y = 2 * M - y - x by ring]
+  · rw [ite_eq_right h, ite_eq_right (fun h' : y ≤ M ∧ x ≤ M => h ⟨h'.2, h'.1⟩), show x - y = -(y - x) by ring,
+      heatKernel_even]
+
+/-- The sector argument of `Q`: `2M − x − y` on the reflected sector, `x − y` otherwise. -/
+noncomputable def qArg (M x y : ℝ) : ℝ := if x ≤ M ∧ y ≤ M then 2 * M - x - y else x - y
+
+theorem qKerTwo_eq_qArg (M x y : ℝ) : qKerTwo M (x, y) = heatKernel 1 (qArg M x y) := by
+  show AiryConj.qMT M 1 x y = _
+  unfold AiryConj.qMT qArg
+  split_ifs <;> rfl
+
+theorem heatKernel_one_sq (v : ℝ) :
+    heatKernel 1 v ^ 2 = ((4 * Real.pi * 1) ^ (-1/2 : ℝ)) ^ 2 * Real.exp (-v ^ 2 / 2) := by
+  unfold heatKernel
+  rw [mul_pow, ← Real.exp_nat_mul]
+  congr 2
+  push_cast
+  ring
+
+/-- **Polynomial absorption**: if `E ≤ 2α² − 2|q| − (p − c)²/2` and `c² ≤ 8α² + 2q²`, then
+`e^E (1+2p²)(1+2q²) ≤ 16384 (1+32α²) e^{2α²} e^{−|q|} e^{−(p−c)²/4}`. -/
+theorem poly_absorb {α p q c E : ℝ} (hc : c ^ 2 ≤ 8 * α ^ 2 + 2 * q ^ 2)
+    (hE : E ≤ 2 * α ^ 2 - 2 * |q| - (p - c) ^ 2 / 2) :
+    Real.exp E * ((1 + 2 * p ^ 2) * (1 + 2 * q ^ 2))
+      ≤ 16384 * (1 + 32 * α ^ 2) * Real.exp (2 * α ^ 2)
+        * (Real.exp (-|q|) * Real.exp (-(1/4) * (p - c) ^ 2)) := by
+  set t : ℝ := p - c with ht
+  have hA : 0 ≤ 32 * α ^ 2 := by positivity
+  have hB : 0 ≤ 8 * q ^ 2 := by positivity
+  have hC : 0 ≤ 4 * t ^ 2 := by positivity
+  have hp2 : p ^ 2 ≤ 2 * c ^ 2 + 2 * t ^ 2 := by nlinarith [sq_nonneg (c - t)]
+  have h1 : 1 + 2 * p ^ 2 ≤ (1 + 32 * α ^ 2) * (1 + 8 * q ^ 2) * (1 + 4 * t ^ 2) := by
+    nlinarith [mul_nonneg hA hB, mul_nonneg hA hC, mul_nonneg hB hC,
+      mul_nonneg (mul_nonneg hA hB) hC]
+  have h2 : 1 + 4 * t ^ 2 ≤ 16 * Real.exp (t ^ 2 / 4) := by
+    have := Real.add_one_le_exp (t ^ 2 / 4)
+    linarith
+  have hq := Real.quadratic_le_exp_of_nonneg (show (0:ℝ) ≤ |q| / 2 by positivity)
+  have hq2 : (|q| / 2) ^ 2 = q ^ 2 / 4 := by rw [div_pow, sq_abs]; ring
+  rw [hq2] at hq
+  have h3a : 1 + 8 * q ^ 2 ≤ 64 * Real.exp (|q| / 2) := by nlinarith [abs_nonneg q]
+  have h3b : 1 + 2 * q ^ 2 ≤ 16 * Real.exp (|q| / 2) := by nlinarith [abs_nonneg q]
+  have h3 : (1 + 8 * q ^ 2) * (1 + 2 * q ^ 2) ≤ 1024 * Real.exp |q| := by
+    have : Real.exp |q| = Real.exp (|q| / 2) * Real.exp (|q| / 2) := by
+      rw [← Real.exp_add]; ring_nf
+    rw [this]
+    nlinarith [mul_le_mul h3a h3b (by positivity) (by positivity)]
+  have hpoly : (1 + 2 * p ^ 2) * (1 + 2 * q ^ 2)
+      ≤ (1 + 32 * α ^ 2) * (16 * Real.exp (t ^ 2 / 4)) * (1024 * Real.exp |q|) := by
+    calc (1 + 2 * p ^ 2) * (1 + 2 * q ^ 2)
+        ≤ ((1 + 32 * α ^ 2) * (1 + 8 * q ^ 2) * (1 + 4 * t ^ 2)) * (1 + 2 * q ^ 2) :=
+          mul_le_mul_of_nonneg_right h1 (by positivity)
+      _ = (1 + 32 * α ^ 2) * (1 + 4 * t ^ 2) * ((1 + 8 * q ^ 2) * (1 + 2 * q ^ 2)) := by ring
+      _ ≤ (1 + 32 * α ^ 2) * (16 * Real.exp (t ^ 2 / 4)) * (1024 * Real.exp |q|) :=
+          mul_le_mul (mul_le_mul_of_nonneg_left h2 (by positivity)) h3 (by positivity)
+            (by positivity)
+  calc Real.exp E * ((1 + 2 * p ^ 2) * (1 + 2 * q ^ 2))
+      ≤ Real.exp (2 * α ^ 2 - 2 * |q| - t ^ 2 / 2)
+          * ((1 + 32 * α ^ 2) * (16 * Real.exp (t ^ 2 / 4)) * (1024 * Real.exp |q|)) :=
+        mul_le_mul (Real.exp_le_exp.mpr hE) hpoly (by positivity) (by positivity)
+    _ = 16384 * (1 + 32 * α ^ 2) * Real.exp ((2 * α ^ 2 - 2 * |q| - t ^ 2 / 2)
+          + t ^ 2 / 4 + |q|) := by
+        rw [Real.exp_add, Real.exp_add]; ring
+    _ = 16384 * (1 + 32 * α ^ 2) * Real.exp (2 * α ^ 2)
+          * (Real.exp (-|q|) * Real.exp (-(1/4) * t ^ 2)) := by
+        rw [← Real.exp_add, mul_assoc (16384 * (1 + 32 * α ^ 2)), ← Real.exp_add]
+        congr 2
+        ring
+
+/-- The four Gaussian profiles in `x` that dominate the weighted `Q²` (one per sector). -/
+noncomputable def gsum (α M x y : ℝ) : ℝ :=
+  Real.exp (-(1/4) * (x - (2 * M - 2 * α - y)) ^ 2) + Real.exp (-(1/4) * (x - (M - 2 * α)) ^ 2)
+    + Real.exp (-(1/4) * (x - M) ^ 2) + Real.exp (-(1/4) * (x - y) ^ 2)
+
+theorem gsum_nonneg (α M x y : ℝ) : 0 ≤ gsum α M x y := by unfold gsum; positivity
+
+/-- The heavier-first weighted square: `e^{−2αx} Q² e^{−2βy} (1+2(M−x)²)(1+2(M−y)²)`. -/
+noncomputable def gFun (α β M x y : ℝ) : ℝ :=
+  Real.exp (-2 * α * x) * qKerTwo M (x, y) ^ 2 * Real.exp (-2 * β * y)
+    * ((1 + 2 * (M - x) ^ 2) * (1 + 2 * (M - y) ^ 2))
+
+/-- **The sector exponent bound** (heavier weight first: `1 ≤ β`, `β + 1 ≤ α`):
+`gFun ≤ c₀² e^{−2(α+β)M} 16384 (1+32α²) e^{2α²} e^{−|M−y|} gsum`. Writing `p = M − x`,
+`q = M − y`, the exponent `2αp + 2βq − v²/2` is bounded on each sector by
+`2α² − 2|q| − (p − c)²/2` with `c = 2α − q` (reflected), `2α` (`y > M`), `0` (`x > M ≥ y`),
+`q` (both above `M`). -/
+theorem gFun_le {α β : ℝ} (hβ : 1 ≤ β) (hαβ : β + 1 ≤ α) (M x y : ℝ) :
+    gFun α β M x y
+      ≤ ((4 * Real.pi * 1) ^ (-1/2 : ℝ)) ^ 2 * Real.exp (-2 * (α + β) * M)
+        * (16384 * (1 + 32 * α ^ 2) * Real.exp (2 * α ^ 2))
+        * (Real.exp (-|M - y|) * gsum α M x y) := by
+  set c₀ : ℝ := (4 * Real.pi * 1) ^ (-1/2 : ℝ) with hc₀
+  set p : ℝ := M - x with hp
+  set q : ℝ := M - y with hq
+  set v : ℝ := qArg M x y with hv
+  have hG : gFun α β M x y
+      = c₀ ^ 2 * Real.exp (-2 * (α + β) * M)
+        * (Real.exp (2 * α * p + 2 * β * q - v ^ 2 / 2) * ((1 + 2 * p ^ 2) * (1 + 2 * q ^ 2))) := by
+    unfold gFun
+    rw [qKerTwo_eq_qArg, heatKernel_one_sq]
+    have : Real.exp (-2 * α * x) * Real.exp (-v ^ 2 / 2) * Real.exp (-2 * β * y)
+        = Real.exp (-2 * (α + β) * M) * Real.exp (2 * α * p + 2 * β * q - v ^ 2 / 2) := by
+      rw [← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
+      congr 1
+      rw [hp, hq]; ring
+    calc Real.exp (-2 * α * x) * (c₀ ^ 2 * Real.exp (-qArg M x y ^ 2 / 2))
+          * Real.exp (-2 * β * y) * ((1 + 2 * (M - x) ^ 2) * (1 + 2 * (M - y) ^ 2))
+        = c₀ ^ 2 * (Real.exp (-2 * α * x) * Real.exp (-v ^ 2 / 2) * Real.exp (-2 * β * y))
+          * ((1 + 2 * p ^ 2) * (1 + 2 * q ^ 2)) := by rw [hv, hp, hq]; ring
+      _ = _ := by rw [this]; ring
+  rw [hG]
+  have hK0 : 0 ≤ c₀ ^ 2 * Real.exp (-2 * (α + β) * M) := by positivity
+  have hα0 : 0 ≤ α := by linarith
+  -- the four sector cases: each gives a bound by one term of `gsum`
+  have hterm : ∀ c : ℝ, c ^ 2 ≤ 8 * α ^ 2 + 2 * q ^ 2 →
+      2 * α * p + 2 * β * q - v ^ 2 / 2 ≤ 2 * α ^ 2 - 2 * |q| - (p - c) ^ 2 / 2 →
+      Real.exp (-(1/4) * (p - c) ^ 2) ≤ gsum α M x y →
+      c₀ ^ 2 * Real.exp (-2 * (α + β) * M)
+        * (Real.exp (2 * α * p + 2 * β * q - v ^ 2 / 2) * ((1 + 2 * p ^ 2) * (1 + 2 * q ^ 2)))
+      ≤ c₀ ^ 2 * Real.exp (-2 * (α + β) * M)
+        * (16384 * (1 + 32 * α ^ 2) * Real.exp (2 * α ^ 2))
+        * (Real.exp (-|M - y|) * gsum α M x y) := by
+    intro c hc hE hgs
+    have h := poly_absorb hc hE
+    rw [mul_assoc (c₀ ^ 2 * Real.exp (-2 * (α + β) * M))]
+    apply mul_le_mul_of_nonneg_left _ hK0
+    refine h.trans ?_
+    apply mul_le_mul_of_nonneg_left _ (by positivity)
+    exact mul_le_mul_of_nonneg_left hgs (Real.exp_pos _).le
+  have g1 := gsum_nonneg α M x y
+  have e1 := Real.exp_pos (-(1/4) * (x - (2 * M - 2 * α - y)) ^ 2)
+  have e2 := Real.exp_pos (-(1/4) * (x - (M - 2 * α)) ^ 2)
+  have e3 := Real.exp_pos (-(1/4) * (x - M) ^ 2)
+  have e4 := Real.exp_pos (-(1/4) * (x - y) ^ 2)
+  by_cases hR : x ≤ M ∧ y ≤ M
+  · -- reflected: `v = p + q`, `c = 2α − q`
+    have hvR : v = p + q := by rw [hv]; unfold qArg; rw [ite_eq_left hR]; rw [hp, hq]; ring
+    have hp0 : 0 ≤ p := by rw [hp]; linarith [hR.1]
+    have hq0 : 0 ≤ q := by rw [hq]; linarith [hR.2]
+    apply hterm (2 * α - q) (by nlinarith [sq_nonneg (2 * α + q)])
+    · rw [hvR, abs_of_nonneg hq0]
+      nlinarith [mul_nonneg (by linarith : (0:ℝ) ≤ α - β - 1) hq0]
+    · have : p - (2 * α - q) = -(x - (2 * M - 2 * α - y)) := by rw [hp, hq]; ring
+      rw [this, neg_sq]; unfold gsum; linarith
+  · have hvF : v = x - y := by rw [hv]; unfold qArg; rw [ite_eq_right hR]
+    have hvpq : v = q - p := by rw [hvF, hp, hq]; ring
+    rcases le_or_gt x M with hx | hx
+    · -- `x ≤ M < y`: `c = 2α`
+      have hy : M < y := by
+        by_contra h; exact hR ⟨hx, not_lt.mp h⟩
+      have hp0 : 0 ≤ p := by rw [hp]; linarith
+      have hq0 : q < 0 := by rw [hq]; linarith
+      apply hterm (2 * α) (by nlinarith [sq_nonneg q])
+      · rw [hvpq, abs_of_neg hq0]
+        nlinarith [mul_nonneg hp0 (neg_nonneg.2 hq0.le),
+          mul_nonneg (by linarith : (0:ℝ) ≤ β - 1) (neg_nonneg.2 hq0.le), sq_nonneg q]
+      · have : p - 2 * α = -(x - (M - 2 * α)) := by rw [hp]; ring
+        rw [this, neg_sq]; unfold gsum; linarith
+    · rcases le_or_gt y M with hy | hy
+      · -- `x > M ≥ y`: `c = 0`
+        have hp0 : p < 0 := by rw [hp]; linarith
+        have hq0 : 0 ≤ q := by rw [hq]; linarith
+        apply hterm (0:ℝ) (by norm_num; positivity)
+        · rw [hvpq, abs_of_nonneg hq0]
+          have key : 2 * α ^ 2 - 2 * q - (p - 0) ^ 2 / 2
+              - (2 * α * p + 2 * β * q - (q - p) ^ 2 / 2)
+              = (q - (2 * β + 2)) ^ 2 / 2 + 2 * ((α - β - 1) * (α + β + 1))
+                + 2 * (α * (-p)) + (-p) * q := by ring
+          have k1 := sq_nonneg (q - (2 * β + 2))
+          have k2 := mul_nonneg (by linarith : (0:ℝ) ≤ α - β - 1)
+            (by linarith : (0:ℝ) ≤ α + β + 1)
+          have k3 := mul_nonneg hα0 (neg_nonneg.2 hp0.le)
+          have k4 := mul_nonneg (neg_nonneg.2 hp0.le) hq0
+          linarith
+        · have : p - 0 = -(x - M) := by rw [hp]; ring
+          rw [this, neg_sq]; unfold gsum; linarith
+      · -- both above `M`: `c = q`
+        have hp0 : p < 0 := by rw [hp]; linarith
+        have hq0 : q < 0 := by rw [hq]; linarith
+        have hcq : q ^ 2 ≤ 8 * α ^ 2 + 2 * q ^ 2 := by
+          have := sq_nonneg α; have := sq_nonneg q; linarith
+        refine hterm q hcq ?_ ?_
+        · rw [hvpq, abs_of_neg hq0]
+          have key : 2 * α ^ 2 - 2 * -q - (p - q) ^ 2 / 2
+              - (2 * α * p + 2 * β * q - (q - p) ^ 2 / 2)
+              = 2 * α ^ 2 + 2 * (α * (-p)) + 2 * ((β - 1) * (-q)) := by ring
+          have k1 := sq_nonneg α
+          have k2 := mul_nonneg hα0 (neg_nonneg.2 hp0.le)
+          have k3 := mul_nonneg (by linarith : (0:ℝ) ≤ β - 1) (neg_nonneg.2 hq0.le)
+          linarith
+        · have : p - q = -(x - y) := by rw [hp, hq]; ring
+          rw [this, neg_sq]; unfold gsum; linarith
+
+/-- The Gaussian profile `e^{−(x−d)²/4}` is integrable with integral `√(π/(1/4))`. -/
+theorem gauss_quarter (d : ℝ) :
+    Integrable (fun x : ℝ => Real.exp (-(1/4) * (x - d) ^ 2)) ∧
+      ∫ x : ℝ, Real.exp (-(1/4) * (x - d) ^ 2) = Real.sqrt (Real.pi / (1/4)) := by
+  have hb : (0:ℝ) < 1/4 := by norm_num
+  refine ⟨(integrable_exp_neg_mul_sq hb).comp_sub_right d, ?_⟩
+  rw [integral_sub_right_eq_self (fun x : ℝ => Real.exp (-(1/4) * x ^ 2)) d]
+  exact integral_gaussian (1/4)
+
+theorem integrable_gsum (α M y : ℝ) : Integrable (fun x : ℝ => gsum α M x y) := by
+  unfold gsum
+  exact (((gauss_quarter _).1.add (gauss_quarter _).1).add (gauss_quarter _).1).add
+    (gauss_quarter _).1
+
+theorem integral_gsum (α M y : ℝ) :
+    ∫ x : ℝ, gsum α M x y = 4 * Real.sqrt (Real.pi / (1/4)) := by
+  obtain ⟨i1, v1⟩ := gauss_quarter (2 * M - 2 * α - y)
+  obtain ⟨i2, v2⟩ := gauss_quarter (M - 2 * α)
+  obtain ⟨i3, v3⟩ := gauss_quarter M
+  obtain ⟨i4, v4⟩ := gauss_quarter y
+  have h12 : Integrable (fun x : ℝ => Real.exp (-(1/4) * (x - (2 * M - 2 * α - y)) ^ 2)
+      + Real.exp (-(1/4) * (x - (M - 2 * α)) ^ 2)) := i1.add i2
+  have h123 : Integrable (fun x : ℝ => Real.exp (-(1/4) * (x - (2 * M - 2 * α - y)) ^ 2)
+      + Real.exp (-(1/4) * (x - (M - 2 * α)) ^ 2) + Real.exp (-(1/4) * (x - M) ^ 2)) :=
+    h12.add i3
+  unfold gsum
+  rw [integral_add h123 i4, integral_add h12 i3, integral_add i1 i2, v1, v2, v3, v4]
+  ring
+
+theorem continuous_gsum (α M : ℝ) : Continuous (fun p : ℝ × ℝ => gsum α M p.1 p.2) := by
+  unfold gsum
+  fun_prop
+
+/-- The normalized dominator profile `(1+(y−M)²)⁻¹ gsum(x, y)`. -/
+noncomputable def hProf (α M : ℝ) (p : ℝ × ℝ) : ℝ :=
+  (1 + (p.2 - M) ^ 2)⁻¹ * gsum α M p.1 p.2
+
+/-- `hProf` is integrable on `ℝ²` with integral `π · 4√(π/(1/4))` (Tonelli: Gaussian in `x`,
+Cauchy in `y`). -/
+theorem hProf_integral (α M : ℝ) :
+    Integrable (hProf α M) (volume.prod volume) ∧
+      ∫ p : ℝ × ℝ, hProf α M p ∂(volume.prod volume)
+        = Real.pi * (4 * Real.sqrt (Real.pi / (1/4))) := by
+  have hk : Continuous fun p : ℝ × ℝ => (1 + (p.2 - M) ^ 2)⁻¹ :=
+    (by fun_prop : Continuous fun p : ℝ × ℝ => 1 + (p.2 - M) ^ 2).inv₀
+      (fun p => by positivity)
+  have hcont : Continuous (hProf α M) := hk.mul (continuous_gsum α M)
+  have hinner : ∀ y : ℝ, ∫ x : ℝ, hProf α M (x, y)
+      = (1 + (y - M) ^ 2)⁻¹ * (4 * Real.sqrt (Real.pi / (1/4))) := by
+    intro y
+    show ∫ x : ℝ, (1 + (y - M) ^ 2)⁻¹ * gsum α M x y = _
+    rw [integral_const_mul, integral_gsum]
+  have hnn : ∀ p : ℝ × ℝ, 0 ≤ hProf α M p := fun p => by
+    unfold hProf; exact mul_nonneg (by positivity) (gsum_nonneg _ _ _ _)
+  have hkint : Integrable (fun y : ℝ => (1 + (y - M) ^ 2)⁻¹) :=
+    integrable_inv_one_add_sq.comp_sub_right M
+  have hint : Integrable (hProf α M) (volume.prod volume) := by
+    rw [integrable_prod_iff' hcont.aestronglyMeasurable]
+    refine ⟨Eventually.of_forall fun y => ?_, ?_⟩
+    · show Integrable (fun x : ℝ => (1 + (y - M) ^ 2)⁻¹ * gsum α M x y) volume
+      exact (integrable_gsum α M y).const_mul _
+    · refine (hkint.mul_const (4 * Real.sqrt (Real.pi / (1/4)))).congr
+        (Eventually.of_forall fun y => ?_)
+      simp only
+      rw [← hinner y]
+      apply integral_congr_ae
+      filter_upwards with x
+      rw [Real.norm_eq_abs, abs_of_nonneg (hnn _)]
+  refine ⟨hint, ?_⟩
+  rw [integral_prod_symm _ hint]
+  simp_rw [hinner]
+  rw [integral_mul_const, integral_inv_one_add_sq_sub]
+
+/-- The constant of the asymmetric `Q` bound. -/
+noncomputable def vAsymConst : ℝ :=
+  2 * ((4 * Real.pi * 1) ^ (-1/2 : ℝ)) ^ 2 * 16384 * (Real.pi * (4 * Real.sqrt (Real.pi / (1/4))))
+
+theorem vAsymConst_pos : 0 < vAsymConst := by
+  unfold vAsymConst
+  have : 0 < (4 * Real.pi * 1) ^ (-1/2 : ℝ) := Real.rpow_pos_of_pos (by positivity) _
+  have : 0 < Real.sqrt (Real.pi / (1/4)) := Real.sqrt_pos.mpr (by positivity)
+  positivity
+
+/-- `gFun ≤ K · hProf` (heavier weight first). -/
+theorem gFun_le_hProf {α β : ℝ} (hβ : 1 ≤ β) (hαβ : β + 1 ≤ α) (M x y : ℝ) :
+    gFun α β M x y
+      ≤ (2 * ((4 * Real.pi * 1) ^ (-1/2 : ℝ)) ^ 2 * 16384) * (1 + 32 * α ^ 2)
+        * Real.exp (-2 * (α + β) * M + 2 * α ^ 2) * hProf α M (x, y) := by
+  refine (gFun_le hβ hαβ M x y).trans ?_
+  have hk : Real.exp (-|M - y|) ≤ 2 * (1 + (y - M) ^ 2)⁻¹ := by
+    rw [abs_sub_comm]; exact exp_neg_abs_le_two_inv _
+  have hg := gsum_nonneg α M x y
+  unfold hProf
+  simp only
+  rw [Real.exp_add]
+  calc ((4 * Real.pi * 1) ^ (-1/2 : ℝ)) ^ 2 * Real.exp (-2 * (α + β) * M)
+        * (16384 * (1 + 32 * α ^ 2) * Real.exp (2 * α ^ 2)) * (Real.exp (-|M - y|) * gsum α M x y)
+      ≤ ((4 * Real.pi * 1) ^ (-1/2 : ℝ)) ^ 2 * Real.exp (-2 * (α + β) * M)
+        * (16384 * (1 + 32 * α ^ 2) * Real.exp (2 * α ^ 2))
+        * (2 * (1 + (y - M) ^ 2)⁻¹ * gsum α M x y) := by
+        apply mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hk hg)
+        positivity
+    _ = _ := by ring
+
+/-- `1 + y² ≤ (1+2M²)(1+2(M−x)²)(1+2(M−y)²)`. -/
+theorem one_add_sq_le_poly (M x y : ℝ) :
+    1 + y ^ 2 ≤ (1 + 2 * M ^ 2) * ((1 + 2 * (M - x) ^ 2) * (1 + 2 * (M - y) ^ 2)) := by
+  have h1 : 1 + y ^ 2 ≤ (1 + 2 * M ^ 2) * (1 + 2 * (M - y) ^ 2) := by
+    nlinarith [sq_nonneg (y - 2 * M), sq_nonneg M, sq_nonneg (M - y),
+      mul_nonneg (sq_nonneg M) (sq_nonneg (M - y))]
+  have h2 : (1 + 2 * M ^ 2) * (1 + 2 * (M - y) ^ 2)
+      ≤ (1 + 2 * M ^ 2) * ((1 + 2 * (M - x) ^ 2) * (1 + 2 * (M - y) ^ 2)) := by
+    apply mul_le_mul_of_nonneg_left _ (by positivity)
+    nlinarith [sq_nonneg (M - x), sq_nonneg (M - y),
+      mul_nonneg (sq_nonneg (M - x)) (sq_nonneg (M - y))]
+  linarith
+
+theorem vAsym_sq_eq (α β M x y : ℝ) :
+    vAsym α β M (x, y) ^ 2
+      = Real.exp (-2 * α * x) * qKerTwo M (x, y) ^ 2 * Real.exp (-2 * β * y) * (1 + y ^ 2) := by
+  unfold vAsym
+  simp only
+  rw [mul_pow, mul_pow, mul_pow, AiryConj.phiWeight_sq, ← Real.exp_nat_mul, ← Real.exp_nat_mul]
+  push_cast
+  ring_nf
+
+/-- Heavier-first pointwise bound: `vAsym α β² ≤ (1+2M²) gFun α β`. -/
+theorem vAsym_sq_le_gFun (α β M x y : ℝ) :
+    vAsym α β M (x, y) ^ 2 ≤ (1 + 2 * M ^ 2) * gFun α β M x y := by
+  rw [vAsym_sq_eq]
+  unfold gFun
+  have hE : 0 ≤ Real.exp (-2 * α * x) * qKerTwo M (x, y) ^ 2 * Real.exp (-2 * β * y) := by
+    positivity
+  calc Real.exp (-2 * α * x) * qKerTwo M (x, y) ^ 2 * Real.exp (-2 * β * y) * (1 + y ^ 2)
+      ≤ Real.exp (-2 * α * x) * qKerTwo M (x, y) ^ 2 * Real.exp (-2 * β * y)
+        * ((1 + 2 * M ^ 2) * ((1 + 2 * (M - x) ^ 2) * (1 + 2 * (M - y) ^ 2))) :=
+        mul_le_mul_of_nonneg_left (one_add_sq_le_poly M x y) hE
+    _ = _ := by ring
+
+/-- Lighter-first pointwise bound: `vAsym α β² ≤ (1+2M²) gFun β α` at the swapped point. -/
+theorem vAsym_sq_le_gFun_swap (α β M x y : ℝ) :
+    vAsym α β M (x, y) ^ 2 ≤ (1 + 2 * M ^ 2) * gFun β α M y x := by
+  rw [vAsym_sq_eq]
+  unfold gFun
+  rw [qKerTwo_symm M y x]
+  have hE : 0 ≤ Real.exp (-2 * α * x) * qKerTwo M (x, y) ^ 2 * Real.exp (-2 * β * y) := by
+    positivity
+  calc Real.exp (-2 * α * x) * qKerTwo M (x, y) ^ 2 * Real.exp (-2 * β * y) * (1 + y ^ 2)
+      ≤ Real.exp (-2 * α * x) * qKerTwo M (x, y) ^ 2 * Real.exp (-2 * β * y)
+        * ((1 + 2 * M ^ 2) * ((1 + 2 * (M - x) ^ 2) * (1 + 2 * (M - y) ^ 2))) :=
+        mul_le_mul_of_nonneg_left (one_add_sq_le_poly M x y) hE
+    _ = _ := by ring
+
+/-- **The sharp asymmetric `Q` bound, heavier weight on the first variable**
+(`1 ≤ β`, `β + 1 ≤ α`): `∫∫ vAsym² ≤ C (1+2M²)(1+32α²) e^{−2(α+β)M + 2α²}`. -/
+theorem vAsym_sq_integral_le {α β : ℝ} (hβ : 1 ≤ β) (hαβ : β + 1 ≤ α) (M : ℝ) :
+    Integrable (fun p : ℝ × ℝ => (vAsym α β M p) ^ 2) (volume.prod volume) ∧
+      ∫ p : ℝ × ℝ, (vAsym α β M p) ^ 2 ∂(volume.prod volume)
+        ≤ vAsymConst * (1 + 2 * M ^ 2) * (1 + 32 * α ^ 2)
+          * Real.exp (-2 * (α + β) * M + 2 * α ^ 2) := by
+  obtain ⟨hHi, hHv⟩ := hProf_integral α M
+  set K : ℝ := (1 + 2 * M ^ 2) * ((2 * ((4 * Real.pi * 1) ^ (-1/2 : ℝ)) ^ 2 * 16384)
+      * (1 + 32 * α ^ 2) * Real.exp (-2 * (α + β) * M + 2 * α ^ 2)) with hK
+  have hbd : ∀ p : ℝ × ℝ, (vAsym α β M p) ^ 2 ≤ K * hProf α M p := by
+    rintro ⟨x, y⟩
+    refine (vAsym_sq_le_gFun α β M x y).trans ?_
+    rw [hK, mul_assoc]
+    exact mul_le_mul_of_nonneg_left (gFun_le_hProf hβ hαβ M x y) (by positivity)
+  have hmeas : AEStronglyMeasurable (fun p : ℝ × ℝ => (vAsym α β M p) ^ 2)
+      (volume.prod volume) := ((measurable_vAsym α β M).pow_const 2).aestronglyMeasurable
+  have hint : Integrable (fun p : ℝ × ℝ => (vAsym α β M p) ^ 2) (volume.prod volume) :=
+    (hHi.const_mul K).mono' hmeas (Eventually.of_forall fun p => by
+      rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]; exact hbd p)
+  refine ⟨hint, ?_⟩
+  calc ∫ p : ℝ × ℝ, (vAsym α β M p) ^ 2 ∂(volume.prod volume)
+      ≤ ∫ p : ℝ × ℝ, K * hProf α M p ∂(volume.prod volume) :=
+        integral_mono hint (hHi.const_mul K) hbd
+    _ = K * (Real.pi * (4 * Real.sqrt (Real.pi / (1/4)))) := by rw [integral_const_mul, hHv]
+    _ = _ := by rw [hK]; unfold vAsymConst; ring
+
+/-- **The sharp asymmetric `Q` bound, heavier weight on the second variable**
+(`1 ≤ α`, `α + 1 ≤ β`): `∫∫ vAsym² ≤ C (1+2M²)(1+32β²) e^{−2(α+β)M + 2β²}`. -/
+theorem vAsym_sq_integral_le_swap {α β : ℝ} (hα : 1 ≤ α) (hβα : α + 1 ≤ β) (M : ℝ) :
+    Integrable (fun p : ℝ × ℝ => (vAsym α β M p) ^ 2) (volume.prod volume) ∧
+      ∫ p : ℝ × ℝ, (vAsym α β M p) ^ 2 ∂(volume.prod volume)
+        ≤ vAsymConst * (1 + 2 * M ^ 2) * (1 + 32 * β ^ 2)
+          * Real.exp (-2 * (α + β) * M + 2 * β ^ 2) := by
+  obtain ⟨hHi, hHv⟩ := hProf_integral β M
+  set K : ℝ := (1 + 2 * M ^ 2) * ((2 * ((4 * Real.pi * 1) ^ (-1/2 : ℝ)) ^ 2 * 16384)
+      * (1 + 32 * β ^ 2) * Real.exp (-2 * (β + α) * M + 2 * β ^ 2)) with hK
+  have hbd : ∀ p : ℝ × ℝ, (vAsym α β M p) ^ 2 ≤ K * hProf β M p.swap := by
+    rintro ⟨x, y⟩
+    refine (vAsym_sq_le_gFun_swap α β M x y).trans ?_
+    rw [hK, mul_assoc]
+    exact mul_le_mul_of_nonneg_left (gFun_le_hProf hα hβα M y x) (by positivity)
+  have hHs : Integrable (fun p : ℝ × ℝ => hProf β M p.swap) (volume.prod volume) := hHi.swap
+  have hmeas : AEStronglyMeasurable (fun p : ℝ × ℝ => (vAsym α β M p) ^ 2)
+      (volume.prod volume) := ((measurable_vAsym α β M).pow_const 2).aestronglyMeasurable
+  have hint : Integrable (fun p : ℝ × ℝ => (vAsym α β M p) ^ 2) (volume.prod volume) :=
+    (hHs.const_mul K).mono' hmeas (Eventually.of_forall fun p => by
+      rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]; exact hbd p)
+  refine ⟨hint, ?_⟩
+  have hswap : ∫ p : ℝ × ℝ, hProf β M p.swap ∂(volume.prod volume)
+      = ∫ p : ℝ × ℝ, hProf β M p ∂(volume.prod volume) :=
+    integral_prod_swap (hProf β M)
+  calc ∫ p : ℝ × ℝ, (vAsym α β M p) ^ 2 ∂(volume.prod volume)
+      ≤ ∫ p : ℝ × ℝ, K * hProf β M p.swap ∂(volume.prod volume) :=
+        integral_mono hint (hHs.const_mul K) hbd
+    _ = K * (Real.pi * (4 * Real.sqrt (Real.pi / (1/4)))) := by
+        rw [integral_const_mul, hswap, hHv]
+    _ = _ := by rw [hK]; unfold vAsymConst; ring_nf
+
+theorem memLp_vAsym_of {α β M : ℝ}
+    (h : Integrable (fun p : ℝ × ℝ => (vAsym α β M p) ^ 2) (volume.prod volume)) :
+    MemLp (vAsym α β M) 2 (volume.prod volume) :=
+  memLp_of_sq_integrable (measurable_vAsym α β M) h
+
+/-! ## Part 4: the weight-free trace and the two-weight Hilbert–Schmidt split -/
+
+/-- The weight cancellation in a `V`–`W` composite at asymmetric weights:
+`(vAsym α β · W_{T,β})(x, z) = e^{−αx} (Q P_{−T}B₀)(x, z) e^{βz}`. -/
+theorem compKernel_vAsym_wKernel (α β M T x z : ℝ) :
+    AiryConj.compKernel (vAsym α β M) (AiryConj.wKernel T β) (x, z)
+      = Real.exp (-α * x) * AiryConj.compKernel (qKerTwo M) (bAiryKer T) (x, z)
+        * Real.exp (β * z) := by
+  show (∫ v : ℝ, vAsym α β M (x, v) * AiryConj.wKernel T β (v, z))
+    = Real.exp (-α * x) * (∫ v : ℝ, qKerTwo M (x, v) * bAiryKer T (v, z)) * Real.exp (β * z)
+  rw [← integral_const_mul, ← integral_mul_const]
+  apply integral_congr_ae
+  filter_upwards with v
+  unfold vAsym AiryConj.wKernel bAiryKer
+  simp only
+  have hφ : AiryConj.phiWeight v * (AiryConj.phiWeight v)⁻¹ = 1 :=
+    mul_inv_cancel₀ (AiryConj.phiWeight_pos v).ne'
+  have he : Real.exp (-β * v) * Real.exp (β * v) = 1 := by
+    rw [← Real.exp_add, show -β * v + β * v = (0:ℝ) by ring, Real.exp_zero]
+  calc Real.exp (-α * x) * qKerTwo M (x, v) * Real.exp (-β * v) * AiryConj.phiWeight v
+        * ((AiryConj.phiWeight v)⁻¹ * Real.exp (β * v) * backwardAiry T (v + z)
+          * Real.exp (β * z))
+      = Real.exp (-α * x) * (qKerTwo M (x, v) * backwardAiry T (v + z)) * Real.exp (β * z)
+        * (AiryConj.phiWeight v * (AiryConj.phiWeight v)⁻¹)
+        * (Real.exp (-β * v) * Real.exp (β * v)) := by ring
+    _ = _ := by rw [hφ, he]; ring
+
+/-- **The weight-free form of `tr(K̃₁K̃₂)`** (`r + 3 ≤ a`):
+`tr(K̃₁K̃₂) = ∫∫ (Q P_rB₀)(x, z) (Q P_{−S}B₀)(z, x)`, `S = 2 + r`. Route: `K̃₂ = (U_aP_{1+r}U_a⁻¹)
+V_a W_{S,a}` (`k2KerT_eq_compKernel`), `K̃₁ = V_a W_{1,a}`, the forward heat–Airy step
+`W_{1,a}(U_aP_{1+r}U_a⁻¹) = W_{−r,a}` (`kernelOperator_wKernel_one_comp_conjHeatCLM`), the
+trace formula `trace_kernelOperator_comp`, and pointwise cancellation of the weights. -/
+theorem trace_k1k2_eq_integral (hr : 0 < r) (hM : 0 < M) {a : ℝ} (hadr : r + 3 ≤ a)
+    (hk1 : MemLp (k1KerT a M) 2 (volume.prod volume))
+    (hk2 : MemLp (k2KerT a M r) 2 (volume.prod volume)) :
+    trace (kernelOperator hk1 ∘L kernelOperator hk2)
+      = ∫ x : ℝ, ∫ z : ℝ, AiryConj.compKernel (qKerTwo M) (bAiryKer (-r)) (x, z)
+          * AiryConj.compKernel (qKerTwo M) (bAiryKer (2 + r)) (z, x) := by
+  have ha2 : 2 ≤ a := by linarith
+  have hL : (0:ℝ) < 1 + r := by linarith
+  have hv : MemLp (AiryConj.vKernel 1 a M) 2 (volume.prod volume) :=
+    AiryConj.vKernel_memLp one_pos hM (by linarith)
+  have hw1 : MemLp (AiryConj.wKernel 1 a) 2 (volume.prod volume) := memLp_wKernel_any (by linarith)
+  have hwr : MemLp (AiryConj.wKernel (-r) a) 2 (volume.prod volume) :=
+    memLp_wKernel_any (by linarith)
+  have hwS : MemLp (AiryConj.wKernel (2 + r) a) 2 (volume.prod volume) :=
+    memLp_wKernel_any (by linarith)
+  have hvm := AiryConj.measurable_vKernel 1 a M
+  have hG : MemLp (AiryConj.compKernel (AiryConj.vKernel 1 a M) (AiryConj.wKernel (2 + r) a)) 2
+      (volume.prod volume) :=
+    memLp_compKernel hvm (AiryConj.continuous_wKernel _ _).measurable hv hwS
+  have hX : MemLp (AiryConj.compKernel (AiryConj.vKernel 1 a M) (AiryConj.wKernel (-r) a)) 2
+      (volume.prod volume) :=
+    memLp_compKernel hvm (AiryConj.continuous_wKernel _ _).measurable hv hwr
+  have hK1c : MemLp (AiryConj.compKernel (AiryConj.vKernel 1 a M) (AiryConj.wKernel 1 a)) 2
+      (volume.prod volume) :=
+    memLp_compKernel hvm (AiryConj.continuous_wKernel _ _).measurable hv hw1
+  have e1 : kernelOperator hk1 = kernelOperator hv ∘L kernelOperator hw1 := by
+    rw [kernelOperator_congr (k1KerT_eq_compKernel_vKernel_wKernel a M) hk1 hK1c,
+      kernelOperator_compKernel hv hw1 hK1c]
+  have hk2c : MemLp (AiryConj.compKernel (uConj a (heatKerTwo (1 + r)))
+      (AiryConj.compKernel (AiryConj.vKernel 1 a M) (AiryConj.wKernel (2 + r) a))) 2
+      (volume.prod volume) := by
+    rw [← k2KerT_eq_compKernel]; exact hk2
+  have e2 : kernelOperator hk2 = conjHeatCLM (1 + r) hL a ∘L kernelOperator hG := by
+    rw [kernelOperator_congr (k2KerT_eq_compKernel a M r) hk2 hk2c,
+      kernelOperator_compKernel_uConjHeat hL a hG hk2c]
+  have e3 : kernelOperator hw1 ∘L conjHeatCLM (1 + r) hL a = kernelOperator hwr :=
+    kernelOperator_wKernel_one_comp_conjHeatCLM hr ha2
+  have e4 : kernelOperator hX = kernelOperator hv ∘L kernelOperator hwr :=
+    kernelOperator_compKernel hv hwr hX
+  have hops : kernelOperator hk1 ∘L kernelOperator hk2 = kernelOperator hX ∘L kernelOperator hG := by
+    rw [e1, e2, e4, ← e3]
+    rfl
+  rw [hops, AiryConj.trace_kernelOperator_comp hX hG]
+  refine integral_congr_ae (Eventually.of_forall fun x => ?_)
+  refine integral_congr_ae (Eventually.of_forall fun z => ?_)
+  simp only
+  rw [← vAsym_self, compKernel_vAsym_wKernel, compKernel_vAsym_wKernel]
+  have h1 : Real.exp (-a * x) * Real.exp (a * x) = 1 := by
+    rw [← Real.exp_add, show -a * x + a * x = (0:ℝ) by ring, Real.exp_zero]
+  have h2 : Real.exp (a * z) * Real.exp (-a * z) = 1 := by
+    rw [← Real.exp_add, show a * z + -a * z = (0:ℝ) by ring, Real.exp_zero]
+  calc Real.exp (-a * x) * AiryConj.compKernel (qKerTwo M) (bAiryKer (-r)) (x, z) * Real.exp (a * z)
+        * (Real.exp (-a * z) * AiryConj.compKernel (qKerTwo M) (bAiryKer (2 + r)) (z, x)
+          * Real.exp (a * x))
+      = AiryConj.compKernel (qKerTwo M) (bAiryKer (-r)) (x, z)
+          * AiryConj.compKernel (qKerTwo M) (bAiryKer (2 + r)) (z, x)
+          * (Real.exp (-a * x) * Real.exp (a * x)) * (Real.exp (a * z) * Real.exp (-a * z)) := by
+        ring
+    _ = _ := by rw [h1, h2]; ring
+
+/-- **Decorrelation bound, two-weight conditional form**: for `r + 3 ≤ a` and weights `1 ≤ b₁`, `b₁ + 1 ≤ b₀`,
+`r + 3 ≤ b₀`,
+`tr(K̃₁K̃₂) ≤ C (1+2M²)(1+32b₀²) exp(−2(b₀+b₁)M + 2b₀² + b₁³/3 + r b₁² + b₀³/3 − (2+r)b₀²)`.
+The weight-free integral is re-weighted as `tr(X_b G_b)` with `X_b = V_{b₀→b₁} W_{−r,b₁}` and
+`G_b = V_{b₁→b₀} W_{S,b₀}`, then bounded by `‖V‖₂‖W_{−r}‖₂‖V'‖₂‖W_S‖₂`. -/
+theorem trace_k1k2_le :
+    ∃ C : ℝ, 0 < C ∧ ∀ {M r a b₀ b₁ : ℝ}, 0 < r → 0 < M → r + 3 ≤ a → 1 ≤ b₁ → b₁ + 1 ≤ b₀ →
+      r + 3 ≤ b₀ →
+      (hk1 : MemLp (k1KerT a M) 2 (volume.prod volume)) →
+      (hk2 : MemLp (k2KerT a M r) 2 (volume.prod volume)) →
+      trace (kernelOperator hk1 ∘L kernelOperator hk2)
+        ≤ C * (1 + 2 * M ^ 2) * (1 + 32 * b₀ ^ 2)
+          * Real.exp (-2 * (b₀ + b₁) * M + 2 * b₀ ^ 2 + (b₁ ^ 3 / 3 + r * b₁ ^ 2)
+            + (b₀ ^ 3 / 3 - (2 + r) * b₀ ^ 2)) := by
+  obtain ⟨CW, hCW, hW⟩ := hsNorm_wKernel_le_any
+  refine ⟨CW ^ 2 * vAsymConst, by have := vAsymConst_pos; positivity, ?_⟩
+  intro M r a b₀ b₁ hr hM hadr hb₁ hb hb₀ hk1 hk2
+  rw [trace_k1k2_eq_integral hr hM hadr hk1 hk2]
+  -- the re-weighted factors
+  obtain ⟨hVi, hVb⟩ := vAsym_sq_integral_le hb₁ hb M
+  obtain ⟨hV'i, hV'b⟩ := vAsym_sq_integral_le_swap hb₁ hb M
+  have hV : MemLp (vAsym b₀ b₁ M) 2 (volume.prod volume) := memLp_vAsym_of hVi
+  have hV' : MemLp (vAsym b₁ b₀ M) 2 (volume.prod volume) := memLp_vAsym_of hV'i
+  have hFa : -r + 1 ≤ b₁ := by linarith
+  have hWa : 2 + r + 1 ≤ b₀ := by linarith
+  have hF : MemLp (AiryConj.wKernel (-r) b₁) 2 (volume.prod volume) := memLp_wKernel_any hFa
+  have hWS : MemLp (AiryConj.wKernel (2 + r) b₀) 2 (volume.prod volume) := memLp_wKernel_any hWa
+  have hXb : MemLp (AiryConj.compKernel (vAsym b₀ b₁ M) (AiryConj.wKernel (-r) b₁)) 2
+      (volume.prod volume) :=
+    memLp_compKernel (measurable_vAsym _ _ _) (AiryConj.continuous_wKernel _ _).measurable hV hF
+  have hGb : MemLp (AiryConj.compKernel (vAsym b₁ b₀ M) (AiryConj.wKernel (2 + r) b₀)) 2
+      (volume.prod volume) :=
+    memLp_compKernel (measurable_vAsym _ _ _) (AiryConj.continuous_wKernel _ _).measurable hV' hWS
+  -- the weight-free integral equals the re-weighted trace
+  have hint : (∫ x : ℝ, ∫ z : ℝ, AiryConj.compKernel (qKerTwo M) (bAiryKer (-r)) (x, z)
+        * AiryConj.compKernel (qKerTwo M) (bAiryKer (2 + r)) (z, x))
+      = trace (kernelOperator hXb ∘L kernelOperator hGb) := by
+    rw [AiryConj.trace_kernelOperator_comp hXb hGb]
+    refine integral_congr_ae (Eventually.of_forall fun x => ?_)
+    refine integral_congr_ae (Eventually.of_forall fun z => ?_)
+    simp only
+    rw [compKernel_vAsym_wKernel, compKernel_vAsym_wKernel]
+    have h1 : Real.exp (-b₀ * x) * Real.exp (b₀ * x) = 1 := by
+      rw [← Real.exp_add, show -b₀ * x + b₀ * x = (0:ℝ) by ring, Real.exp_zero]
+    have h2 : Real.exp (b₁ * z) * Real.exp (-b₁ * z) = 1 := by
+      rw [← Real.exp_add, show b₁ * z + -b₁ * z = (0:ℝ) by ring, Real.exp_zero]
+    calc AiryConj.compKernel (qKerTwo M) (bAiryKer (-r)) (x, z)
+          * AiryConj.compKernel (qKerTwo M) (bAiryKer (2 + r)) (z, x)
+        = AiryConj.compKernel (qKerTwo M) (bAiryKer (-r)) (x, z)
+          * AiryConj.compKernel (qKerTwo M) (bAiryKer (2 + r)) (z, x)
+          * (Real.exp (-b₀ * x) * Real.exp (b₀ * x)) * (Real.exp (b₁ * z) * Real.exp (-b₁ * z)) := by
+          rw [h1, h2]; ring
+      _ = _ := by ring
+  rw [hint]
+  -- Hilbert–Schmidt factor bounds
+  set A : ℝ := vAsymConst * (1 + 2 * M ^ 2) * (1 + 32 * b₀ ^ 2)
+    * Real.exp (-2 * (b₀ + b₁) * M + 2 * b₀ ^ 2) with hA
+  have hA0 : 0 ≤ A := by have := vAsymConst_pos; positivity
+  have hVhs : hsNorm (kernelOperator hV) ≤ Real.sqrt A :=
+    (AiryConj.hsNorm_kernelOperator_le_sqrt hV hVi).trans (Real.sqrt_le_sqrt hVb)
+  have hV'hs : hsNorm (kernelOperator hV') ≤ Real.sqrt A := by
+    refine (AiryConj.hsNorm_kernelOperator_le_sqrt hV' hV'i).trans (Real.sqrt_le_sqrt ?_)
+    refine hV'b.trans (le_of_eq ?_)
+    rw [hA, show -2 * (b₁ + b₀) * M = -2 * (b₀ + b₁) * M by ring]
+  have hFhs : hsNorm (kernelOperator hF) ≤ CW * Real.exp (b₁ ^ 3 / 3 - (-r) * b₁ ^ 2) :=
+    hW (-r) b₁ hFa
+  have hWhs : hsNorm (kernelOperator hWS) ≤ CW * Real.exp (b₀ ^ 3 / 3 - (2 + r) * b₀ ^ 2) :=
+    hW (2 + r) b₀ hWa
+  have hXhs : hsNorm (kernelOperator hXb) ≤ Real.sqrt A * (CW * Real.exp (b₁ ^ 3 / 3 - (-r) * b₁ ^ 2)) := by
+    rw [kernelOperator_compKernel hV hF hXb]
+    exact (hsNorm_comp_le (isHilbertSchmidt_kernelOperator hV)
+      (isHilbertSchmidt_kernelOperator hF)).trans
+      (mul_le_mul hVhs hFhs (hsNorm_nonneg _) (Real.sqrt_nonneg _))
+  have hGhs : hsNorm (kernelOperator hGb) ≤ Real.sqrt A * (CW * Real.exp (b₀ ^ 3 / 3 - (2 + r) * b₀ ^ 2)) := by
+    rw [kernelOperator_compKernel hV' hWS hGb]
+    exact (hsNorm_comp_le (isHilbertSchmidt_kernelOperator hV')
+      (isHilbertSchmidt_kernelOperator hWS)).trans
+      (mul_le_mul hV'hs hWhs (hsNorm_nonneg _) (Real.sqrt_nonneg _))
+  have htr := norm_trace_comp_le (isHilbertSchmidt_kernelOperator hXb)
+    (isHilbertSchmidt_kernelOperator hGb)
+  rw [Real.norm_eq_abs] at htr
+  calc trace (kernelOperator hXb ∘L kernelOperator hGb)
+      ≤ |trace (kernelOperator hXb ∘L kernelOperator hGb)| := le_abs_self _
+    _ ≤ hsNorm (kernelOperator hXb) * hsNorm (kernelOperator hGb) := htr
+    _ ≤ (Real.sqrt A * (CW * Real.exp (b₁ ^ 3 / 3 - (-r) * b₁ ^ 2)))
+          * (Real.sqrt A * (CW * Real.exp (b₀ ^ 3 / 3 - (2 + r) * b₀ ^ 2))) :=
+        mul_le_mul hXhs hGhs (hsNorm_nonneg _) (by positivity)
+    _ = (Real.sqrt A * Real.sqrt A) * CW ^ 2
+          * (Real.exp (b₁ ^ 3 / 3 - (-r) * b₁ ^ 2) * Real.exp (b₀ ^ 3 / 3 - (2 + r) * b₀ ^ 2)) := by
+        ring
+    _ = CW ^ 2 * vAsymConst * (1 + 2 * M ^ 2) * (1 + 32 * b₀ ^ 2)
+          * Real.exp (-2 * (b₀ + b₁) * M + 2 * b₀ ^ 2 + (b₁ ^ 3 / 3 + r * b₁ ^ 2)
+            + (b₀ ^ 3 / 3 - (2 + r) * b₀ ^ 2)) := by
+        have hE : Real.exp (-2 * (b₀ + b₁) * M + 2 * b₀ ^ 2 + (b₁ ^ 3 / 3 + r * b₁ ^ 2)
+            + (b₀ ^ 3 / 3 - (2 + r) * b₀ ^ 2))
+            = Real.exp (-2 * (b₀ + b₁) * M + 2 * b₀ ^ 2)
+              * (Real.exp (b₁ ^ 3 / 3 - (-r) * b₁ ^ 2) * Real.exp (b₀ ^ 3 / 3 - (2 + r) * b₀ ^ 2)) := by
+          rw [← Real.exp_add, ← Real.exp_add]; congr 1; ring
+        rw [Real.mul_self_sqrt hA0, hA, hE]
+        ring
+
+/-- **Decorrelation bound, discharged form**: at the Lean weight
+`a = √(2M)`, eventually in `M` and uniformly for `1 ≤ r ≤ χ√(2M)` (`0 < χ < 1`) — the
+quantifier pattern of `hsNorm_crKerT_le_discharged`, with the kernel binders `hk1`, `hk2` of
+`twoInt_joint_ge_plemelj` —
+`tr(K̃₁K̃₂) ≤ C (1+2M²)(1+256M) e^{−(4/3)a³ − 2ar²}`.
+This is the two-weight split at `(b₀, b₁) = (a + r, a − r)`, whose exponent is exactly
+`−(4/3)a³ − 2ar²` at `a² = 2M`. Since `π₁² ≥ ρ²(1 − o(1))`, `ρ² ≍ M^{1/2} e^{−(4/3)a³}` and
+`r ≥ 1`, this is `o(π₁²)` (the polynomial is beaten by `e^{−2a}`). -/
+theorem trace_k1k2_le_discharged {χ : ℝ} (hχ0 : 0 < χ) (hχ : χ < 1) :
+    ∃ C M₀ : ℝ, 0 < C ∧ ∀ {M r : ℝ}, M₀ ≤ M → 1 ≤ r →
+      r ≤ χ * Real.sqrt (2*M) →
+      (hk1 : MemLp (k1KerT (Real.sqrt (2*M)) M) 2 (volume.prod volume)) →
+      (hk2 : MemLp (k2KerT (Real.sqrt (2*M)) M r) 2 (volume.prod volume)) →
+      trace (kernelOperator hk1 ∘L kernelOperator hk2)
+        ≤ C * (1 + 2 * M ^ 2) * (1 + 256 * M)
+          * Real.exp (-(4/3) * Real.sqrt (2*M) ^ 3 - 2 * Real.sqrt (2*M) * r ^ 2) := by
+  obtain ⟨C, hC, H⟩ := trace_k1k2_le
+  obtain ⟨Ma, hMa⟩ := exists_admissible_M₀ hχ0 hχ
+  refine ⟨C, Ma, hC, ?_⟩
+  intro M r hM hr hrM hk1 hk2
+  obtain ⟨hadr, _, hM1⟩ := hMa M r hM hr hrM
+  have hr0 : (0:ℝ) < r := lt_of_lt_of_le one_pos hr
+  have hMpos : (0:ℝ) < M := lt_of_lt_of_le one_pos hM1
+  set a : ℝ := Real.sqrt (2*M) with ha
+  have ha2 : a ^ 2 = 2 * M := Real.sq_sqrt (by linarith)
+  have h := H (b₀ := a + r) (b₁ := a - r) hr0 hMpos hadr (by linarith) (by linarith)
+    (by linarith) hk1 hk2
+  have hexp : -2 * (a + r + (a - r)) * M + 2 * (a + r) ^ 2 + ((a - r) ^ 3 / 3 + r * (a - r) ^ 2)
+      + ((a + r) ^ 3 / 3 - (2 + r) * (a + r) ^ 2)
+      = -(4/3) * a ^ 3 - 2 * a * r ^ 2 := by
+    have hM' : M = a ^ 2 / 2 := by linarith
+    rw [hM']; ring
+  rw [hexp] at h
+  have hra : r ≤ a := by
+    have := Real.sqrt_nonneg (2*M)
+    nlinarith
+  have hpoly : 1 + 32 * (a + r) ^ 2 ≤ 1 + 256 * M := by nlinarith
+  refine h.trans ?_
+  apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+  exact mul_le_mul_of_nonneg_left hpoly (by positivity)
+end AiryTwoInt

@@ -1,0 +1,367 @@
+schema: claims/1
+package: airy1-gumbel-lean
+claims:
+  - id: airy1-gumbel-lean/block-extremes-interface
+    decl: Airy1Gumbel.Airy1BlockExtremes
+    kind: construction
+    summary: Hypothesis structure packaging the Airy_1 one-block inputs (sharp tail, cubic mixing family, pair-exceedance bounds, mesoscopic bound) for the extreme-value blocking argument; its conditional Gumbel limit is Airy1BlockExtremes.gumbel_limit.
+    file: Airy1Gumbel/BlockExtremes.lean
+    status: internal
+    keywords: [extreme-value, blocking, airy1, conditional]
+  - id: airy1-gumbel-lean/gumbel-limit-conditional
+    decl: Airy1Gumbel.Airy1BlockExtremes.gumbel_limit
+    kind: theorem
+    summary: "Conditional block-extremes Gumbel limit: for block maxima Y_j satisfying the hypotheses of Airy1BlockExtremes, P(Y_j <= a_N + b_N z for all j < N) -> exp(-e^{-z}) for every real z."
+    file: Airy1Gumbel/GumbelLimit.lean
+    status: internal
+    keywords: [gumbel, extreme-value, conditional, airy1]
+  - id: airy1-gumbel-lean/gumbel-limit-continuum
+    decl: Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_normalized
+    kind: theorem
+    summary: For an a.s.-continuous process A (Airy1ContinuousMax) whose block maxima carry an Airy1BlockExtremes bundle, P((A(x) - a_N)/b_N <= z for all x in [0, N]) -> exp(-e^{-z}) along integer N, via the a.s. identity between continuum and block-suprema events.
+    file: Airy1Gumbel/ContinuumMax.lean
+    status: internal
+    keywords: [gumbel, continuum, normalization]
+  - id: airy1-gumbel-lean/gumbel-limit-real
+    decl: Airy1Gumbel.Airy1ContinuousMax.gumbel_limit_continuum_real_normalized
+    kind: theorem
+    summary: "Real-length form of the normalized Gumbel limit: for A and the block-extremes bundle as in the integer case, P((A(x) - a_T)/b_T <= z for all x in [0, T]) -> exp(-e^{-z}) as real T -> infinity."
+    file: Airy1Gumbel/ContinuumMax.lean
+    status: internal
+    keywords: [gumbel, real-parameter, interpolation]
+  - id: airy1-gumbel-lean/two-sided-brownian
+    decl: Airy1Gumbel.twoSidedBM
+    kind: construction
+    summary: Two-sided Brownian motion on R built from the BrownianMotion dependency, with shift invariance of its increments (map_twoSidedBM_shift_incr).
+    file: Airy1Gumbel/TwoSidedBM.lean
+    status: internal
+    keywords: [brownian-motion, two-sided, shift-invariance]
+  - id: airy1-gumbel-lean/groeneboom-process
+    decl: Airy1Gumbel.groeneboomS
+    kind: construction
+    summary: The recentered Groeneboom process (argmax of two-sided Brownian motion minus a parabola, recentered by the location), built on twoSidedBM.
+    file: Airy1Gumbel/Groeneboom.lean
+    status: internal
+    keywords: [groeneboom, argmax, brownian-motion]
+  - id: airy1-gumbel-lean/groeneboom-fdd-stationary
+    decl: Airy1Gumbel.groeneboom_stationary_fdd
+    kind: theorem
+    summary: "Stationarity of the finite-dimensional distributions of the recentered Groeneboom process: for times t_1..t_k and shift s, the law of (U(t_i + s))_i equals that of (U(t_i))_i; a.s. path continuity is proved in the same module."
+    file: Airy1Gumbel/Groeneboom.lean
+    status: internal
+    keywords: [groeneboom, stationarity, fdd]
+  - id: airy1-gumbel-lean/sharp-tail-discharge
+    decl: Airy1Gumbel.sharp_tail_of_QRUnitBlockLaw
+    kind: theorem
+    summary: Sharp one-block tail P(Y_0 > u) / e^{-H(u)} -> 1 as u -> infinity, derived from the record QRUnitBlockLaw (Quastel-Remenik 2012, Theorem 4, at their weight a = 2T, T = 1) via the two-term determinant asymptotics of the contrib package.
+    file: Airy1Gumbel/SharpTail.lean
+    status: internal
+    keywords: [sharp-tail, fredholm-determinant, external-record]
+  - id: airy1-gumbel-lean/touching-discharge
+    decl: Airy1Gumbel.touching_of_QR
+    kind: theorem
+    summary: Adjacent-block anti-clustering N * P(Y_0 > u_N, Y_1 > u_N) -> 0 (the paper's touching-block estimate), from stationary marginals and the records QRUnitBlockLaw and QRTwoBlockLaw (Quastel-Remenik 2012, Theorem 4, T = 1, 2) via the determinant asymptotics touchDet_isBigO.
+    file: Airy1Gumbel/Touching.lean
+    status: internal
+    keywords: [touching, anti-clustering, external-record]
+  - id: airy1-gumbel-lean/separated-discharge
+    decl: Airy1Gumbel.separated_of_QR
+    kind: theorem
+    summary: Separated-block anti-clustering N * sum_{2<=j<=m_N} P(Y_0 > u_N, Y_j > u_N) -> 0 for (1/2)^{1/3} < chi < 1 (the paper's separated-block estimate), from QRUnitBlockLaw and the two-interval record QRTwoIntervalLaw via the contrib two-interval estimates.
+    file: Airy1Gumbel/Separated.lean
+    status: internal
+    keywords: [separated, anti-clustering, two-interval-determinant, external-record]
+  - id: airy1-gumbel-lean/mixing-tail-pair-mix-discharge
+    decl: Airy1Gumbel.pair_mix_of_decouple
+    kind: theorem
+    summary: If |P(max_S Y <= u, max_T Y <= u) - P(max_S Y <= u) P(max_T Y <= u)| <= alpha(q) whenever T lies q steps after S, and marginals are stationary, then P(Y_0 > u, Y_j > u) <= P(Y_0 > u)^2 + alpha(j).
+    file: Airy1Gumbel/Mixing.lean
+    status: internal
+    keywords: [mixing, strong-mixing, decoupling]
+  - id: airy1-gumbel-lean/decouple-discharge
+    decl: Airy1Gumbel.decouple_of_CubicStrongMixing
+    kind: theorem
+    summary: "From the record CubicStrongMixing (sigma-algebra alpha-mixing, Chen-Pu 2026, Proposition 3.1 at s = 1/2): the block maxima satisfy the decoupling bound |P(max_S <= u, max_T <= u) - P(max_S <= u) P(max_T <= u)| <= alpha_Y(q), alpha_Y(m) = max(C,1) e^{-c(m-1)^3}."
+    file: Airy1Gumbel/MixingRecord.lean
+    status: internal
+    keywords: [mixing, strong-mixing, decoupling, external-record]
+  - id: airy1-gumbel-lean/newman-lemma3
+    decl: Airy1Gumbel.newman_lemma3
+    kind: theorem
+    summary: "Newman's Lemma 3 (CMP 1980), Bulinski Lipschitz form: for X, Y in L2 whose bounded monotone transforms are nonnegatively correlated and Lipschitz f, g, |Cov(f(X), g(Y))| <= Lip(f) Lip(g) Cov(X, Y)."
+    file: Airy1Gumbel/Newman.lean
+    status: internal
+    keywords: [association, covariance-inequality, newman]
+  - id: airy1-gumbel-lean/qr-records-entire-det
+    decl: Airy1Gumbel.QRTwoIntervalLaw.iff_law_detOne
+    kind: theorem
+    summary: "QRTwoIntervalLaw, stated with the entire Fredholm determinant, is equivalent to its exp-trace form: eventually in u, P(Y_0 <= u, Y_j <= u) = det_1(I - K_cup) for all j >= 2 with j + 2 <= sqrt(2u); the determinants agree since the operators eventually lie in the HS disk."
+    file: Airy1Gumbel/Separated.lean
+    status: internal
+    keywords: [external-record, fredholm-determinant, entire-determinant]
+  - id: airy1-gumbel-lean/qr-record-sanity
+    decl: Airy1Gumbel.qrRecords_joint_consistent
+    kind: theorem
+    summary: "Consistency of the QR block-law records: eventually in u, with pi_T = 1 - det(I - A_{u,T}) (entire determinant), 0 < pi_1 < pi_2 < 2 pi_1. The same module checks further consistency properties of the three records."
+    file: Airy1Gumbel/QRRecordSanity.lean
+    status: internal
+    keywords: [external-record, consistency-check, fredholm-determinant]
+  - id: airy1-gumbel-lean/mesoscopic-discharge
+    decl: Airy1Gumbel.mesoscopic_of_records
+    kind: theorem
+    summary: Mesoscopic anti-clustering N * sum_{m_N<j<=q_N} P(Y_0 > u_N, Y_j > u_N) -> 0 from the records LocalModulusEstimate, CubicCovarianceDecay, PairStationary, ProcessAssociated and QRUnitBlockLaw, using the proved newman_lemma3.
+    file: Airy1Gumbel/MesoscopicRecord.lean
+    status: internal
+    keywords: [mesoscopic, anti-clustering, external-record, newman]
+  - id: airy1-gumbel-lean/qr-record3-sign
+    decl: Airy1Gumbel.qrTwoInterval_implied_joint_pos
+    kind: theorem
+    summary: For 0 < chi < 1, eventually in u, for every j >= 2 with j - 1 <= chi sqrt(2u), the joint exceedance implied by the two-interval record, 1 - 2 det_1(I - K_1) + det_1(I - K_cup), is positive; no record is assumed (Plemelj expansion and two-interval trace bounds).
+    file: Airy1Gumbel/QRRecordSanity.lean
+    status: internal
+    keywords: [external-record, consistency-check, fredholm-determinant]
+  - id: airy1-gumbel-lean/airy1-fdd-positive-record
+    decl: Airy1Gumbel.airy1Fdd_map_erase
+    kind: theorem
+    summary: "Under the record Airy1FddPositive (Airy_1 Fredholm CDFs are distribution functions; Quastel-Remenik, Theorem 1; Borodin-Ferrari-Prahofer 2007), the finite-dimensional laws airy1Fdd are projective: erasing a time t maps airy1Fdd I to airy1Fdd (I.erase t)."
+    file: Airy1Gumbel/FddRecord.lean
+    status: internal
+    keywords: [external-record, finite-dimensional-distributions, airy1, projectivity]
+  - id: airy1-gumbel-lean/airy1-process-law
+    decl: Airy1Gumbel.airy1Law_map_timeShift
+    kind: theorem
+    summary: Under Airy1FddPositive, the Kolmogorov-extension law airy1Law on R -> R (with finite-dimensional CDFs airy1FinCdf) is invariant under every time shift; consequently PairStationary holds for the coordinate process.
+    file: Airy1Gumbel/Airy1Process.lean
+    status: internal
+    keywords: [kolmogorov-extension, finite-dimensional-distributions, airy1, stationarity]
+  - id: airy1-gumbel-lean/truncated-moment
+    decl: Airy1Gumbel.lintegral_clamp_incr_rpow_le
+    kind: theorem
+    summary: "Under Airy1FddPositive and forward/reverse two-time defect bounds at level L, for X = clamp of the airy1Law coordinates to [L, U], p > 1 and 0 < t <= 1: E|X(x+t) - X(x)|^p <= K t^{(p-1)/2}, with K = truncMomentConst (C + C') (U - L) p."
+    file: Airy1Gumbel/TruncatedMoment.lean
+    status: internal
+    keywords: [kolmogorov-chentsov, truncated-moment, airy1, continuity]
+  - id: airy1-gumbel-lean/continuous-version-lower-clamped
+    decl: Airy1Gumbel.exists_continuous_version_max
+    kind: theorem
+    summary: Under Airy1FddPositive, for each L there is a process on [0, infinity) with measurable marginals, every path continuous, >= L and locally beta-Hoelder for beta < 1/2, that is a modification of max(L, f(t)) under airy1Law.
+    file: Airy1Gumbel/ContinuousVersion.lean
+    status: internal
+    keywords: [kolmogorov-chentsov, continuity, airy1, upper-boundedness]
+  - id: airy1-gumbel-lean/goe-left-tail-record
+    decl: Airy1Gumbel.GOELeftTail.airy1Law_le
+    kind: theorem
+    summary: "Under the record GOELeftTail (F_GOE(-M) <= C e^{-c M^3}; Baik-Buckingham-DiFranco 2008, Ferrari-Spohn 2005) and Airy1FddPositive: there are C, c > 0 with airy1Law(f(t) <= -M) <= C e^{-c M^3} for all t and all M >= 0."
+    file: Airy1Gumbel/GOELeftTail.lean
+    status: internal
+    keywords: [external-record, goe-left-tail, airy1]
+  - id: airy1-gumbel-lean/continuous-version
+    decl: Airy1Gumbel.exists_continuous_version
+    kind: theorem
+    summary: Under Airy1FddPositive and GOELeftTail, there is a real process on [0, infinity) with measurable marginals, a modification of the airy1Law coordinates, whose paths are all continuous and locally beta-Hoelder for every beta < 1/2.
+    file: Airy1Gumbel/LowerBound.lean
+    status: internal
+    keywords: [kolmogorov-chentsov, continuity, airy1, lower-boundedness]
+  - id: airy1-gumbel-lean/continuous-instance-headline
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1
+    kind: theorem
+    summary: Normalized Gumbel limit P((A(x) - a_T)/b_T <= z on [0, T]) -> exp(-e^{-z}) for the continuous version A of airy1Law, assuming Airy1FddPositive, GOELeftTail, the three QR block-law records, the mesoscopic bound and CubicStrongMixing.
+    file: Airy1Gumbel/ContinuousInstance.lean
+    status: internal
+    keywords: [continuity, stationarity, block-maxima, airy1]
+  - id: airy1-gumbel-lean/local-modulus-coordinate-regression
+    decl: Airy1Gumbel.isEmpty_localModulusEstimate_airy1Process
+    kind: theorem
+    summary: "LocalModulusEstimate (airy1Process h) is uninhabited: on the coordinate process, product-measurable sets are countably determined, so the oscillation event has outer measure 1."
+    file: Airy1Gumbel/ContinuousInstance.lean
+    status: internal
+    keywords: [outer-measure, local-modulus, airy1, non-existence]
+  - id: airy1-gumbel-lean/high-level-upcrossing-record
+    decl: Airy1Gumbel.not_highLevelUpcrossingTail_switch
+    kind: theorem
+    summary: The switch process does not satisfy HighLevelUpcrossingTail (P(A(x) <= a, A(x+h) > a + eta) <= C h^{-k} e^{-c_1 eta^2/h} for a >= a_0, cf. Quastel-Remenik 2013); constant and time-constant processes do satisfy it.
+    file: Airy1Gumbel/Upcrossing.lean
+    status: internal
+    keywords: [external-record, consistency-check, upcrossing, airy1]
+  - id: airy1-gumbel-lean/mesoscopic-upcrossing-route
+    decl: Airy1Gumbel.mesoscopic_of_records₆
+    kind: theorem
+    summary: Mesoscopic anti-clustering from CubicCovarianceDecay, PairStationary, ProcessAssociated, HighLevelUpcrossingTail and QRUnitBlockLaw, via a level-thresholded block-to-grid cover (dyadic chain, level mesh, geometric union bound); no local-modulus estimate is needed.
+    file: Airy1Gumbel/UpcrossingRecord.lean
+    status: internal
+    keywords: [mesoscopic, upcrossing, dyadic-chain, external-record]
+  - id: airy1-gumbel-lean/continuous-instance-headline-qr6
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₆
+    kind: theorem
+    summary: Normalized real-length Gumbel limit for the continuous version of airy1Law, assuming Airy1FddPositive, GOELeftTail, the three QR block-law records, and CubicStrongMixing, CubicCovarianceDecay, ProcessAssociated, HighLevelUpcrossingTail on that version.
+    file: Airy1Gumbel/UpcrossingRecord.lean
+    status: internal
+    keywords: [continuity, block-maxima, airy1, gumbel]
+  - id: airy1-gumbel-lean/block-law-core
+    decl: Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet
+    kind: theorem
+    summary: "Under Airy1FddPositive, GOELeftTail and MeshHittingLimit M T, for T >= 1, M > 0, x >= 0: P(continuous version <= M on [x, x+T]) = det(I - A_{M,T}) at weight 2T, via nested dyadic meshes, path continuity and continuity from above."
+    file: Airy1Gumbel/BlockLaw.lean
+    status: internal
+    keywords: [block-law, fredholm-determinant, dyadic-mesh, airy1]
+  - id: airy1-gumbel-lean/qr-block-laws-theorems
+    decl: Airy1Gumbel.qrTwoBlockLaw_airy1
+    kind: theorem
+    summary: Under Airy1FddPositive, GOELeftTail and MeshHittingLimit M 2 for all M > 0, the two-block record QRTwoBlockLaw holds for the block maxima of airy1Law (the unit-block record QRUnitBlockLaw is proved alike from MeshHittingLimit M 1).
+    file: Airy1Gumbel/BlockLaw.lean
+    status: internal
+    keywords: [external-record, block-law, airy1]
+  - id: airy1-gumbel-lean/continuous-instance-headline-qr7
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₇
+    kind: theorem
+    summary: Normalized real-length Gumbel limit for the continuous version of airy1Law, assuming Airy1FddPositive, GOELeftTail, MeshHittingLimit at T = 1, 2, QRTwoIntervalLaw, CubicStrongMixing, CubicCovarianceDecay, ProcessAssociated and HighLevelUpcrossingTail.
+    file: Airy1Gumbel/BlockLaw.lean
+    status: internal
+    keywords: [continuity, block-maxima, airy1, gumbel]
+  - id: airy1-gumbel-lean/mesh-hitting-limit
+    decl: Airy1Gumbel.meshHittingLimit
+    kind: theorem
+    summary: The dyadic hitting-kernel limit MeshHittingLimit M T holds for every M and every T > 0 (the dyadic reflection theorem applied to the Brownian motion of the BrownianMotion dependency).
+    file: Airy1Gumbel/MeshHitting.lean
+    status: internal
+    keywords: [brownian-motion, reflection-principle, hitting-kernel]
+  - id: airy1-gumbel-lean/mesh-fdd-limit-unconditional
+    decl: Airy1Gumbel.tendsto_airy1FinCdf_meshSet_of_pos
+    kind: theorem
+    summary: "For T >= 1, M > 0 and any x, the constant-level Airy_1 finite-dimensional CDF on the dyadic mesh {x + kT/2^n : k < 2^n} converges to det(I - A_{M,T}) at weight 2T as n -> infinity; no kernel hypothesis."
+    file: Airy1Gumbel/MeshHitting.lean
+    status: internal
+    keywords: [fredholm-determinant, airy1, fdd, dyadic-mesh, continuum-limit]
+  - id: airy1-gumbel-lean/qr-block-laws-unconditional
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₈
+    kind: theorem
+    summary: Normalized real-length Gumbel limit for the continuous version of airy1Law, assuming Airy1FddPositive, GOELeftTail, QRTwoIntervalLaw, CubicStrongMixing, CubicCovarianceDecay, ProcessAssociated and HighLevelUpcrossingTail; the unit and two-block laws are proved.
+    file: Airy1Gumbel/BlockLawUnconditional.lean
+    status: internal
+    keywords: [block-law, airy1, gumbel, block-maxima]
+  - id: airy1-gumbel-lean/high-level-upcrossing-discharged
+    decl: Airy1Gumbel.highLevelUpcrossingTail_airy1SRP
+    kind: theorem
+    summary: Under Airy1FddPositive and GOELeftTail, HighLevelUpcrossingTail holds for the continuous version airy1SRP h hT (a_0 = 0, k = 0, c_1 = 1/8), via the forward two-time defect bound and a.s. equality at two times.
+    file: Airy1Gumbel/UpcrossingTheorem.lean
+    status: internal
+    keywords: [upcrossing, airy1, two-time]
+  - id: airy1-gumbel-lean/two-block-law
+    decl: Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet
+    kind: theorem
+    summary: "Under Airy1FddPositive and GOELeftTail, for x >= 0, r > 0, M > 0, r + 3 <= a: P(A <= M on [x, x+1] and on [x+1+r, x+2+r]) = det(I - K_cup(a, M, r)) for the continuous version A (nested two-block meshes, continuity)."
+    file: Airy1Gumbel/TwoIntervalLaw.lean
+    status: internal
+    keywords: [block-law, two-interval, fredholm-determinant, dyadic-mesh, airy1]
+  - id: airy1-gumbel-lean/qr-two-interval-law-theorem
+    decl: Airy1Gumbel.qrTwoIntervalLaw_airy1
+    kind: theorem
+    summary: "Under Airy1FddPositive and GOELeftTail, QRTwoIntervalLaw holds for the block maxima of airy1Law: the two-block law at x = 0, r = j - 1, weight sqrt(2u); the record's condition j + 2 <= sqrt(2u) is the admissibility condition r + 3 <= a."
+    file: Airy1Gumbel/TwoIntervalLaw.lean
+    status: internal
+    keywords: [block-law, two-interval, airy1]
+  - id: airy1-gumbel-lean/continuous-instance-headline-qr10
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₁₀
+    kind: theorem
+    summary: Normalized real-length Gumbel limit for the continuous version of airy1Law, assuming Airy1FddPositive, GOELeftTail, CubicStrongMixing, CubicCovarianceDecay, ProcessAssociated and HighLevelUpcrossingTail; all three QR block-law records are proved.
+    file: Airy1Gumbel/TwoIntervalLaw.lean
+    status: internal
+    keywords: [continuity, block-maxima, airy1, gumbel]
+  - id: airy1-gumbel-lean/continuous-instance-headline-final
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final
+    kind: theorem
+    summary: Normalized real-length Gumbel limit for the continuous version of airy1Law, assuming only Airy1FddPositive, GOELeftTail, CubicStrongMixing, CubicCovarianceDecay and ProcessAssociated; the QR block-law records and HighLevelUpcrossingTail are proved.
+    file: Airy1Gumbel/FinalHeadline.lean
+    status: internal
+    keywords: [continuity, block-maxima, airy1, gumbel]
+  - id: airy1-gumbel-lean/carrier-transfer-literature-records
+    decl: Airy1Gumbel.cubicStrongMixing_airy1SRP_iff
+    kind: theorem
+    summary: CubicStrongMixing holds on the continuous version airy1SRP h hT iff it holds on the coordinate process airy1Process h (same constants), via null-set approximation of the generated sigma-algebras; companions do the same for CubicCovarianceDecay and ProcessAssociated.
+    file: Airy1Gumbel/CarrierTransfer.lean
+    status: internal
+    keywords: [carrier-transfer, modification, mixing, covariance, association, airy1]
+  - id: airy1-gumbel-lean/two-point-excess-airy1
+    decl: Airy1Gumbel.twoPointExcess_airy1
+    kind: theorem
+    summary: Under Airy1FddPositive there are w_0 >= 0, C > 0, C' >= 0 with |P(A(0) > w, A(d) > w) - P(A(0) > w)^2| <= C exp(-I(w) - 2wd + C'(1 + w + d^2)) for all w >= w_0, d > 0, where I(w) = (2/3)(2w)^{3/2}.
+    file: Airy1Gumbel/TwoPointBound.lean
+    status: internal
+    keywords: [two-point-bound, fredholm-determinant, trace-norm, airy1]
+  - id: airy1-gumbel-lean/pair-tp-airy1-srp
+    decl: Airy1Gumbel.pairTP_airy1SRP_field
+    kind: theorem
+    summary: On the continuous version W = airy1SRP h hT there are w_0 >= 0, C > 0, C' >= 0 with P(W(x) > v, W(y) > v) <= P(W(0) > v)^2 + C exp(-I(v) - 2v(y-x) + C'(1 + v + (y-x)^2)) for all real x + 1 <= y and v >= w_0.
+    file: Airy1Gumbel/TwoPointBound.lean
+    status: internal
+    keywords: [two-point-bound, carrier-transfer, mesoscopic, airy1]
+  - id: airy1-gumbel-lean/mesoscopic-of-bounds-tp
+    decl: Airy1Gumbel.mesoscopic_of_boundsTP
+    kind: theorem
+    summary: Mesoscopic anti-clustering N * sum_{m_N<j<=q_N} P(Y_0 > u_N, Y_j > u_N) -> 0 from MesoscopicBoundsTP (cover, two-point bound, one-point bound, sharp tail); no covariance decay or association. Uses q_N = O(a_N) and chi > (1/2)^{1/3} > 2/3.
+    file: Airy1Gumbel/MesoscopicTP.lean
+    status: internal
+    keywords: [mesoscopic, two-point-bound, block-maxima, airy1]
+  - id: airy1-gumbel-lean/continuous-instance-headline-final2
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂
+    kind: theorem
+    summary: "The paper's main theorem (Theorem 1.1) for the continuous version of airy1Law: P((A(x) - a_T)/b_T <= z on [0, T]) -> exp(-e^{-z}), assuming only Airy1FddPositive, GOELeftTail and CubicStrongMixing; the mesoscopic step uses the two-point bound."
+    file: Airy1Gumbel/FinalHeadlineTP.lean
+    status: internal
+    keywords: [continuity, block-maxima, airy1, gumbel, main-theorem]
+  - id: airy1-gumbel-lean/continuous-instance-headline-final2-coord
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord
+    kind: theorem
+    summary: Same normalized Gumbel limit with CubicStrongMixing stated on the coordinate process airy1Process h (a statement about the Airy_1 law alone), transferred to the continuous version by CubicStrongMixing.ofModification.
+    file: Airy1Gumbel/FinalHeadlineTP.lean
+    status: internal
+    keywords: [continuity, carrier-transfer, airy1, gumbel, main-theorem]
+  - id: airy1-gumbel-lean/two-point-excess-sharp
+    decl: Airy1Gumbel.twoPointExcess_airy1_sharp
+    kind: theorem
+    summary: Under Airy1FddPositive there are w_0 >= 0, C > 0 with |P(A(0)>w, A(d)>w) - P(A(0)>w)^2| <= C(1+w+d)^2 exp(-Psi(d,w)) for w >= w_0, d > 0, Psi = (2/3)(2w+d^2)^{3/2} + 2wd + (2/3)d^3 (polynomial prefactor not optimised).
+    file: Airy1Gumbel/TwoPointSharp.lean
+    status: internal
+    keywords: [two-point-bound, airy1, sharp]
+  - id: airy1-gumbel-lean/two-point-excess-sharp-sqrt
+    decl: Airy1Gumbel.twoPointExcess_airy1_sharp_sqrt
+    kind: theorem
+    summary: Under Airy1FddPositive there are w_0 >= 0, C > 0 with |P(A(0)>w, A(d)>w) - P(A(0)>w)^2| <= C sqrt(1+w+d) sqrt(1+d) exp(-Psi(d,w)) for w >= w_0, d > 0, Psi as in the sharp two-point bound (prefactor not claimed optimal).
+    file: Airy1Gumbel/TwoPointSharpSqrt.lean
+    status: internal
+    keywords: [two-point-bound, airy1, sharp]
+  - id: airy1-gumbel-lean/two-point-excess-sharp-d
+    decl: Airy1Gumbel.twoPointExcess_airy1_sharp_d
+    kind: theorem
+    summary: Under Airy1FddPositive there are w_0 >= 0, C > 0 with |P(A(0)>w, A(d)>w) - P(A(0)>w)^2| <= C sqrt(1+d) exp(-Psi(d,w)) for w >= w_0, d > 0 (sqrt(1+d) from the norm bound on Q; not optimal).
+    file: Airy1Gumbel/TwoPointSharpD.lean
+    status: internal
+    keywords: [two-point-bound, airy1, sharp]
+  - id: airy1-gumbel-lean/two-point-excess-sharp-e
+    decl: Airy1Gumbel.twoPointExcess_airy1_sharp_e
+    kind: theorem
+    summary: Under Airy1FddPositive there are w_0 >= 0, C > 0 with |P(A(0)>w, A(d)>w) - P(A(0)>w)^2| <= C exp(-Psi(d,w)) for w >= w_0, d > 0 (norm of Q <= 1 via the L1 cap L2 Airy-transform contraction; C not optimal).
+    file: Airy1Gumbel/TwoPointSharpE.lean
+    status: internal
+    keywords: [two-point-bound, airy1, sharp]
+  - id: airy1-gumbel-lean/normalization-centering
+    decl: Airy1Gumbel.airyH_gumbelA
+    kind: theorem
+    summary: "The centering sequence a_N satisfies H(a_N) - log N -> 0, where H is the exponent function of the one-block tail (the paper's centering lemma)."
+    file: Airy1Gumbel/Normalization.lean
+    status: internal
+    keywords: [gumbel, normalization, centering]
+  - id: airy1-gumbel-lean/normalization-scaling
+    decl: Airy1Gumbel.gumbel_normalization
+    kind: theorem
+    summary: "For every z, N * exp(-H(u_N(z))) -> exp(-z) with u_N(z) = a_N + b_N z (the paper's normalization lemma)."
+    file: Airy1Gumbel/Normalization.lean
+    status: internal
+    keywords: [gumbel, normalization, scaling]
+  - id: airy1-gumbel-lean/block-law-unconditional
+    decl: Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet'
+    kind: theorem
+    summary: "For the constructed Airy_1 process and T >= 1, the law of the supremum over a block of length T is the Fredholm determinant det(I - K_tilde) at weight 2T, assuming only Airy1FddPositive and GOELeftTail."
+    file: Airy1Gumbel/BlockLawUnconditional.lean
+    status: internal
+    keywords: [block-law, fredholm-determinant, airy1]

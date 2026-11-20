@@ -1,0 +1,222 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.Gaussian.MillsRatio
+import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Series
+
+/-! # The Schläfli integral for `K_{1/3}` and its large-`z` bound
+
+The modified Bessel function of the second kind with index `1/3` has the Schläfli
+integral representation
+
+  `K_{1/3}(z) = ∫₀^∞ e^{-z cosh t} cosh(t/3) dt     (z > 0)`,
+
+absolutely convergent for `z > 0`.  This file defines that integral (`schlaefliK13`),
+proves positivity, and establishes the large-`z` Laplace-localization bound
+
+  `schlaefliK13 z ≤ C · z^{-1/2} · e^{-z}     (z ≥ 2/3)`,
+
+via the global pointwise domination
+
+  `e^{-z cosh t} cosh(t/3) ≤ e^{-z} · e^{1/(9z)} · e^{-(z/4) t²}`
+
+obtained from `cosh t ≥ 1 + t²/2` (power series), `cosh(t/3) ≤ e^{|t|/3}`, and the
+AM–GM inequality `|t|/3 ≤ (z/4) t² + 1/(9z)`.  The dominating Gaussian integrates to
+`2 √π · z^{-1/2}`, and the `e^{1/(9z)}` factor is bounded by `e^{1/6}` for `z ≥ 2/3`.
+(The bound is stated for `z ≥ 2/3` rather than `z ≥ 1` so that the corollary for the
+Airy prefactor applies already at `x = 1`, where `ζ = (2/3) x^{3/2} = 2/3`.)
+
+## Main results
+
+* `one_add_sq_div_two_le_cosh`: `1 + t²/2 ≤ cosh t` (from `Real.cosh_eq_tsum`).
+* `cosh_le_exp_abs`: `cosh t ≤ e^{|t|}`.
+* `schlaefliK13`: the Schläfli integral above.
+* `integrable_schlaefliK13_integrand`, `schlaefliK13_pos`: integrability and positivity
+  for `0 < z`.
+* `schlaefliK13_le`: the headline bound `∃ C, ∀ z ≥ 2/3, schlaefliK13 z ≤ C z^{-1/2} e^{-z}`.
+* `airyK13_schlaefli_le`: the corollary used for the paper's Airy bound,
+  `(1/π) √(x/3) · K_{1/3}((2/3) x^{3/2}) ≤ C x^{-1/4} e^{-(2/3) x^{3/2}}` for `x ≥ 1`
+  (the K-side of the Airy upper bound `Ai(x) ≤ C x^{-1/4} e^{-(2/3) x^{3/2}}`).
+
+## Continued in `Airy/AiryBessel.lean`
+
+* The modified Bessel equation `z² K'' + z K' - (z² + 1/9) K = 0` for `schlaefliK13`
+  (differentiate under the integral sign): `schlaefliK13_bessel_eq` (with
+  `hasDerivAt_schlaefliK13`, `hasDerivAt_schlaefliK13_two`, `hasDerivAt_deriv_schlaefliK13`).
+* Change of variables: `y(x) = √(x/3) K((2/3) x^{3/2})` solves `y'' = x y`.
+* Initial data matching against `airyAiReal` at `x = 0` and uniqueness for `W'' = xW`,
+  giving the Airy–Bessel identity (DLMF 9.6.1).
+-/
+
+open MeasureTheory Set Filter
+open scoped Topology
+
+/-- `cosh t ≥ 1 + t²/2` for all real `t`: the even power series has nonnegative terms. -/
+theorem one_add_sq_div_two_le_cosh (t : ℝ) : 1 + t ^ 2 / 2 ≤ Real.cosh t := by
+  rw [Real.cosh_eq_tsum]
+  have hs : Summable (fun n : ℕ => t ^ (2 * n) / (Nat.factorial (2 * n) : ℝ)) :=
+    (Real.hasSum_cosh t).summable
+  calc 1 + t ^ 2 / 2 = ∑ n ∈ ({0, 1} : Finset ℕ), t ^ (2 * n) / (Nat.factorial (2 * n) : ℝ) := by
+        rw [Finset.sum_insert (by norm_num), Finset.sum_singleton]
+        norm_num
+    _ ≤ ∑' n : ℕ, t ^ (2 * n) / (Nat.factorial (2 * n) : ℝ) :=
+        hs.sum_le_tsum _ (fun n _ => by rw [pow_mul]; positivity)
+
+/-- `cosh t ≤ e^{|t|}` for all real `t`. -/
+theorem cosh_le_exp_abs (t : ℝ) : Real.cosh t ≤ Real.exp |t| := by
+  rw [Real.cosh_eq]
+  have h1 : Real.exp t ≤ Real.exp |t| := Real.exp_le_exp.2 (le_abs_self t)
+  have h2 : Real.exp (-t) ≤ Real.exp |t| := Real.exp_le_exp.2 (neg_le_abs t)
+  linarith [h1, h2]
+
+/-- The Schläfli integral for the modified Bessel function `K_{1/3}`:
+`K_{1/3}(z) = ∫₀^∞ e^{-z cosh t} cosh(t/3) dt`.  (Junk value `0` for `z ≤ 0`, where the
+integral diverges.) -/
+noncomputable def schlaefliK13 (z : ℝ) : ℝ :=
+  ∫ t in Set.Ioi 0, Real.exp (-z * Real.cosh t) * Real.cosh (t / 3)
+
+/-- Pointwise domination of the Schläfli integrand by a Gaussian, valid for all `t : ℝ`
+and `0 < z`. -/
+theorem schlaefliK13_integrand_le {z : ℝ} (hz : 0 < z) (t : ℝ) :
+    0 ≤ Real.exp (-z * Real.cosh t) * Real.cosh (t / 3)
+    ∧ Real.exp (-z * Real.cosh t) * Real.cosh (t / 3)
+      ≤ Real.exp (-z + 1/(9*z)) * Real.exp (-(z/4) * t^2) := by
+  have hzp : z ≠ 0 := hz.ne'
+  have hcosh := one_add_sq_div_two_le_cosh t
+  have hAMGM : |t| / 3 ≤ z * t ^ 2 / 4 + 1 / (9 * z) := by
+    have h0 := sq_nonneg (3 * z * |t| - 2)
+    have h1 : 12 * z * |t| ≤ 9 * z ^ 2 * t ^ 2 + 4 := by
+      have e : (3 * z * |t| - 2) ^ 2 = 9 * z ^ 2 * |t| ^ 2 - 12 * z * |t| + 4 := by ring
+      rw [e, sq_abs] at h0
+      linarith
+    calc |t| / 3 = (12 * z * |t|) / (36 * z) := by field_simp; ring
+      _ ≤ (9 * z ^ 2 * t ^ 2 + 4) / (36 * z) := by gcongr
+      _ = z * t ^ 2 / 4 + 1 / (9 * z) := by field_simp; ring
+  have h1 : Real.exp (-z * Real.cosh t) ≤ Real.exp (-z * (1 + t^2/2)) :=
+    Real.exp_le_exp.2 (mul_le_mul_of_nonpos_left hcosh (neg_nonpos.2 hz.le))
+  have h2 : Real.cosh (t/3) ≤ Real.exp (|t|/3) := by
+    calc Real.cosh (t/3) ≤ Real.exp |t/3| := cosh_le_exp_abs (t/3)
+      _ = Real.exp (|t|/3) := by
+          rw [abs_div, show |(3:ℝ)| = 3 from by norm_num]
+  refine ⟨mul_nonneg (Real.exp_pos _).le (Real.cosh_pos _).le, ?_⟩
+  calc Real.exp (-z * Real.cosh t) * Real.cosh (t/3)
+      ≤ Real.exp (-z * (1 + t^2/2)) * Real.exp (|t|/3) :=
+        mul_le_mul h1 h2 (Real.cosh_pos _).le (Real.exp_pos _).le
+    _ = Real.exp (-z * (1 + t^2/2) + |t|/3) := (Real.exp_add _ _).symm
+    _ ≤ Real.exp (-z + 1/(9*z) - (z/4) * t^2) := Real.exp_le_exp.2 (by linarith [hAMGM])
+    _ = Real.exp (-z + 1/(9*z)) * Real.exp (-(z/4) * t^2) := by
+        rw [show (-z + 1/(9*z) - (z/4) * t^2) = (-z + 1/(9*z)) + (-(z/4) * t^2) from by ring,
+          Real.exp_add]
+
+/-- The dominating Gaussian is integrable for `0 < z`. -/
+theorem integrable_schlaefliK13_dom {z : ℝ} (hz : 0 < z) :
+    Integrable fun t : ℝ => Real.exp (-z + 1/(9*z)) * Real.exp (-(z/4) * t^2) :=
+  (integrable_exp_neg_mul_sq (by positivity : (0:ℝ) < z/4)).const_mul _
+
+/-- The Schläfli integrand is integrable for `0 < z`. -/
+theorem integrable_schlaefliK13_integrand {z : ℝ} (hz : 0 < z) :
+    Integrable fun t : ℝ => Real.exp (-z * Real.cosh t) * Real.cosh (t / 3) := by
+  refine (integrable_schlaefliK13_dom hz).mono' ?_ ?_
+  · exact (by fun_prop : Continuous fun t : ℝ =>
+      Real.exp (-z * Real.cosh t) * Real.cosh (t / 3)).aestronglyMeasurable
+  · refine Filter.Eventually.of_forall fun t => ?_
+    have h := schlaefliK13_integrand_le hz t
+    rw [Real.norm_of_nonneg h.1]
+    exact h.2
+
+/-- The Schläfli integrand is integrable on `Ioi 0` for `0 < z`. -/
+theorem integrableOn_schlaefliK13_integrand {z : ℝ} (hz : 0 < z) :
+    IntegrableOn (fun t => Real.exp (-z * Real.cosh t) * Real.cosh (t / 3)) (Set.Ioi 0) :=
+  (integrable_schlaefliK13_integrand hz).integrableOn
+
+/-- The Schläfli integral is strictly positive for `0 < z`. -/
+theorem schlaefliK13_pos {z : ℝ} (hz : 0 < z) : 0 < schlaefliK13 z := by
+  unfold schlaefliK13
+  have h0 : 0 ≤ᵐ[volume.restrict (Set.Ioi 0)]
+      (fun t => Real.exp (-z * Real.cosh t) * Real.cosh (t / 3)) :=
+    MeasureTheory.ae_mono Measure.restrict_le_self
+      (Filter.Eventually.of_forall fun t => (schlaefliK13_integrand_le hz t).1)
+  rw [setIntegral_pos_iff_support_of_nonneg_ae h0 (integrableOn_schlaefliK13_integrand hz)]
+  have hsupp : Function.support (fun t => Real.exp (-z * Real.cosh t) * Real.cosh (t/3))
+      = Set.univ :=
+    Set.eq_univ_of_forall fun t => (mul_pos (Real.exp_pos _) (Real.cosh_pos _)).ne'
+  rw [hsupp, Set.univ_inter, Real.volume_Ioi]
+  simp
+
+/-- **Headline bound** (Laplace localization): `schlaefliK13 z ≤ C · z^{-1/2} · e^{-z}` for
+`z ≥ 2/3`, with the explicit constant `C = 2 √π e^{1/6}`. -/
+theorem schlaefliK13_le : ∃ C : ℝ, ∀ z : ℝ, 2/3 ≤ z →
+    schlaefliK13 z ≤ C * z^(-1/2:ℝ) * Real.exp (-z) := by
+  refine ⟨2 * Real.sqrt Real.pi * Real.exp (1/6), fun z hz => ?_⟩
+  have hz0 : (0:ℝ) < z := by linarith
+  have hzp : z ≠ 0 := hz0.ne'
+  have hval : Real.sqrt (Real.pi / (z/4)) = 2 * Real.sqrt Real.pi * z^(-1/2:ℝ) := by
+    have e1 : Real.pi / (z/4) = (4 * Real.pi) * z⁻¹ := by field_simp
+    have e2 : Real.sqrt (4 * Real.pi) = 2 * Real.sqrt Real.pi := by
+      rw [show (4:ℝ) * Real.pi = 2^2 * Real.pi from by ring,
+        Real.sqrt_mul (by norm_num : (0:ℝ) ≤ 2^2), Real.sqrt_sq (by norm_num : (0:ℝ) ≤ 2)]
+    have e3 : Real.sqrt (z⁻¹) = z^(-1/2:ℝ) := by
+      rw [Real.sqrt_eq_rpow, ← Real.rpow_neg_one, ← Real.rpow_mul hz0.le]
+      norm_num
+    rw [e1, Real.sqrt_mul (by positivity : (0:ℝ) ≤ 4 * Real.pi), e2, e3]
+  have hE : Real.exp (1/(9*z)) ≤ Real.exp (1/6) :=
+    Real.exp_le_exp.2 (one_div_le_one_div_of_le (by norm_num) (by linarith : (6:ℝ) ≤ 9 * z))
+  calc schlaefliK13 z
+      ≤ ∫ t in Set.Ioi 0, Real.exp (-z + 1/(9*z)) * Real.exp (-(z/4) * t^2) := by
+        apply setIntegral_mono_on (integrableOn_schlaefliK13_integrand hz0)
+          (integrable_schlaefliK13_dom hz0).integrableOn measurableSet_Ioi
+        intro t _
+        exact (schlaefliK13_integrand_le hz0 t).2
+    _ ≤ ∫ t : ℝ, Real.exp (-z + 1/(9*z)) * Real.exp (-(z/4) * t^2) :=
+        setIntegral_le_integral (integrable_schlaefliK13_dom hz0)
+          (Filter.Eventually.of_forall fun t => by positivity)
+    _ = Real.exp (-z + 1/(9*z)) * Real.sqrt (Real.pi / (z/4)) := by
+        rw [MeasureTheory.integral_const_mul, integral_gaussian]
+    _ = Real.exp (-z) * Real.exp (1/(9*z)) * (2 * Real.sqrt Real.pi * z^(-1/2:ℝ)) := by
+        rw [hval, Real.exp_add]
+    _ ≤ 2 * Real.sqrt Real.pi * Real.exp (1/6) * z^(-1/2:ℝ) * Real.exp (-z) := by
+        rw [show Real.exp (-z) * Real.exp (1/(9*z)) * (2 * Real.sqrt Real.pi * z^(-1/2:ℝ))
+            = 2 * Real.sqrt Real.pi * z^(-1/2:ℝ) * (Real.exp (-z) * Real.exp (1/(9*z)))
+            from by ring]
+        rw [show 2 * Real.sqrt Real.pi * Real.exp (1/6) * z^(-1/2:ℝ) * Real.exp (-z)
+            = 2 * Real.sqrt Real.pi * z^(-1/2:ℝ) * (Real.exp (-z) * Real.exp (1/6))
+            from by ring]
+        apply mul_le_mul_of_nonneg_left _ (by positivity)
+        apply mul_le_mul_of_nonneg_left _ (Real.exp_pos _).le
+        exact hE
+
+/-- The corollary used for the paper's Airy bound: the K-side of the Airy upper bound.  For `x ≥ 1`,
+`(1/π) √(x/3) · K_{1/3}((2/3) x^{3/2}) ≤ C x^{-1/4} e^{-(2/3) x^{3/2}}`. -/
+theorem airyK13_schlaefli_le : ∃ C : ℝ, ∀ x : ℝ, 1 ≤ x →
+    (1/Real.pi) * Real.sqrt (x/3) * schlaefliK13 ((2/3) * x^(3/2:ℝ))
+      ≤ C * x^(-1/4:ℝ) * Real.exp (-(2/3 * x^(3/2:ℝ))) := by
+  obtain ⟨C₀, hC₀⟩ := schlaefliK13_le
+  refine ⟨C₀ * Real.pi⁻¹ * 3^(-1/2:ℝ) * (2/3)^(-1/2:ℝ), fun x hx => ?_⟩
+  have hx0 : (0:ℝ) < x := by linarith
+  have hz : 2/3 ≤ (2/3) * x^(3/2:ℝ) := by
+    have h1 : (1:ℝ) ≤ x^(3/2:ℝ) := by
+      calc (1:ℝ) = (1:ℝ)^(3/2:ℝ) := (Real.one_rpow _).symm
+        _ ≤ x^(3/2:ℝ) := Real.rpow_le_rpow zero_le_one hx (by norm_num)
+    linarith
+  have hK := hC₀ _ hz
+  have hsqrt : Real.sqrt (x/3) = x^(1/2:ℝ) * 3^(-1/2:ℝ) := by
+    rw [Real.sqrt_eq_rpow, show x/3 = x * 3⁻¹ from by ring,
+      Real.mul_rpow hx0.le (by norm_num), ← Real.rpow_neg_one,
+      ← Real.rpow_mul (by norm_num : (0:ℝ) ≤ 3)]
+    norm_num
+  have hzpow : ((2/3) * x^(3/2:ℝ))^(-1/2:ℝ) = (2/3)^(-1/2:ℝ) * x^(-3/4:ℝ) := by
+    rw [Real.mul_rpow (by norm_num) (Real.rpow_nonneg hx0.le _), ← Real.rpow_mul hx0.le]
+    norm_num
+  calc (1/Real.pi) * Real.sqrt (x/3) * schlaefliK13 ((2/3) * x^(3/2:ℝ))
+      ≤ (1/Real.pi) * Real.sqrt (x/3)
+          * (C₀ * ((2/3)*x^(3/2:ℝ))^(-1/2:ℝ) * Real.exp (-((2/3)*x^(3/2:ℝ)))) :=
+        mul_le_mul_of_nonneg_left hK (by positivity)
+    _ = C₀ * Real.pi⁻¹ * 3^(-1/2:ℝ) * (2/3)^(-1/2:ℝ) * x^(-1/4:ℝ)
+          * Real.exp (-((2/3)*x^(3/2:ℝ))) := by
+        rw [hsqrt, hzpow, one_div,
+          show x^(-1/4:ℝ) = x^(1/2:ℝ) * x^(-3/4:ℝ) from by
+            rw [← Real.rpow_add hx0]; congr 1; norm_num]
+        ring

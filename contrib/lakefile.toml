@@ -1,0 +1,16 @@
+name = "airy1-gumbel-lean-contrib"
+version = "0.1.0"
+description = "Analytic infrastructure for the Airy_1 Gumbel companion: Gumbel law, Airy functions, Mills ratio, Hilbert-Schmidt and trace-class operators, Fredholm determinants, Airy_1 finite-dimensional laws and two-time estimates"
+license = "Apache-2.0"
+keywords = ["airy-function", "fredholm-determinant", "trace-class", "hilbert-schmidt", "airy-process"]
+homepage = "https://github.com/chenle02/airy1-gumbel-lean"
+defaultTargets = ["Airy1GumbelContrib"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+# mathlib master of 2026-10-15 (toolchain leanprover/lean4:v4.35.0).
+rev = "cfc55fc58714a59dc06e6e79edc6d1d95140d3c2"
+
+[[lean_lib]]
+name = "Airy1GumbelContrib"

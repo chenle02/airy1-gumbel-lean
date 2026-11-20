@@ -1,0 +1,262 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Mathlib.Probability.BrownianMotion.Basic
+import Airy1GumbelContrib.Mesh.MeshLimit
+
+/-!
+# The Brownian skeleton of the discrete hitting kernel
+
+For a pre-Brownian motion `B` (Mathlib
+`ProbabilityTheory.IsPreBrownianReal`, measurable coordinates) and a step `h > 0` with
+`h = 2g` (so `B(s + h) − B(s) ~ N(0, 2g)`, whose density is `heatKernel g`):
+
+* `gaussianPDFReal_eq_heatKernel` / `gaussianReal_eq_withDensity_heatKernel`: the law
+  `N(μ, 2g)` has density `v ↦ heatKernel g (μ − v)`;
+* `map_add_sub_eq`: the law of `u + (B s − B t)` (`t ≤ s`, `s − t = 2g`) is `N(u, 2g)`;
+* **`measure_skelSet`**: for every `k`, start `u`, level `M` and Borel `S`,
+  `P(u + X_{jh} ≤ M ∀ j ≤ k, u + X_{(k+1)h} ∈ S) = ∫_S Λ_k(u, v) dv` where `X = B − B 0` and
+  `Λ_k = lamKerN (M, g) (replicate k (M, g))` is the kernel of `(P̄_M e^{gΔ})^{k+1}`.
+
+The proof is an induction on `k` along the `lamKerN` cons-recursion; one step is the weak
+Markov property at the deterministic time `h` (`IsPreBrownianReal.indepFun_shift`, composed
+with finitely many coordinates) plus Tonelli.  No strong Markov property is used.
+-/
+
+namespace AiryFdd
+
+open MeasureTheory ProbabilityTheory Real Set Filter Topology
+open scoped ENNReal NNReal
+
+/-! ## The Gaussian law as a heat kernel -/
+
+/-- `N(μ, 2g)` has density `heatKernel g (μ − ·)`. -/
+theorem gaussianPDFReal_eq_heatKernel {g : ℝ} (hg : 0 < g) {w : ℝ≥0} (hw : (w : ℝ) = 2 * g)
+    (μ x : ℝ) : gaussianPDFReal μ w x = heatKernel g (μ - x) := by
+  rw [gaussianPDFReal, heatKernel, hw]
+  have h4 : (0 : ℝ) ≤ 4 * π * g := by positivity
+  have e1 : (4 * π * g) ^ (-1 / 2 : ℝ) = (√(2 * π * (2 * g)))⁻¹ := by
+    rw [show 2 * π * (2 * g) = 4 * π * g by ring, Real.sqrt_eq_rpow, ← Real.rpow_neg h4]
+    norm_num
+  rw [e1, show -(x - μ) ^ 2 / (2 * (2 * g)) = -(μ - x) ^ 2 / (4 * g) by ring]
+
+theorem gaussianReal_eq_withDensity_heatKernel {g : ℝ} (hg : 0 < g) {w : ℝ≥0}
+    (hw : (w : ℝ) = 2 * g) (μ : ℝ) :
+    gaussianReal μ w = volume.withDensity (fun x => ENNReal.ofReal (heatKernel g (μ - x))) := by
+  have hw0 : w ≠ 0 := by
+    intro h; rw [h, NNReal.coe_zero] at hw; linarith
+  rw [gaussianReal_of_var_ne_zero _ hw0]
+  congr 1
+  funext x
+  rw [gaussianPDF, gaussianPDFReal_eq_heatKernel hg hw]
+
+theorem nndist_coe_of_le {s t : ℝ≥0} (h : t ≤ s) : nndist s.1 t.1 = s - t := by
+  show nndist (s : ℝ) (t : ℝ) = s - t
+  apply NNReal.eq
+  rw [coe_nndist, Real.dist_eq, NNReal.coe_sub h,
+    abs_of_nonneg (sub_nonneg.2 (NNReal.coe_le_coe.2 h))]
+
+variable {Ω : Type*} {mΩ : MeasurableSpace Ω} {P : Measure Ω}
+
+/-- The law of `u + (B s − B t)` for `t ≤ s` is `N(u, s − t)`. -/
+theorem map_add_sub_eq {B : ℝ≥0 → Ω → ℝ} (hB : IsPreBrownianReal B P)
+    (hm : ∀ t, Measurable (B t)) {s t : ℝ≥0} (hts : t ≤ s) (u : ℝ) :
+    P.map (fun ω => u + (B s ω - B t ω)) = gaussianReal u (s - t) := by
+  have hl := (hB.hasLaw_sub s t).map_eq
+  rw [nndist_coe_of_le hts] at hl
+  have e : (fun ω => u + (B s ω - B t ω)) = (u + ·) ∘ (B s - B t) := rfl
+  rw [e, ← Measure.map_map (measurable_const_add u) ((hm s).sub (hm t)), hl,
+    gaussianReal_map_const_add, zero_add]
+
+/-! ## The skeleton event -/
+
+/-- `{u + X_{jh} ≤ M ∀ j < k, u + X_{kh} ∈ S}` with `X = B − B 0`. -/
+def skelSet (B : ℝ≥0 → Ω → ℝ) (h : ℝ≥0) (M u : ℝ) (k : ℕ) (S : Set ℝ) : Set Ω :=
+  {ω | (∀ j < k, u + (B ((j : ℝ≥0) * h) ω - B 0 ω) ≤ M) ∧
+    u + (B ((k : ℝ≥0) * h) ω - B 0 ω) ∈ S}
+
+theorem measurableSet_forall_lt {α : Type*} [MeasurableSpace α] (k : ℕ) {s : ℕ → Set α}
+    (hs : ∀ i, MeasurableSet (s i)) : MeasurableSet {x | ∀ i < k, x ∈ s i} := by
+  have : {x | ∀ i < k, x ∈ s i} = ⋂ i, ⋂ (_ : i < k), s i := by ext; simp
+  rw [this]
+  exact .iInter fun i => .iInter fun _ => hs i
+
+/-- The skeleton kernel `Λ_k = lamKerN (M, g) (replicate k (M, g))`. -/
+noncomputable abbrev skelKer (M g : ℝ) (k : ℕ) : ℝ × ℝ → ℝ :=
+  lamKerN (M, g) (List.replicate k (M, g))
+
+theorem skelKer_props {g : ℝ} (hg : 0 < g) (M : ℝ) (k : ℕ) :
+    Measurable (skelKer M g k) ∧ (∀ p, 0 ≤ skelKer M g k p) ∧
+      (∀ p, skelKer M g k p ≤ heatKernel (gapSum (M, g) (List.replicate k (M, g))) (p.1 - p.2)) :=
+  lamKerN_props _ _ hg (fun y hy => by rw [List.eq_of_mem_replicate hy]; exact hg)
+
+theorem gapSum_replicate_pos {g : ℝ} (hg : 0 < g) (M : ℝ) (k : ℕ) :
+    0 < gapSum (M, g) (List.replicate k (M, g)) :=
+  gapSum_pos _ _ hg (fun y hy => by rw [List.eq_of_mem_replicate hy]; exact hg)
+
+/-- **The skeleton identification.** For a pre-Brownian motion with measurable
+coordinates and step `h = 2g`, the sub-probability law of `u + X_{(k+1)h}` on the event that
+the skeleton stays below `M` at the times `0, h, …, kh` has density
+`lamKerN (M, g) (replicate k (M, g)) (u, ·)`. -/
+theorem measure_skelSet {g : ℝ} (hg : 0 < g) {h : ℝ≥0} (hh : (h : ℝ) = 2 * g) (M : ℝ)
+    (k : ℕ) : ∀ {B : ℝ≥0 → Ω → ℝ}, IsPreBrownianReal B P → (∀ t, Measurable (B t)) →
+      ∀ (u : ℝ) {S : Set ℝ}, MeasurableSet S →
+        P (skelSet B h M u (k + 1) S) = ∫⁻ v in S, ENNReal.ofReal (skelKer M g k (u, v)) := by
+  induction k with
+  | zero =>
+    intro B hB hm u S hS
+    have hlaw := map_add_sub_eq hB hm (zero_le : (0 : ℝ≥0) ≤ h) u
+    rw [tsub_zero, gaussianReal_eq_withDensity_heatKernel hg hh] at hlaw
+    by_cases hu : u ≤ M
+    · have hset : skelSet B h M u (0 + 1) S = (fun ω => u + (B h ω - B 0 ω)) ⁻¹' S := by
+        ext ω
+        simp only [skelSet, zero_add, Nat.lt_one_iff, forall_eq, Nat.cast_zero, zero_mul,
+          sub_self, add_zero, Nat.cast_one, one_mul, mem_ofPred_eq, mem_preimage]
+        exact ⟨fun h => h.2, fun h => ⟨hu, h⟩⟩
+      rw [hset, ← Measure.map_apply (show Measurable fun ω => u + (B h ω - B 0 ω) from
+          ((hm h).sub (hm 0)).const_add u) hS,
+        hlaw, withDensity_apply _ hS]
+      refine setLIntegral_congr_fun hS (fun v _ => ?_)
+      simp [skelKer, lamKerN, lamKer1, Set.indicator_of_mem (show u ∈ Iic M from hu)]
+    · have hset : skelSet B h M u (0 + 1) S = ∅ := by
+        ext ω
+        simp only [skelSet, zero_add, Nat.lt_one_iff, forall_eq, Nat.cast_zero, zero_mul,
+          sub_self, add_zero, mem_ofPred_eq, mem_empty_iff_false, iff_false, not_and]
+        exact fun h => absurd h hu
+      rw [hset, measure_empty]
+      symm
+      refine (setLIntegral_congr_fun hS (fun v _ => ?_)).trans (lintegral_zero)
+      simp [skelKer, lamKerN, lamKer1, Set.indicator_of_notMem (show u ∉ Iic M from hu)]
+  | succ k ih =>
+    intro B hB hm u S hS
+    have := hB.isGaussianProcess.isProbabilityMeasure
+    -- the shifted process and the first increment
+    set B' : ℝ≥0 → Ω → ℝ := fun t ω => B (h + t) ω - B h ω with hB'def
+    have hB' : IsPreBrownianReal B' P := hB.shift h
+    have hm' : ∀ t, Measurable (B' t) := fun t => (hm _).sub (hm _)
+    set W : Ω → ℝ := fun ω => B h ω - B 0 ω with hWdef
+    set V : Ω → (ℕ → ℝ) := fun ω i => B' ((i : ℝ≥0) * h) ω - B' 0 ω with hVdef
+    have hWm : Measurable W := (hm h).sub (hm 0)
+    have hVm : Measurable V := Measurable.of_eval fun i => (hm' _).sub (hm' _)
+    -- independence of `W` and `V` (weak Markov at time `h`)
+    have hind : IndepFun W V P := by
+      have h0 := hB.indepFun_shift h
+      have h1 := h0.comp (φ := fun (f : ℝ≥0 → ℝ) (i : ℕ) => f ((i : ℝ≥0) * h) - f 0)
+        (ψ := fun (r : Iic h → ℝ) => r ⟨h, Set.mem_Iic.2 le_rfl⟩ - r ⟨0, Set.mem_Iic.2 zero_le⟩)
+        (Measurable.of_eval fun i => (measurable_pi_apply _).sub (measurable_pi_apply _))
+        (by fun_prop)
+      exact h1.symm
+    have hprod := (indepFun_iff_map_prod_eq_prod_map_map hWm.aemeasurable
+      hVm.aemeasurable).1 hind
+    -- the joint event
+    set F : Set (ℝ × (ℕ → ℝ)) :=
+      {p | (∀ i < k + 1, u + p.1 + p.2 i ≤ M) ∧ u + p.1 + p.2 (k + 1) ∈ S} with hFdef
+    have hF : MeasurableSet F := by
+      rw [hFdef, Set.ofPred_and]
+      refine MeasurableSet.inter ?_ ?_
+      · exact measurableSet_forall_lt (k + 1)
+          (s := fun i => {p : ℝ × (ℕ → ℝ) | u + p.1 + p.2 i ≤ M}) fun i =>
+          measurableSet_le (by fun_prop) measurable_const
+      · exact (by fun_prop : Measurable fun p : ℝ × (ℕ → ℝ) => u + p.1 + p.2 (k + 1)) hS
+    have key : ∀ (i : ℕ) (ω : Ω),
+        B (((i + 1 : ℕ) : ℝ≥0) * h) ω - B 0 ω = W ω + V ω i := by
+      intro i ω
+      have e : ((i + 1 : ℕ) : ℝ≥0) * h = h + (i : ℝ≥0) * h := by push_cast; ring
+      simp only [hWdef, hVdef, hB'def, e, add_zero]
+      ring
+    -- the integrand
+    set Φ : ℝ → ℝ≥0∞ := fun w => ∫⁻ v in S, ENNReal.ofReal (skelKer M g k (w, v)) with hΦdef
+    obtain ⟨hLm, hL0, hL1⟩ := skelKer_props hg M k
+    have hΦm : Measurable Φ :=
+      (ENNReal.measurable_ofReal.comp hLm).lintegral_prod_right'
+    have hfib : ∀ x : ℝ, (P.map V) (Prod.mk x ⁻¹' F) = Φ (u + x) := by
+      intro x
+      rw [Measure.map_apply hVm (measurable_prodMk_left hF), hΦdef]
+      beta_reduce
+      rw [← ih hB' hm' (u + x) hS]
+      congr 1
+    have hlaw := map_add_sub_eq hB hm (zero_le : (0 : ℝ≥0) ≤ h) u
+    rw [tsub_zero, gaussianReal_eq_withDensity_heatKernel hg hh] at hlaw
+    -- the main computation of `P{(W, V) ∈ F}`
+    have hmain : P {ω | (W ω, V ω) ∈ F} =
+        ∫⁻ v in S, ENNReal.ofReal
+          (AiryConj.compKernel (AiryTwoInt.heatKerTwo g) (skelKer M g k) (u, v)) := by
+      have e1 : P {ω | (W ω, V ω) ∈ F} = (P.map fun ω => (W ω, V ω)) F :=
+        (Measure.map_apply (hWm.prodMk hVm) hF).symm
+      rw [e1, hprod, Measure.prod_apply hF]
+      simp_rw [hfib]
+      have e2 : ∫⁻ x, Φ (u + x) ∂(P.map W) =
+          ∫⁻ y, Φ y ∂(P.map fun ω => u + (B h ω - B 0 ω)) :=
+        calc ∫⁻ x, Φ (u + x) ∂(P.map W) = ∫⁻ ω, Φ (u + W ω) ∂P :=
+              lintegral_map (hΦm.comp (measurable_const_add u)) hWm
+          _ = _ := (lintegral_map hΦm (hWm.const_add u)).symm
+      have hpm : Measurable fun x : ℝ => ENNReal.ofReal (heatKernel g (u - x)) :=
+        ENNReal.measurable_ofReal.comp ((continuous_heatKernel g).comp
+          (continuous_const.sub continuous_id)).measurable
+      rw [e2, hlaw, lintegral_withDensity_eq_lintegral_mul _ hpm hΦm]
+      simp only [Pi.mul_apply, hΦdef]
+      have e3 : ∀ y, ENNReal.ofReal (heatKernel g (u - y)) *
+          ∫⁻ v in S, ENNReal.ofReal (skelKer M g k (y, v)) =
+          ∫⁻ v in S, ENNReal.ofReal (heatKernel g (u - y)) *
+            ENNReal.ofReal (skelKer M g k (y, v)) := fun y =>
+        (lintegral_const_mul _ ((ENNReal.measurable_ofReal.comp hLm).comp
+          measurable_prodMk_left)).symm
+      simp_rw [e3]
+      rw [lintegral_lintegral_swap]
+      · refine setLIntegral_congr_fun hS (fun v _ => ?_)
+        have hS' := gapSum_replicate_pos hg M k
+        have hint : Integrable fun w : ℝ => heatKernel g (u - w) * skelKer M g k (w, v) :=
+          AiryTwoInt.integrable_pair_mul_of_heatKernel_le hg hS'
+            (AiryTwoInt.measurable_heatKerTwo _) hLm
+            (fun a b => AiryTwoInt.heatKerTwo_abs_le_self hg (a, b))
+            (fun a b => by rw [abs_of_nonneg (hL0 _)]; exact hL1 (a, b)) u v
+        show _ = ENNReal.ofReal (∫ w : ℝ, heatKernel g (u - w) * skelKer M g k (w, v))
+        rw [ofReal_integral_eq_lintegral_ofReal hint
+          (Eventually.of_forall fun w => mul_nonneg (heatKernel_pos hg _).le (hL0 _))]
+        refine lintegral_congr fun w => ?_
+        rw [ENNReal.ofReal_mul (heatKernel_pos hg _).le]
+      · refine Measurable.aemeasurable ?_
+        exact (ENNReal.measurable_ofReal.comp ((continuous_heatKernel g).comp
+          (continuous_const.sub continuous_fst)).measurable).mul
+          (ENNReal.measurable_ofReal.comp hLm)
+    by_cases hu : u ≤ M
+    · have hset : skelSet B h M u (k + 1 + 1) S = {ω | (W ω, V ω) ∈ F} := by
+        ext ω
+        simp only [skelSet, hFdef, mem_ofPred_eq]
+        constructor
+        · rintro ⟨h1, h2⟩
+          refine ⟨fun i hi => ?_, ?_⟩
+          · have := h1 (i + 1) (by omega)
+            rw [key] at this
+            linarith
+          · rw [key] at h2
+            rwa [add_assoc]
+        · rintro ⟨h1, h2⟩
+          refine ⟨fun j hj => ?_, ?_⟩
+          · rcases j with _ | i
+            · simpa using hu
+            · rw [key]
+              have := h1 i (by omega)
+              linarith
+          · rw [key, ← add_assoc]
+            exact h2
+      rw [hset, hmain]
+      refine setLIntegral_congr_fun hS (fun v _ => ?_)
+      simp only [skelKer, List.replicate_succ, lamKerN,
+        Set.indicator_of_mem (show u ∈ Iic M from hu), one_mul]
+    · have hset : skelSet B h M u (k + 1 + 1) S = ∅ := by
+        ext ω
+        simp only [skelSet, mem_ofPred_eq, mem_empty_iff_false, iff_false, not_and]
+        intro h1
+        have := h1 0 (by omega)
+        simp at this
+        exact absurd this hu
+      rw [hset, measure_empty]
+      symm
+      refine (setLIntegral_congr_fun hS (fun v _ => ?_)).trans lintegral_zero
+      simp [skelKer, List.replicate_succ, lamKerN,
+        Set.indicator_of_notMem (show u ∉ Iic M from hu)]
+
+end AiryFdd

@@ -1,0 +1,838 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.AiryKernel.Conjugates
+import Airy1GumbelContrib.Gaussian.MillsRatio
+
+/-!
+# Gaussian saddle library
+
+Gaussian tail bounds, the Gaussian convolution/CDF identity (the paper's reflected-heat integral
+identity), and the saddle-point analysis of
+`F(δ) = δ²/2 + 2S(M−δ) + (2/3)S³ + (2/3)(2M−2δ+S²)^{3/2}` with `S = r+2`: `F(δ*) = J_M(r)` exactly
+and
+`F(δ) ≥ J_M(r) + (δ−δ*)²/2`, where `J_M(r) = (2/3)(2M+r²)^{3/2} + 2Mr +
+(2/3)r³` (the definition of `J_M(r)`).
+
+## Contents
+
+* Gaussian tail bounds: `gaussianTail_chernoff` (the Chernoff factor behind
+  `Φ(−t) ≤ ½ e^{−t²/2}`), `gaussianTail_half_bound`, `gaussian_tail_std_sq_bound`.
+* Convolution identities: `gaussian_uv_integral`,
+  `heatKernel_conv_cdf` (the paper's reflected-heat integral identity),
+  `heatKernel_semigroup` (the full-line heat semigroup law).
+* The saddle: `saddleF`, `saddleJ`, `saddleR` with the exact critical value
+  `saddleF_min_eq`, the derivative `saddleF_hasDeriv`
+  (`F'(δ) = δ − 2S − 2q(δ)`), and the quadratic lower bound
+  `saddleF_ge` (`F(δ) ≥ J_M(r) + (δ−δ*)²/2`),
+  plus the interiority statement `saddle_interior`.
+
+## Note on hypotheses
+
+The critical-point analysis requires `2 ≤ saddleR M r` (i.e. `4 ≤ 2M + r²`):
+when `R < 2` the point `δ* = 2(r+R)` is *not* a critical point of `F` (one has
+`q(δ*) = |R−2| ≠ R−2`), and both `F(δ*) = J_M(r)` and the quadratic bound fail
+(for instance at `M = r = 1`, `δ = δmax`).  The paper works in the regime
+`r ≤ χ√(2M)`, `χ < 1`, `M` large, which gives `R > 2`; we carry the condition
+`2 ≤ saddleR M r` (resp. `2 < saddleR M r` for strict interiority) explicitly.
+
+## Proof outline for `saddleF_ge`
+
+With `G(δ) = F(δ) − (δ−δ*)²/2`, one has `G'(δ) = F'(δ) − (δ−δ*) = 2(q* − q(δ))`
+where `q(δ) = √(2M−2δ+S²)` is strictly decreasing and `q(δ*) = q* = R−2`
+(using `R ≥ 2`).  Hence `G` is decreasing on `[0, δ*]` and increasing on
+`[δ*, δmax]`, so `G(δ) ≥ G(δ*) = F(δ*) = J_M(r)`.  This route uses only the
+first derivative plus monotonicity (`antitoneOn_of_deriv_nonpos` /
+`monotoneOn_of_deriv_nonneg`); no second-derivative API is needed.
+-/
+
+namespace AiryConj
+
+open MeasureTheory Real Set Filter
+open scoped Topology BigOperators ENNReal NNReal
+
+/-! ### Set-integral shift lemmas -/
+
+/-- Translation on a half-line: `∫ u ∈ (t, ∞), g (u − t) du = ∫ v ∈ (0, ∞), g v dv`. -/
+theorem integral_Ioi_comp_sub (g : ℝ → ℝ) (t : ℝ) :
+    ∫ u in Set.Ioi t, g (u - t) = ∫ v in Set.Ioi 0, g v := by
+  rw [← MeasureTheory.integral_indicator measurableSet_Ioi,
+    ← MeasureTheory.integral_indicator measurableSet_Ioi]
+  have hpt : (fun u : ℝ => (Set.Ioi t).indicator (fun u => g (u - t)) u)
+      = fun u => (Set.Ioi 0).indicator g (u - t) := by
+    funext u
+    by_cases hu : t < u
+    · rw [Set.indicator_of_mem (Set.mem_Ioi.mpr hu),
+        Set.indicator_of_mem (Set.mem_Ioi.mpr (sub_pos.mpr hu))]
+    · rw [Set.indicator_of_notMem (fun h => hu (Set.mem_Ioi.mp h)),
+        Set.indicator_of_notMem (fun h => hu (sub_pos.mp (Set.mem_Ioi.mp h)))]
+  rw [hpt]
+  exact MeasureTheory.integral_sub_right_eq_self _ t
+
+/-- Reflection and translation: `∫ z ∈ (−∞, M], g (M − z) dz = ∫ w ∈ (0, ∞), g w dw`. -/
+theorem integral_Iic_comp_const_sub (g : ℝ → ℝ) (M : ℝ) :
+    ∫ z in Set.Iic M, g (M - z) = ∫ w in Set.Ioi 0, g w := by
+  rw [MeasureTheory.integral_Iic_eq_integral_Iio]
+  rw [← MeasureTheory.integral_indicator measurableSet_Iio,
+    ← MeasureTheory.integral_indicator measurableSet_Ioi]
+  have hpt : (fun z : ℝ => (Set.Iio M).indicator (fun z => g (M - z)) z)
+      = fun z => (Set.Ioi 0).indicator g (M - z) := by
+    funext z
+    by_cases hz : z < M
+    · rw [Set.indicator_of_mem (Set.mem_Iio.mpr hz),
+        Set.indicator_of_mem (Set.mem_Ioi.mpr (by linarith : (0:ℝ) < M - z))]
+    · rw [Set.indicator_of_notMem (fun h => hz (Set.mem_Iio.mp h)),
+        Set.indicator_of_notMem (fun h => hz (by linarith [Set.mem_Ioi.mp h]))]
+  rw [hpt]
+  have h2 : (fun z : ℝ => (Set.Ioi 0).indicator g (M - z))
+      = fun z => ((Set.Ioi 0).indicator g ∘ fun w : ℝ => -w) (z - M) := by
+    funext z
+    congr 1
+    ring
+  rw [h2, MeasureTheory.integral_sub_right_eq_self]
+  simp only [Function.comp_apply]
+  exact MeasureTheory.integral_neg_eq_self _ _
+
+/-- Translation on a half-line with the shift on the target set:
+`∫ w ∈ (t, ∞), g (w + c) dw = ∫ v ∈ (t + c, ∞), g v dv`. -/
+theorem integral_Ioi_add_const (g : ℝ → ℝ) (t c : ℝ) :
+    ∫ w in Set.Ioi t, g (w + c) = ∫ v in Set.Ioi (t + c), g v := by
+  rw [← MeasureTheory.integral_indicator measurableSet_Ioi,
+    ← MeasureTheory.integral_indicator measurableSet_Ioi]
+  have hpt : (fun w : ℝ => (Set.Ioi t).indicator (fun w => g (w + c)) w)
+      = fun w => (Set.Ioi (t + c)).indicator g (w + c) := by
+    funext w
+    by_cases hw : t < w
+    · rw [Set.indicator_of_mem (Set.mem_Ioi.mpr hw),
+        Set.indicator_of_mem (Set.mem_Ioi.mpr (by linarith : t + c < w + c))]
+    · rw [Set.indicator_of_notMem (fun h => hw (Set.mem_Ioi.mp h)),
+        Set.indicator_of_notMem (fun h => hw (by linarith [Set.mem_Ioi.mp h]))]
+  rw [hpt]
+  have h2 : (fun w : ℝ => (Set.Ioi (t + c)).indicator g (w + c))
+      = fun w => (Set.Ioi (t + c)).indicator g (w - (-c)) := by
+    funext w
+    congr 1
+    ring
+  rw [h2]
+  exact MeasureTheory.integral_sub_right_eq_self _ _
+
+/-! ### Gaussian tail calculus -/
+
+/-- `gaussianTail T` is antitone in the lower limit. -/
+theorem gaussianTail_mono {T : ℝ} (hT : 0 < T) {a b : ℝ} (hab : a ≤ b) :
+    gaussianTail T b ≤ gaussianTail T a :=
+  MeasureTheory.setIntegral_mono_set (integrableOn_exp_neg_sq_div_Ioi hT a)
+    (Filter.Eventually.of_forall fun d => (Real.exp_pos _).le)
+    (Filter.Eventually.of_forall fun d hd => hab.trans_lt hd)
+
+/-- The half-line Gaussian mass: `gaussianTail T 0 = √(π T)`. -/
+theorem gaussianTail_zero (hT : 0 < T) : gaussianTail T 0 = Real.sqrt (Real.pi * T) := by
+  have h1 : gaussianTail T 0 = ∫ d in Set.Ioi 0, Real.exp (-(4*T)⁻¹ * d^2) := by
+    unfold gaussianTail
+    apply setIntegral_congr_fun measurableSet_Ioi
+    intro d _
+    congr 1
+    ring
+  rw [h1, integral_gaussian_Ioi]
+  have h2 : Real.pi / (4*T)⁻¹ = 4 * Real.pi * T := by
+    field_simp
+  rw [h2]
+  have h3 : Real.sqrt (4 * Real.pi * T) = 2 * Real.sqrt (Real.pi * T) := by
+    rw [show (4 : ℝ) * Real.pi * T = 2^2 * (Real.pi * T) by ring,
+      Real.sqrt_mul (sq_nonneg 2), Real.sqrt_sq (by norm_num : (0:ℝ) ≤ 2)]
+  rw [h3]
+  ring
+
+/-- Scaling of the Gaussian tail:
+`gaussianTail T b = √(2T) · gaussianTail (1/2) (b / √(2T))`. -/
+theorem gaussianTail_scale (hT : 0 < T) (b : ℝ) :
+    gaussianTail T b
+      = Real.sqrt (2*T) * gaussianTail (1/2) (b / Real.sqrt (2*T)) := by
+  set c := Real.sqrt (2*T) with hc
+  have hcpos : 0 < c := Real.sqrt_pos.mpr (by positivity)
+  have hc2 : c^2 = 2*T := Real.sq_sqrt (by positivity)
+  have h1 : gaussianTail T b = ∫ v in Set.Ioi b, Real.exp (-(c⁻¹ * v)^2/2) := by
+    unfold gaussianTail
+    apply setIntegral_congr_fun measurableSet_Ioi
+    intro v _
+    show Real.exp (-v^2/(4*T)) = Real.exp (-(c⁻¹ * v)^2/2)
+    congr 1
+    have hc2' : (c⁻¹)^2 = (2*T)⁻¹ := by rw [inv_pow, hc2]
+    have e4 : (4:ℝ)*T = 2*(2*T) := by ring
+    rw [mul_pow, hc2', e4, div_eq_mul_inv, div_eq_mul_inv, mul_inv]
+    ring
+  rw [h1]
+  have h2 : (∫ v in Set.Ioi b, Real.exp (-(c⁻¹ * v)^2/2))
+      = c * ∫ u in Set.Ioi (b / c), Real.exp (-u^2/2) := by
+    have h := MeasureTheory.integral_comp_mul_left_Ioi (fun u : ℝ => Real.exp (-u^2/2)) b
+      (inv_pos.mpr hcpos)
+    rw [inv_inv, smul_eq_mul] at h
+    rw [h]
+    have e : b / c = c⁻¹ * b := by rw [div_eq_mul_inv, mul_comm]
+    rw [e]
+  rw [h2]
+  congr 1
+  unfold gaussianTail
+  apply setIntegral_congr_fun measurableSet_Ioi
+  intro u _
+  show Real.exp (-u^2/2) = Real.exp (-u^2/(4*(1/2)))
+  congr 1
+  ring
+
+/-- Integrability of `u ↦ exp(−u²/2)` on `(t, ∞)`. -/
+theorem integrableOn_exp_neg_sq_half_Ioi (t : ℝ) :
+    IntegrableOn (fun u : ℝ => Real.exp (-u^2/2)) (Set.Ioi t) := by
+  have h : (fun u : ℝ => Real.exp (-u^2/2)) = fun u => Real.exp (-(1/2) * u^2) := by
+    funext u
+    congr 1
+    ring
+  rw [h]
+  exact (integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1/2)).integrableOn
+
+/-- The Chernoff bound `gaussianTail (1/2) t ≤ √(π/2) e^{−t²/2}` for `0 ≤ t`,
+behind `Φ(−t) ≤ ½ e^{−t²/2}`: for `u ≥ t`,
+`e^{−u²/2} = e^{−t²/2} e^{−t(u−t)} e^{−(u−t)²/2} ≤ e^{−t²/2} e^{−(u−t)²/2}`,
+and the shifted tail has mass `√(π/2)`. -/
+theorem gaussianTail_chernoff (t : ℝ) (ht : 0 ≤ t) :
+    gaussianTail (1/2) t ≤ Real.sqrt (Real.pi/2) * Real.exp (-t^2/2) := by
+  have hcong : gaussianTail (1/2) t = ∫ u in Set.Ioi t, Real.exp (-u^2/2) := by
+    unfold gaussianTail
+    apply setIntegral_congr_fun measurableSet_Ioi
+    intro u _
+    congr 1
+    ring
+  rw [hcong]
+  set g : ℝ → ℝ := fun v => Real.exp (-v^2/2) with hg
+  have hbound : ∀ u ∈ Set.Ioi t, Real.exp (-u^2/2) ≤ Real.exp (-t^2/2) * g (u - t) := by
+    intro u hu
+    have hu' : t < u := hu
+    have hsplit : Real.exp (-u^2/2)
+        = Real.exp (-t^2/2) * Real.exp (-(t*(u-t))) * Real.exp (-(u-t)^2/2) := by
+      rw [← Real.exp_add, ← Real.exp_add]
+      congr 1
+      ring
+    have h1 : Real.exp (-(t*(u-t))) ≤ 1 := by
+      apply Real.exp_le_one_iff.mpr
+      apply neg_nonpos.mpr
+      exact mul_nonneg ht (sub_nonneg.mpr hu'.le)
+    calc Real.exp (-u^2/2)
+        = Real.exp (-t^2/2) * Real.exp (-(t*(u-t))) * Real.exp (-(u-t)^2/2) := hsplit
+      _ ≤ Real.exp (-t^2/2) * 1 * Real.exp (-(u-t)^2/2) :=
+          mul_le_mul_of_nonneg_right
+            (mul_le_mul_of_nonneg_left h1 (Real.exp_pos _).le) (Real.exp_pos _).le
+      _ = Real.exp (-t^2/2) * g (u - t) := by rw [hg, mul_one]
+  have hintR : IntegrableOn (fun u : ℝ => Real.exp (-t^2/2) * g (u - t)) (Set.Ioi t) := by
+    rw [← MeasureTheory.integrable_indicator_iff measurableSet_Ioi]
+    have hpt : (Set.Ioi t).indicator (fun u : ℝ => Real.exp (-t^2/2) * g (u - t))
+        = fun u => Real.exp (-t^2/2) * ((Set.Ioi 0).indicator g) (u - t) := by
+      funext u
+      by_cases hu : t < u
+      · rw [Set.indicator_of_mem (Set.mem_Ioi.mpr hu),
+          Set.indicator_of_mem (Set.mem_Ioi.mpr (sub_pos.mpr hu))]
+      · rw [Set.indicator_of_notMem (fun h => hu (Set.mem_Ioi.mp h)),
+          Set.indicator_of_notMem (fun h => hu (sub_pos.mp (Set.mem_Ioi.mp h))), mul_zero]
+    rw [hpt]
+    apply Integrable.const_mul
+    apply MeasureTheory.Integrable.comp_sub_right
+    rw [MeasureTheory.integrable_indicator_iff measurableSet_Ioi]
+    exact integrableOn_exp_neg_sq_half_Ioi 0
+  calc ∫ u in Set.Ioi t, Real.exp (-u^2/2)
+      ≤ ∫ u in Set.Ioi t, Real.exp (-t^2/2) * g (u - t) :=
+        setIntegral_mono_on (integrableOn_exp_neg_sq_half_Ioi t) hintR measurableSet_Ioi hbound
+    _ = Real.exp (-t^2/2) * ∫ u in Set.Ioi t, g (u - t) := integral_const_mul _ _
+    _ = Real.exp (-t^2/2) * ∫ v in Set.Ioi 0, g v := by rw [integral_Ioi_comp_sub g t]
+    _ = Real.exp (-t^2/2) * Real.sqrt (Real.pi/2) := by
+        congr 1
+        have hg0 : (∫ v in Set.Ioi 0, g v) = gaussianTail (1/2) 0 := by
+          unfold gaussianTail
+          apply setIntegral_congr_fun measurableSet_Ioi
+          intro v _
+          rw [hg]
+          congr 1
+          ring
+        rw [hg0, gaussianTail_zero (by norm_num : (0:ℝ) < 1/2)]
+        congr 1
+        ring
+    _ = Real.sqrt (Real.pi/2) * Real.exp (-t^2/2) := by ring
+
+/-- The Gaussian tail bound
+`∫_δ^∞ e^{−u²/2} du ≤ C (1 + δ⁻¹) e^{−δ²/2}` for `0 < δ`.
+For `δ ≥ 1` this is the Mills bound `gaussianTail_le`; for `0 < δ < 1` the left
+side is at most `√(π/2)` while `(1+δ⁻¹) e^{−δ²/2} ≥ e^{−1/2}`, so enlarging `C`
+absorbs the small-`δ` region. -/
+theorem gaussianTail_half_bound :
+    ∃ C : ℝ, 0 < C ∧ ∀ δ : ℝ, 0 < δ →
+      gaussianTail (1/2) δ ≤ C * (1 + δ⁻¹) * Real.exp (-δ^2/2) := by
+  refine ⟨Real.sqrt (Real.pi/2) * Real.exp (1/2) + 1, by positivity, fun δ hδ => ?_⟩
+  have hC1 : (1:ℝ) ≤ Real.sqrt (Real.pi/2) * Real.exp (1/2) + 1 :=
+    le_add_of_nonneg_left (mul_nonneg (Real.sqrt_nonneg _) (Real.exp_pos _).le)
+  have hC2 : Real.sqrt (Real.pi/2) * Real.exp (1/2)
+      ≤ Real.sqrt (Real.pi/2) * Real.exp (1/2) + 1 := le_add_of_nonneg_right zero_le_one
+  have hδinv : (0:ℝ) ≤ 1 + δ⁻¹ := by linarith [inv_nonneg.mpr hδ.le]
+  rcases le_or_gt 1 δ with h1 | h1
+  · -- Mills bound, valid for `δ ≥ 1`
+    have hM := gaussianTail_le (show (0:ℝ) < 1/2 by norm_num) hδ
+    have e1 : (2:ℝ)*(1/2)/δ = δ⁻¹ := by
+      rw [show (2:ℝ)*(1/2) = 1 by norm_num, one_div]
+    have e2 : -δ^2/(4*(1/2:ℝ)) = -δ^2/2 := by ring
+    rw [e1, e2] at hM
+    calc gaussianTail (1/2) δ
+        ≤ δ⁻¹ * Real.exp (-δ^2/2) := hM
+      _ ≤ (1 + δ⁻¹) * Real.exp (-δ^2/2) :=
+          mul_le_mul_of_nonneg_right (le_add_of_nonneg_left zero_le_one)
+            (Real.exp_pos _).le
+      _ ≤ (Real.sqrt (Real.pi/2) * Real.exp (1/2) + 1) * (1 + δ⁻¹) * Real.exp (-δ^2/2) := by
+          calc (1 + δ⁻¹) * Real.exp (-δ^2/2)
+              = 1 * ((1 + δ⁻¹) * Real.exp (-δ^2/2)) := by ring
+            _ ≤ (Real.sqrt (Real.pi/2) * Real.exp (1/2) + 1) * ((1 + δ⁻¹) * Real.exp (-δ^2/2)) :=
+                mul_le_mul_of_nonneg_right hC1 (mul_nonneg hδinv (Real.exp_pos _).le)
+            _ = (Real.sqrt (Real.pi/2) * Real.exp (1/2) + 1) * (1 + δ⁻¹) * Real.exp (-δ^2/2) := by ring
+  · -- small `δ`: absorb into the constant
+    have hle0 : gaussianTail (1/2) δ ≤ gaussianTail (1/2) 0 :=
+      gaussianTail_mono (by norm_num) hδ.le
+    rw [gaussianTail_zero (by norm_num : (0:ℝ) < 1/2)] at hle0
+    have e3 : Real.pi * (1/2:ℝ) = Real.pi/2 := by ring
+    rw [e3] at hle0
+    have hδ2 : δ^2 ≤ 1 := by nlinarith [hδ.le, h1.le]
+    have hkey : Real.exp (-1/2) ≤ (1 + δ⁻¹) * Real.exp (-δ^2/2) := by
+      calc Real.exp (-1/2)
+          = 1 * Real.exp (-1/2) := (one_mul _).symm
+        _ ≤ (1 + δ⁻¹) * Real.exp (-δ^2/2) := by
+            apply mul_le_mul _ _ (Real.exp_pos _).le hδinv
+            · linarith [inv_nonneg.mpr hδ.le]
+            · apply Real.exp_le_exp.mpr
+              linarith [hδ2]
+    have hexp1 : Real.exp (1/2:ℝ) * Real.exp (-1/2) = 1 := by
+      rw [← Real.exp_add, show (1/2 : ℝ) + -1/2 = 0 by norm_num, Real.exp_zero]
+    calc gaussianTail (1/2) δ
+        ≤ Real.sqrt (Real.pi/2) := hle0
+      _ = Real.sqrt (Real.pi/2) * Real.exp (1/2) * Real.exp (-1/2) := by
+          rw [mul_assoc, hexp1, mul_one]
+      _ ≤ (Real.sqrt (Real.pi/2) * Real.exp (1/2) + 1) * ((1 + δ⁻¹) * Real.exp (-δ^2/2)) := by
+          exact mul_le_mul hC2 hkey (Real.exp_pos _).le (by positivity)
+      _ = (Real.sqrt (Real.pi/2) * Real.exp (1/2) + 1) * (1 + δ⁻¹) * Real.exp (-δ^2/2) := by ring
+
+/-- The Gaussian tail bound
+`∫_x^∞ e^{−u²} du ≤ C (1+x)⁻¹ e^{−x²}` for `0 ≤ x`.  This is the `T = 1/4`
+instance of the same picture: for `x ≥ 1` the Mills bound gives the factor
+`1/(2x) ≤ (1+x)⁻¹`; for `0 ≤ x ≤ 1` both sides are bounded away from their
+regions (`∫ ≤ √π/2`, `(1+x)⁻¹ e^{−x²} ≥ e⁻¹/2`). -/
+theorem gaussian_tail_std_sq_bound :
+    ∃ C : ℝ, 0 < C ∧ ∀ x : ℝ, 0 ≤ x →
+      ∫ u in Set.Ioi x, Real.exp (-u^2) ≤ C * (1+x)⁻¹ * Real.exp (-x^2) := by
+  refine ⟨Real.sqrt Real.pi * Real.exp 1 + 1, by positivity, fun x hx => ?_⟩
+  have hG : (∫ u in Set.Ioi x, Real.exp (-u^2)) = gaussianTail (1/4) x := by
+    unfold gaussianTail
+    apply setIntegral_congr_fun measurableSet_Ioi
+    intro u _
+    congr 1
+    ring
+  rw [hG]
+  have hC1 : (1:ℝ) ≤ Real.sqrt Real.pi * Real.exp 1 + 1 :=
+    le_add_of_nonneg_left (mul_nonneg (Real.sqrt_nonneg _) (Real.exp_pos _).le)
+  have hx1 : (0:ℝ) < 1 + x := by linarith
+  have hinv : (0:ℝ) ≤ (1+x)⁻¹ := inv_nonneg.mpr hx1.le
+  rcases le_or_gt 1 x with h1 | h1
+  · -- Mills bound, valid for `x ≥ 1`
+    have hx0 : (0:ℝ) < x := lt_of_lt_of_le one_pos h1
+    have hM := gaussianTail_le (show (0:ℝ) < 1/4 by norm_num) hx0
+    have e1 : (2:ℝ)*(1/4)/x = 1/(2*x) := by
+      rw [show (2:ℝ)*(1/4) = 1/2 by norm_num]
+      field_simp
+    have e2 : -x^2/(4*(1/4:ℝ)) = -x^2 := by ring
+    rw [e1, e2] at hM
+    have h12 : (1:ℝ)/(2*x) ≤ (1+x)⁻¹ := by
+      rw [one_div]
+      apply (inv_le_inv₀ (by positivity : (0:ℝ) < 2*x) hx1).mpr
+      linarith
+    calc gaussianTail (1/4) x
+        ≤ (1/(2*x)) * Real.exp (-x^2) := hM
+      _ ≤ (1+x)⁻¹ * Real.exp (-x^2) :=
+          mul_le_mul_of_nonneg_right h12 (Real.exp_pos _).le
+      _ ≤ (Real.sqrt Real.pi * Real.exp 1 + 1) * (1+x)⁻¹ * Real.exp (-x^2) := by
+          calc (1+x)⁻¹ * Real.exp (-x^2)
+              = 1 * ((1+x)⁻¹ * Real.exp (-x^2)) := by ring
+            _ ≤ (Real.sqrt Real.pi * Real.exp 1 + 1) * ((1+x)⁻¹ * Real.exp (-x^2)) :=
+                mul_le_mul_of_nonneg_right hC1 (mul_nonneg hinv (Real.exp_pos _).le)
+            _ = (Real.sqrt Real.pi * Real.exp 1 + 1) * (1+x)⁻¹ * Real.exp (-x^2) := by ring
+  · -- small `x`: absorb into the constant
+    have hle0 : gaussianTail (1/4) x ≤ gaussianTail (1/4) 0 :=
+      gaussianTail_mono (by norm_num) hx
+    rw [gaussianTail_zero (by norm_num : (0:ℝ) < 1/4)] at hle0
+    have e3 : Real.sqrt (Real.pi * (1/4:ℝ)) = Real.sqrt Real.pi / 2 := by
+      rw [show Real.pi * (1/4:ℝ) = Real.pi * (1/2)^2 by ring,
+        Real.sqrt_mul (by positivity : (0:ℝ) ≤ Real.pi), Real.sqrt_sq (by norm_num : (0:ℝ) ≤ 1/2)]
+      ring
+    rw [e3] at hle0
+    have hx2 : x^2 ≤ 1 := by nlinarith [hx, h1.le]
+    have hkey : Real.exp (-1)/2 ≤ (1+x)⁻¹ * Real.exp (-x^2) := by
+      have hin2 : (1:ℝ)/2 ≤ (1+x)⁻¹ := by
+        rw [one_div]
+        apply (inv_le_inv₀ (by norm_num : (0:ℝ) < 2) hx1).mpr
+        linarith
+      have hexp : Real.exp (-1) ≤ Real.exp (-x^2) := by
+        apply Real.exp_le_exp.mpr
+        linarith [hx2]
+      calc Real.exp (-1)/2
+          = Real.exp (-1) * (1/2) := by ring
+        _ ≤ Real.exp (-x^2) * (1+x)⁻¹ :=
+            mul_le_mul hexp hin2 (by norm_num) (Real.exp_pos _).le
+        _ = (1+x)⁻¹ * Real.exp (-x^2) := by ring
+    have hexp1 : Real.exp (1:ℝ) * Real.exp (-1) = 1 := by
+      rw [← Real.exp_add, show (1:ℝ) + -1 = 0 by norm_num, Real.exp_zero]
+    calc gaussianTail (1/4) x
+        ≤ Real.sqrt Real.pi / 2 := hle0
+      _ = Real.sqrt Real.pi * Real.exp 1 * (Real.exp (-1)/2) := by
+          calc Real.sqrt Real.pi / 2
+              = (Real.sqrt Real.pi * (Real.exp 1 * Real.exp (-1))) / 2 := by rw [hexp1, mul_one]
+            _ = Real.sqrt Real.pi * Real.exp 1 * (Real.exp (-1)/2) := by ring
+      _ ≤ (Real.sqrt Real.pi * Real.exp 1 + 1) * ((1+x)⁻¹ * Real.exp (-x^2)) := by
+          calc Real.sqrt Real.pi * Real.exp 1 * (Real.exp (-1)/2)
+              ≤ (Real.sqrt Real.pi * Real.exp 1 + 1) * (Real.exp (-1)/2) :=
+                mul_le_mul_of_nonneg_right (le_add_of_nonneg_right zero_le_one)
+                  (div_nonneg (Real.exp_pos _).le (by norm_num))
+            _ ≤ (Real.sqrt Real.pi * Real.exp 1 + 1) * ((1+x)⁻¹ * Real.exp (-x^2)) :=
+                mul_le_mul_of_nonneg_left hkey (by positivity)
+      _ = (Real.sqrt Real.pi * Real.exp 1 + 1) * (1+x)⁻¹ * Real.exp (-x^2) := by ring
+
+/-! ### The Gaussian convolution identities -/
+
+/-- The `(U, V)`-Gaussian double integral:
+`∫∫ exp(−(U+V)²/2 − V²/r) dU dV = √(2π) √(π r)`.
+We integrate `V` first (completing the square in `V` at fixed `U`) and then `U`;
+both steps are shifted Gaussian masses. -/
+theorem gaussian_uv_integral (r : ℝ) (hr : 0 < r) :
+    ∫ U : ℝ, ∫ V : ℝ, Real.exp (-(U+V)^2/2 - V^2/r)
+      = Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r) := by
+  have hr2 : (0:ℝ) < r + 2 := by linarith
+  have ha : (0:ℝ) < (r+2)/(2*r) := by positivity
+  -- the `V`-integral at fixed `U`, by completing the square
+  have hVint : ∀ U : ℝ, (∫ V : ℝ, Real.exp (-(U+V)^2/2 - V^2/r))
+      = Real.sqrt (2*Real.pi*r/(r+2)) * Real.exp (-U^2/(r+2)) := by
+    intro U
+    have hsplit : ∀ V : ℝ, -(U+V)^2/2 - V^2/r
+        = -U^2/(r+2) + -((r+2)/(2*r)) * (V + r*U/(r+2))^2 := by
+      intro V
+      field_simp [hr.ne', hr2.ne']
+      ring
+    rw [show (fun V : ℝ => Real.exp (-(U+V)^2/2 - V^2/r))
+        = fun V => Real.exp (-U^2/(r+2))
+            * Real.exp (-((r+2)/(2*r)) * (V + r*U/(r+2))^2) from
+      funext fun V => by rw [hsplit V, Real.exp_add]]
+    rw [integral_const_mul]
+    have hshift : (∫ V : ℝ, Real.exp (-((r+2)/(2*r)) * (V + r*U/(r+2))^2))
+        = ∫ V : ℝ, Real.exp (-((r+2)/(2*r)) * V^2) := by
+      have h2 : (fun V : ℝ => Real.exp (-((r+2)/(2*r)) * (V + r*U/(r+2))^2))
+          = fun V => (fun V : ℝ => Real.exp (-((r+2)/(2*r)) * V^2)) (V - (-(r*U/(r+2)))) := by
+        funext V
+        congr 1
+        ring
+      rw [h2]
+      exact MeasureTheory.integral_sub_right_eq_self (μ := volume)
+        (fun V : ℝ => Real.exp (-((r+2)/(2*r)) * V^2)) (-(r*U/(r+2)))
+    rw [hshift, integral_gaussian]
+    have hA2 : Real.pi / ((r+2)/(2*r)) = 2*Real.pi*r/(r+2) := by
+      field_simp [hr.ne', hr2.ne']
+    rw [hA2]
+    ring
+  calc ∫ U : ℝ, ∫ V : ℝ, Real.exp (-(U+V)^2/2 - V^2/r)
+      = ∫ U : ℝ, Real.sqrt (2*Real.pi*r/(r+2)) * Real.exp (-U^2/(r+2)) :=
+        integral_congr_ae (Filter.Eventually.of_forall hVint)
+    _ = Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r) := by
+        rw [integral_const_mul]
+        have h : (fun U : ℝ => Real.exp (-U^2/(r+2)))
+            = fun U => Real.exp (-(1/(r+2)) * U^2) := by
+          funext U
+          congr 1
+          ring
+        rw [h, integral_gaussian]
+        have hA : Real.pi / (1/(r+2)) = Real.pi * (r+2) := by
+          field_simp [hr2.ne']
+        rw [hA, ← Real.sqrt_mul (by positivity : (0:ℝ) ≤ 2*Real.pi*r/(r+2)),
+          ← Real.sqrt_mul (by positivity : (0:ℝ) ≤ 2*Real.pi)]
+        congr 1
+        field_simp [hr2.ne']
+
+/-- Completing the square for the product of two heat kernels evaluated along a
+common translate (the algebraic core of the paper's reflected-heat integral identity):
+`p_L(α+w) p_1(β+w) = p_{L+1}(α−β) · p_{L/(L+1)}(w + (α+Lβ)/(L+1))`. -/
+theorem heatKernel_mul_heatKernel (hL : 0 < L) (α β w : ℝ) :
+    heatKernel L (α + w) * heatKernel 1 (β + w)
+      = heatKernel (L+1) (α - β)
+        * heatKernel (L/(L+1)) (w + (α + L*β)/(L+1)) := by
+  have hS : (0:ℝ) < L + 1 := by linarith
+  have hT : (0:ℝ) < L/(L+1) := by positivity
+  unfold heatKernel
+  have hC : (4*Real.pi*L)^(-1/2 : ℝ) * (4*Real.pi*(1:ℝ))^(-1/2 : ℝ)
+      = (4*Real.pi*(L+1))^(-1/2 : ℝ) * (4*Real.pi*(L/(L+1)))^(-1/2 : ℝ) := by
+    rw [← Real.mul_rpow (by positivity : (0:ℝ) ≤ 4*Real.pi*L)
+        (by positivity : (0:ℝ) ≤ 4*Real.pi*(1:ℝ)),
+      ← Real.mul_rpow (by positivity : (0:ℝ) ≤ 4*Real.pi*(L+1))
+        (by positivity : (0:ℝ) ≤ 4*Real.pi*(L/(L+1)))]
+    congr 1
+    field_simp [hS.ne']
+  have hE : -(α + w)^2/(4*L) + -(β + w)^2/(4*1)
+      = -(α - β)^2/(4*(L+1)) + -(w + (α + L*β)/(L+1))^2/(4*(L/(L+1))) := by
+    field_simp [hL.ne', hS.ne']
+    ring
+  calc (4*Real.pi*L)^(-1/2 : ℝ) * Real.exp (-(α + w)^2/(4*L))
+        * ((4*Real.pi*(1:ℝ))^(-1/2 : ℝ) * Real.exp (-(β + w)^2/(4*1)))
+      = ((4*Real.pi*L)^(-1/2 : ℝ) * (4*Real.pi*(1:ℝ))^(-1/2 : ℝ))
+        * (Real.exp (-(α + w)^2/(4*L)) * Real.exp (-(β + w)^2/(4*1))) := by ring
+    _ = ((4*Real.pi*(L+1))^(-1/2 : ℝ) * (4*Real.pi*(L/(L+1)))^(-1/2 : ℝ))
+        * Real.exp (-(α + w)^2/(4*L) + -(β + w)^2/(4*1)) := by
+        rw [hC, ← Real.exp_add]
+    _ = ((4*Real.pi*(L+1))^(-1/2 : ℝ) * (4*Real.pi*(L/(L+1)))^(-1/2 : ℝ))
+        * Real.exp (-(α - β)^2/(4*(L+1)) + -(w + (α + L*β)/(L+1))^2/(4*(L/(L+1)))) := by
+        rw [hE]
+    _ = (4*Real.pi*(L+1))^(-1/2 : ℝ) * Real.exp (-(α - β)^2/(4*(L+1)))
+        * ((4*Real.pi*(L/(L+1)))^(-1/2 : ℝ)
+          * Real.exp (-(w + (α + L*β)/(L+1))^2/(4*(L/(L+1))))) := by
+        rw [Real.exp_add]
+        ring
+
+/-- The product of heat kernels at complementary arguments, completing the
+square in `z` (the full-line companion of `heatKernel_mul_heatKernel`):
+`p_s(x−z) p_t(z) = p_{s+t}(x) · p_{st/(s+t)}(z − tx/(s+t))`. -/
+theorem heatKernel_mul_heatKernel' (hs : 0 < s) (ht : 0 < t) (x z : ℝ) :
+    heatKernel s (x - z) * heatKernel t z
+      = heatKernel (s+t) x * heatKernel (s*t/(s+t)) (z - t*x/(s+t)) := by
+  have hst : (0:ℝ) < s + t := by linarith
+  have hT : (0:ℝ) < s*t/(s+t) := by positivity
+  unfold heatKernel
+  have hC : (4*Real.pi*s)^(-1/2 : ℝ) * (4*Real.pi*t)^(-1/2 : ℝ)
+      = (4*Real.pi*(s+t))^(-1/2 : ℝ) * (4*Real.pi*(s*t/(s+t)))^(-1/2 : ℝ) := by
+    rw [← Real.mul_rpow (by positivity : (0:ℝ) ≤ 4*Real.pi*s)
+        (by positivity : (0:ℝ) ≤ 4*Real.pi*t),
+      ← Real.mul_rpow (by positivity : (0:ℝ) ≤ 4*Real.pi*(s+t))
+        (by positivity : (0:ℝ) ≤ 4*Real.pi*(s*t/(s+t)))]
+    congr 1
+    field_simp [hst.ne']
+  have hE : -(x - z)^2/(4*s) + -(z)^2/(4*t)
+      = -(x)^2/(4*(s+t)) + -(z - t*x/(s+t))^2/(4*(s*t/(s+t))) := by
+    field_simp [hs.ne', ht.ne', hst.ne']
+    ring
+  calc (4*Real.pi*s)^(-1/2 : ℝ) * Real.exp (-(x - z)^2/(4*s))
+        * ((4*Real.pi*t)^(-1/2 : ℝ) * Real.exp (-z^2/(4*t)))
+      = ((4*Real.pi*s)^(-1/2 : ℝ) * (4*Real.pi*t)^(-1/2 : ℝ))
+        * (Real.exp (-(x - z)^2/(4*s)) * Real.exp (-z^2/(4*t))) := by ring
+    _ = ((4*Real.pi*(s+t))^(-1/2 : ℝ) * (4*Real.pi*(s*t/(s+t)))^(-1/2 : ℝ))
+        * Real.exp (-(x - z)^2/(4*s) + -(z)^2/(4*t)) := by
+        rw [hC, ← Real.exp_add]
+    _ = ((4*Real.pi*(s+t))^(-1/2 : ℝ) * (4*Real.pi*(s*t/(s+t)))^(-1/2 : ℝ))
+        * Real.exp (-(x)^2/(4*(s+t)) + -(z - t*x/(s+t))^2/(4*(s*t/(s+t)))) := by
+        rw [hE]
+    _ = (4*Real.pi*(s+t))^(-1/2 : ℝ) * Real.exp (-(x)^2/(4*(s+t)))
+        * ((4*Real.pi*(s*t/(s+t)))^(-1/2 : ℝ)
+          * Real.exp (-(z - t*x/(s+t))^2/(4*(s*t/(s+t))))) := by
+        rw [Real.exp_add]
+        ring
+
+/-- **The paper's reflected-heat integral identity**: the truncated
+heat-kernel convolution is the heat kernel at the summed temperature times a
+Gaussian CDF factor (written as `gaussianTail (1/2) · / √(2π)`, which is the
+standard normal tail `Φ(−·)`). -/
+theorem heatKernel_conv_cdf (hL : 0 < L) (M α β : ℝ) :
+    ∫ z in Set.Iic M, heatKernel L (M+α-z) * heatKernel 1 (M-z+β)
+      = heatKernel (L+1) (α-β)
+        * (gaussianTail (1/2) ((α + L*β) / Real.sqrt (2*L*(L+1)))
+          / Real.sqrt (2*Real.pi)) := by
+  have hS : (0:ℝ) < L + 1 := by linarith
+  have hT : (0:ℝ) < L/(L+1) := by positivity
+  -- step 1: substitute `w = M − z`
+  have step1 : (∫ z in Set.Iic M, heatKernel L (M+α-z) * heatKernel 1 (M-z+β))
+      = ∫ w in Set.Ioi 0, heatKernel L (α+w) * heatKernel 1 (β+w) := by
+    rw [← integral_Iic_comp_const_sub (fun w => heatKernel L (α+w) * heatKernel 1 (β+w)) M]
+    apply setIntegral_congr_fun measurableSet_Iic
+    intro z _
+    show heatKernel L (M+α-z) * heatKernel 1 (M-z+β)
+      = heatKernel L (α + (M - z)) * heatKernel 1 (β + (M - z))
+    congr 1
+    · congr 1
+      ring
+    · congr 1
+      ring
+  rw [step1]
+  -- step 2: pointwise factorization and the constant factor
+  have step2 : (∫ w in Set.Ioi 0, heatKernel L (α+w) * heatKernel 1 (β+w))
+      = ∫ w in Set.Ioi 0, heatKernel (L+1) (α-β)
+          * heatKernel (L/(L+1)) (w + (α + L*β)/(L+1)) := by
+    apply setIntegral_congr_fun measurableSet_Ioi
+    intro w _
+    exact heatKernel_mul_heatKernel hL α β w
+  rw [step2, integral_const_mul]
+  -- step 3: shift the half-line
+  have step3 : (∫ w in Set.Ioi 0, heatKernel (L/(L+1)) (w + (α + L*β)/(L+1)))
+      = ∫ v in Set.Ioi ((α + L*β)/(L+1)), heatKernel (L/(L+1)) v := by
+    rw [integral_Ioi_add_const (heatKernel (L/(L+1))) 0 ((α + L*β)/(L+1)), zero_add]
+  rw [step3]
+  -- step 4: the half-line heat-kernel mass is a `gaussianTail`
+  have step4 : (∫ v in Set.Ioi ((α + L*β)/(L+1)), heatKernel (L/(L+1)) v)
+      = (4*Real.pi*(L/(L+1)))^(-1/2 : ℝ)
+        * gaussianTail (L/(L+1)) ((α + L*β)/(L+1)) := by
+    unfold heatKernel gaussianTail
+    rw [integral_const_mul]
+  rw [step4, gaussianTail_scale hT]
+  -- step 5: normalize the constants and the tail argument
+  have hC : (4*Real.pi*(L/(L+1)))^(-1/2 : ℝ) * Real.sqrt (2*(L/(L+1)))
+      = (Real.sqrt (2*Real.pi))⁻¹ := by
+    have hinv : (4*Real.pi*(L/(L+1)))^(-1/2 : ℝ)
+        = (Real.sqrt (4*Real.pi*(L/(L+1))))⁻¹ := by
+      rw [Real.sqrt_eq_rpow,
+        ← Real.rpow_neg (by positivity : (0:ℝ) ≤ 4*Real.pi*(L/(L+1)))]
+      congr 1
+      norm_num
+    rw [hinv, mul_comm, ← div_eq_mul_inv,
+      ← Real.sqrt_div (by positivity : (0:ℝ) ≤ 2*(L/(L+1)))]
+    have hdiv : 2*(L/(L+1)) / (4*Real.pi*(L/(L+1))) = (2*Real.pi)⁻¹ := by
+      field_simp [hL.ne', hS.ne', Real.pi_ne_zero]
+      ring
+    rw [hdiv, Real.sqrt_eq_rpow, Real.sqrt_eq_rpow]
+    exact Real.inv_rpow (by positivity : (0:ℝ) ≤ 2*Real.pi) (1/2 : ℝ)
+  have harg : (α + L*β)/(L+1) / Real.sqrt (2*(L/(L+1)))
+      = (α + L*β) / Real.sqrt (2*L*(L+1)) := by
+    have hsqrt : Real.sqrt (2*L*(L+1)) = (L+1) * Real.sqrt (2*(L/(L+1))) := by
+      have h1 : (2*L*(L+1) : ℝ) = (L+1)^2 * (2*(L/(L+1))) := by
+        field_simp [hS.ne']
+      rw [h1, Real.sqrt_mul (by positivity : (0:ℝ) ≤ (L+1)^2), Real.sqrt_sq hS.le]
+    rw [hsqrt, div_div]
+  rw [← mul_assoc ((4*Real.pi*(L/(L+1)))^(-1/2 : ℝ)) (Real.sqrt (2*(L/(L+1))))
+    (gaussianTail (1/2) ((α + L*β)/(L+1) / Real.sqrt (2*(L/(L+1))))), hC, harg]
+  ring
+
+/-- **The heat-kernel semigroup law** on the full line (the `M → ∞` limit of
+the paper's reflected-heat integral identity, used in `TwoInterval/`): `p_s ∗ p_t = p_{s+t}`. -/
+theorem heatKernel_semigroup (hs : 0 < s) (ht : 0 < t) (x : ℝ) :
+    ∫ z : ℝ, heatKernel s (x-z) * heatKernel t z = heatKernel (s+t) x := by
+  have hst : (0:ℝ) < s + t := by linarith
+  have hT : (0:ℝ) < s*t/(s+t) := by positivity
+  have hcong : (fun z : ℝ => heatKernel s (x-z) * heatKernel t z)
+      = fun z => heatKernel (s+t) x * heatKernel (s*t/(s+t)) (z - t*x/(s+t)) :=
+    funext fun z => heatKernel_mul_heatKernel' hs ht x z
+  rw [hcong, integral_const_mul]
+  have hshift : (∫ z : ℝ, heatKernel (s*t/(s+t)) (z - t*x/(s+t)))
+      = ∫ z : ℝ, heatKernel (s*t/(s+t)) z :=
+    MeasureTheory.integral_sub_right_eq_self (μ := volume) _ _
+  rw [hshift, integral_heatKernel hT, mul_one]
+
+/-! ### The saddle point -/
+
+/-- The saddle exponent (the definition of `F(δ)`), with `S = r+2`
+and `a² = 2M` inlined. -/
+noncomputable def saddleF (M r δ : ℝ) : ℝ :=
+  δ^2/2 + 2*(r+2)*(M-δ) + (2/3)*(r+2)^3 + (2/3)*(2*M-2*δ+(r+2)^2)^(3/2 : ℝ)
+
+/-- `J_M(r)` (the definition of `J_M(r)`). -/
+noncomputable def saddleJ (M r : ℝ) : ℝ :=
+  (2/3)*(2*M+r^2)^(3/2 : ℝ) + 2*M*r + (2/3)*r^3
+
+/-- The saddle radius `R = √(2M+r²)`. -/
+noncomputable def saddleR (M r : ℝ) : ℝ := Real.sqrt (2*M + r^2)
+
+/-- `(saddleR M r)² = 2M + r²` when the radicand is nonnegative. -/
+theorem saddleR_sq {M r : ℝ} (h : 0 ≤ 2*M + r^2) : (saddleR M r)^2 = 2*M + r^2 :=
+  Real.sq_sqrt h
+
+/-- `saddleR M r ≥ 0`. -/
+theorem saddleR_nonneg (M r : ℝ) : 0 ≤ saddleR M r := Real.sqrt_nonneg _
+
+/-- The shifted objective `G(δ) = F(δ) − (δ−δ*)²/2` with
+`δ* = 2(r + √(2M+r²))`; the quadratic lower bound is `G(δ) ≥ G(δ*)`. -/
+noncomputable def saddleG (M r t : ℝ) : ℝ :=
+  saddleF M r t - (t - 2*(r + saddleR M r))^2/2
+
+/-- The key identity: at the critical point
+`δ* = 2(r+R)`, `F(δ*) = J_M(r)` exactly.  The condition `2 ≤ R`
+(equivalently `4 ≤ 2M + r²`) is necessary: it ensures
+`2M − 2δ* + S² = (R−2)²` raises to `((R−2)²)^{3/2} = (R−2)³`. -/
+theorem saddleF_min_eq {M r : ℝ} (hM : 0 < M) (hr : 1 ≤ r) (hR : 2 ≤ saddleR M r) :
+    saddleF M r (2*(r + saddleR M r)) = saddleJ M r := by
+  have hR2 : (saddleR M r)^2 = 2*M + r^2 := saddleR_sq (by nlinarith [hM, sq_nonneg r])
+  have hRnn : 0 ≤ saddleR M r := saddleR_nonneg M r
+  have hkey : 2*M - 2*(2*(r + saddleR M r)) + (r+2)^2 = (saddleR M r - 2)^2 := by
+    linear_combination hR2.symm
+  have hrpow : ((saddleR M r - 2)^2)^(3/2 : ℝ) = (saddleR M r - 2)^3 := by
+    have hR2m : (0:ℝ) ≤ saddleR M r - 2 := by linarith [hR]
+    rw [← Real.rpow_natCast (saddleR M r - 2) 2, ← Real.rpow_mul hR2m]
+    rw [show ((2:ℕ):ℝ)*(3/2) = ((3:ℕ):ℝ) by norm_num, Real.rpow_natCast]
+  have hrpow2 : (2*M + r^2)^(3/2 : ℝ) = (saddleR M r)^3 := by
+    rw [← hR2, ← Real.rpow_natCast (saddleR M r) 2, ← Real.rpow_mul hRnn]
+    rw [show ((2:ℕ):ℝ)*(3/2) = ((3:ℕ):ℝ) by norm_num, Real.rpow_natCast]
+  unfold saddleF saddleJ
+  rw [hkey, hrpow, hrpow2]
+  linear_combination -2 * hR2
+
+/-- The derivative of the saddle exponent:
+`F'(δ) = δ − 2S − 2q(δ)` with `q(δ) = √(2M − 2δ + S²)`, valid where the
+radicand is positive. -/
+theorem saddleF_hasDeriv (M r δ : ℝ) (h : 0 < 2*M - 2*δ + (r+2)^2) :
+    HasDerivAt (saddleF M r)
+      (δ - 2*(r+2) - 2*Real.sqrt (2*M - 2*δ + (r+2)^2)) δ := by
+  have hne : 2*M - 2*δ + (r+2)^2 ≠ 0 := h.ne'
+  unfold saddleF
+  have t1 : HasDerivAt (fun δ : ℝ => δ^2/2) δ δ := by
+    have h1 := (hasDerivAt_pow 2 δ).div_const (2:ℝ)
+    convert h1 using 1 <;> first | rfl | (norm_num; ring) | ring
+  have t2 : HasDerivAt (fun δ : ℝ => 2*(r+2)*(M-δ)) (-2*(r+2)) δ := by
+    have h1 := ((hasDerivAt_const δ M).sub (hasDerivAt_id' δ)).const_mul (2*(r+2))
+    convert h1 using 1 <;> first | rfl | ring
+  have t4 : HasDerivAt (fun δ : ℝ => (2/3)*(2*M-2*δ+(r+2)^2)^(3/2 : ℝ))
+      (-2 * Real.sqrt (2*M - 2*δ + (r+2)^2)) δ := by
+    have hin : HasDerivAt (fun δ : ℝ => 2*M - 2*δ + (r+2)^2) (-2) δ := by
+      have h1 := ((hasDerivAt_const δ (2*M)).sub ((hasDerivAt_id' δ).const_mul 2)).add_const
+        ((r+2)^2)
+      convert h1 using 1 <;> first | rfl | ring
+    have hpow : HasDerivAt (fun x : ℝ => x^(3/2 : ℝ))
+        ((3/2) * (2*M - 2*δ + (r+2)^2)^(1/2 : ℝ)) (2*M - 2*δ + (r+2)^2) := by
+      have h2 := Real.hasDerivAt_rpow_const (x := 2*M - 2*δ + (r+2)^2) (p := (3:ℝ)/2)
+        (Or.inl hne)
+      rw [show (3/2 : ℝ) - 1 = 1/2 by norm_num] at h2
+      exact h2
+    have h3 := hpow.comp δ hin
+    have h4 := h3.const_mul (2/3)
+    convert h4 using 1 <;> first | rfl | (rw [Real.sqrt_eq_rpow]; ring)
+  have htot := ((t1.add t2).add (hasDerivAt_const δ ((2/3)*(r+2)^3))).add t4
+  convert htot using 1 <;> first | rfl | ring
+
+/-- The derivative of the shifted objective:
+`G'(δ) = 2(q* − q(δ))` with `q* = R − 2`. -/
+theorem saddleG_hasDeriv (M r t : ℝ) (h : 0 < 2*M - 2*t + (r+2)^2) :
+    HasDerivAt (saddleG M r)
+      (2*(saddleR M r - 2) - 2*Real.sqrt (2*M - 2*t + (r+2)^2)) t := by
+  have h2 : HasDerivAt (fun t : ℝ => (t - 2*(r + saddleR M r))^2/2)
+      (t - 2*(r + saddleR M r)) t := by
+    have h1 := (((hasDerivAt_id' t).sub_const (2*(r + saddleR M r))).pow 2).div_const 2
+    convert h1 using 1 <;> first | rfl | (norm_num; ring) | ring
+  have h3 := (saddleF_hasDeriv M r t h).sub h2
+  convert h3 using 1 <;> first | rfl | ring
+
+/-- `saddleG M r` is continuous on `ℝ` (the `rpow` with exponent `3/2 > 0` is
+continuous everywhere). -/
+theorem continuous_saddleG (M r : ℝ) : Continuous (saddleG M r) := by
+  have hrpow_cont : Continuous fun t : ℝ => (2*M - 2*t + (r+2)^2)^(3/2 : ℝ) := by
+    apply continuous_iff_continuousAt.mpr
+    intro t
+    exact (Real.continuousAt_rpow_const _ _ (Or.inr (by norm_num : (0:ℝ) ≤ 3/2))).comp
+      (by fun_prop : ContinuousAt (fun t : ℝ => 2*M - 2*t + (r+2)^2) t)
+  have hF : Continuous fun t : ℝ => saddleF M r t := by
+    unfold saddleF
+    exact ((((continuous_pow 2).div_const 2).add
+      (continuous_const.mul (continuous_const.sub continuous_id))).add continuous_const).add
+      (continuous_const.mul hrpow_cont)
+  unfold saddleG
+  exact hF.sub (((continuous_id.sub continuous_const).pow 2).div_const 2)
+
+/-- The quadratic lower bound:
+`F(δ) ≥ J_M(r) + (δ−δ*)²/2` for `δ ∈ [0, δmax]`, `δmax = (2M+(r+2)²)/2`.
+
+Proof: with `G = F − (δ−δ*)²/2` one has `G'(t) = 2(q* − q(t))` where
+`q(t) = √(2M−2t+S²)` is strictly decreasing on the interval and
+`q(δ*) = q* = R−2 ≥ 0` (this is where `2 ≤ R` enters).  Hence `G` decreases
+on `[0, δ*]` and increases on `[δ*, δmax]`, so `G(δ) ≥ G(δ*) = J_M(r)` by
+`saddleF_min_eq`.  Only the first derivative is used; no second-derivative
+API is needed (the paper's `F'' = 1 + 2/q ≥ 1` is repackaged as the
+monotonicity of `G'`'s sign through its zero). -/
+theorem saddleF_ge {M r : ℝ} (hM : 1 ≤ M) (hr : 1 ≤ r) (hR : 2 ≤ saddleR M r)
+    (δ : ℝ) (hδ : δ ∈ Set.Icc 0 ((2*M + (r+2)^2)/2)) :
+    saddleJ M r + (δ - 2*(r + saddleR M r))^2/2 ≤ saddleF M r δ := by
+  have hM0 : 0 < M := lt_of_lt_of_le one_pos hM
+  have hR2 : (saddleR M r)^2 = 2*M + r^2 := saddleR_sq (by nlinarith [hM, sq_nonneg r])
+  have hRnn : 0 ≤ saddleR M r := saddleR_nonneg M r
+  set δs := 2*(r + saddleR M r) with hδs
+  set δm := (2*M + (r+2)^2)/2 with hδm
+  have hδs_pos : 0 < δs := by
+    have h1 : (1:ℝ) ≤ r + saddleR M r := by linarith [hr, hRnn]
+    linarith
+  have hδs_le : δs ≤ δm := by
+    have hdiff : δm - δs = (saddleR M r - 2)^2/2 := by
+      rw [hδm, hδs]
+      linear_combination hR2.symm / 2
+    have hnn : 0 ≤ (saddleR M r - 2)^2/2 := by positivity
+    linarith
+  -- `G` is differentiable on `(0, δmax)` with `G'(t) = 2(q* − q(t))`
+  have hGderiv : ∀ t ∈ Set.Ioo 0 δm, HasDerivAt (saddleG M r)
+      (2*(saddleR M r - 2) - 2*Real.sqrt (2*M - 2*t + (r+2)^2)) t := by
+    intro t ht
+    apply saddleG_hasDeriv
+    have h0 : 2*M - 2*δm + (r+2)^2 = 0 := by rw [hδm]; ring
+    linarith [ht.2]
+  -- `q(δ*) = R − 2`
+  have hqδs : Real.sqrt (2*M - 2*δs + (r+2)^2) = saddleR M r - 2 := by
+    have h1 : 2*M - 2*δs + (r+2)^2 = (saddleR M r - 2)^2 := by
+      rw [hδs]
+      linear_combination hR2.symm
+    rw [h1, Real.sqrt_sq_eq_abs, abs_of_nonneg (by linarith [hR])]
+  -- `q` is strictly decreasing on `(−∞, δmax]`
+  have hqstrict : ∀ {s t : ℝ}, s < t → t ≤ δm →
+      Real.sqrt (2*M - 2*t + (r+2)^2) < Real.sqrt (2*M - 2*s + (r+2)^2) := by
+    intro s t hst htm
+    apply Real.sqrt_lt_sqrt
+    · have h0 : 2*M - 2*δm + (r+2)^2 = 0 := by rw [hδm]; ring
+      linarith [htm]
+    · linarith [hst]
+  -- `G` decreases on `[0, δ*]`
+  have hAnti : AntitoneOn (saddleG M r) (Set.Icc 0 δs) := by
+    refine antitoneOn_of_deriv_nonpos (convex_Icc _ _) ?_ ?_ ?_
+    · exact (continuous_saddleG M r).continuousOn
+    · rw [interior_Icc]
+      intro t ht
+      exact (hGderiv t ⟨ht.1, ht.2.trans_le hδs_le⟩).hasDerivWithinAt.differentiableWithinAt
+    · rw [interior_Icc]
+      intro t ht
+      rw [(hGderiv t ⟨ht.1, ht.2.trans_le hδs_le⟩).deriv]
+      have hq := hqstrict ht.2 hδs_le
+      rw [hqδs] at hq
+      linarith
+  -- `G` increases on `[δ*, δmax]`
+  have hMono : MonotoneOn (saddleG M r) (Set.Icc δs δm) := by
+    refine monotoneOn_of_deriv_nonneg (convex_Icc _ _) ?_ ?_ ?_
+    · exact (continuous_saddleG M r).continuousOn
+    · rw [interior_Icc]
+      intro t ht
+      exact (hGderiv t ⟨hδs_pos.trans ht.1, ht.2⟩).hasDerivWithinAt.differentiableWithinAt
+    · rw [interior_Icc]
+      intro t ht
+      rw [(hGderiv t ⟨hδs_pos.trans ht.1, ht.2⟩).deriv]
+      have hq := hqstrict ht.1 ht.2.le
+      rw [hqδs] at hq
+      linarith
+  -- assemble: `G(δ) ≥ G(δ*) = J_M(r)`
+  have hGδs : saddleG M r δs = saddleJ M r := by
+    have h1 : saddleG M r δs
+        = saddleF M r δs - (δs - δs)^2/2 := rfl
+    rw [h1, sub_self, zero_pow two_ne_zero, zero_div, sub_zero]
+    exact saddleF_min_eq hM0 hr hR
+  have hfin : saddleG M r δs ≤ saddleG M r δ := by
+    rcases le_total δ δs with hle | hle
+    · exact hAnti ⟨hδ.1, hle⟩ ⟨hδs_pos.le, le_rfl⟩ hle
+    · exact hMono ⟨le_rfl, hδs_le⟩ ⟨hle, hδ.2⟩ hle
+  have hGδ : saddleG M r δ = saddleF M r δ - (δ - δs)^2/2 := rfl
+  rw [hGδs] at hfin
+  linarith
+
+/-- The saddle point is interior to `[0, δmax]` and `q* > 0`, under the strict condition `2 < R`. -/
+theorem saddle_interior {M r : ℝ} (hM : 1 ≤ M) (hr : 1 ≤ r) (hR : 2 < saddleR M r) :
+    0 < 2*(r + saddleR M r)
+      ∧ 2*(r + saddleR M r) < (2*M + (r+2)^2)/2
+      ∧ 0 < saddleR M r - 2 := by
+  have hR2 : (saddleR M r)^2 = 2*M + r^2 := by
+    apply saddleR_sq
+    by_contra hneg
+    push_neg at hneg
+    unfold saddleR at hR
+    rw [Real.sqrt_eq_zero_of_nonpos hneg.le] at hR
+    linarith
+  have hRnn : 0 ≤ saddleR M r := saddleR_nonneg M r
+  refine ⟨?_, ?_, by linarith⟩
+  · have h1 : (1:ℝ) ≤ r + saddleR M r := by linarith [hr, hRnn]
+    linarith
+  · have hdiff : (2*M + (r+2)^2)/2 - 2*(r + saddleR M r) = (saddleR M r - 2)^2/2 := by
+      linear_combination hR2.symm / 2
+    have hpos : 0 < (saddleR M r - 2)^2/2 := by
+      have h1 : (0:ℝ) < (saddleR M r - 2)^2 := pow_pos (by linarith) 2
+      linarith
+    linarith
+
+end AiryConj

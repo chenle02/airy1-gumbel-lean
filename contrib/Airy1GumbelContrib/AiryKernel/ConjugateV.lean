@@ -1,0 +1,1653 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.AiryKernel.Conjugates
+
+/-!
+# The Hilbert–Schmidt bound for the weighted kernel `V_{T,a}`
+
+This is the paper's Hilbert–Schmidt lemma for the weighted kernel `V_{T,a}`.
+The paper writes the weight parameter as `λ` with condition `λ ≥ T+1`
+and sets `a = √(2M)`; the exponent `2Tλ² - 2a²λ` is then `2Tλ² - 4Mλ`, the
+form used in the Lean statement (no square roots needed).
+
+## Proof structure
+
+All bounds are proved at the `lintegral` (nonnegative) level, so no
+integrability side conditions are needed mid-way; integrability and the
+Bochner bound are extracted only at the very end.
+
+* `gaussT T w = exp(-w²/(2T))` and its absolute moments `gaussMoment T k`;
+* `gRefKernel` / `gFreeKernel`: explicit pointwise forms of `(vKernel)²` on the
+  reflected region `{x ≤ M, z ≤ M}` and its complement, together with the
+  completed-square alternate forms used to integrate;
+* `shear_lintegral_le`: the shear substitution `(u, s) = (-(X+Z), -Z)` behind
+  the reflected-region estimate (paper's `J_{λ,T}`);
+* the three region bounds and the final assembly.
+-/
+
+namespace AiryConj
+
+open MeasureTheory Real Set Filter
+open scoped Topology BigOperators ENNReal NNReal
+
+/-- `(exp t)² = exp (2t)`. -/
+theorem exp_sq (t : ℝ) : (Real.exp t) ^ 2 = Real.exp (2 * t) := by
+  rw [pow_two, ← Real.exp_add]
+  congr 1
+  ring
+
+/-! ## The Gaussian factor and its moments -/
+
+/-- The Gaussian factor `w ↦ exp(-w²/(2T))` underlying `(heatKernel T)²`. -/
+noncomputable def gaussT (T w : ℝ) : ℝ := Real.exp (-(w ^ 2) / (2 * T))
+
+/-- `gaussT` is positive. -/
+theorem gaussT_pos (T w : ℝ) : 0 < gaussT T w := Real.exp_pos _
+
+/-- `gaussT` is nonnegative. -/
+theorem gaussT_nonneg (T w : ℝ) : 0 ≤ gaussT T w := (gaussT_pos T w).le
+
+/-- `gaussT` is even. -/
+theorem gaussT_even (T w : ℝ) : gaussT T (-w) = gaussT T w := by
+  unfold gaussT
+  rw [neg_sq]
+
+/-- `gaussT` is continuous in `w`. -/
+theorem continuous_gaussT (T : ℝ) : Continuous fun w : ℝ => gaussT T w := by
+  unfold gaussT
+  fun_prop
+
+/-- `gaussT` is measurable in `w`. -/
+theorem measurable_gaussT (T : ℝ) : Measurable fun w : ℝ => gaussT T w :=
+  (continuous_gaussT T).measurable
+
+/-- `gaussT` in the `exp(-b·w²)` normal form. -/
+theorem gaussT_eq_exp_neg_mul_sq {T : ℝ} (hT : 0 < T) (w : ℝ) :
+    gaussT T w = Real.exp (-(2 * T)⁻¹ * w ^ 2) := by
+  unfold gaussT
+  congr 1
+  field_simp
+
+/-- `(heatKernel T v)² = (4πT)⁻¹ · gaussT T v`. -/
+theorem heatKernel_sq {T : ℝ} (hT : 0 < T) (v : ℝ) :
+    (heatKernel T v) ^ 2 = (4 * Real.pi * T)⁻¹ * gaussT T v := by
+  have h4 : (0 : ℝ) < 4 * Real.pi * T := by positivity
+  have hX : (4 * Real.pi * T) ^ (-1 / 2 : ℝ) * (4 * Real.pi * T) ^ (-1 / 2 : ℝ)
+      = (4 * Real.pi * T)⁻¹ := by
+    rw [← Real.rpow_add h4, show (-1 / 2 : ℝ) + -1 / 2 = -1 by norm_num,
+      Real.rpow_neg_one]
+  rw [pow_two, heatKernel, gaussT,
+    show (4 * Real.pi * T) ^ (-1 / 2 : ℝ) * Real.exp (-v ^ 2 / (4 * T)) *
+        ((4 * Real.pi * T) ^ (-1 / 2 : ℝ) * Real.exp (-v ^ 2 / (4 * T)))
+      = ((4 * Real.pi * T) ^ (-1 / 2 : ℝ) * (4 * Real.pi * T) ^ (-1 / 2 : ℝ)) *
+        (Real.exp (-v ^ 2 / (4 * T)) * Real.exp (-v ^ 2 / (4 * T))) from by ring,
+    hX, ← Real.exp_add]
+  congr 1
+  field_simp
+  ring_nf
+
+/-- The `k`-th absolute moment of `gaussT`: `∫ w, |w|^k exp(-w²/(2T))`. -/
+noncomputable def gaussMoment (T : ℝ) (k : ℕ) : ℝ := ∫ w : ℝ, |w| ^ k * gaussT T w
+
+/-- `gaussT` is integrable for `0 < T`. -/
+theorem integrable_gaussT {T : ℝ} (hT : 0 < T) : Integrable (gaussT T) := by
+  have hb : (0 : ℝ) < (2 * T)⁻¹ := by positivity
+  have hfun : gaussT T = fun w : ℝ => Real.exp (-(2 * T)⁻¹ * w ^ 2) :=
+    funext fun w => gaussT_eq_exp_neg_mul_sq hT w
+  rw [hfun]
+  exact integrable_exp_neg_mul_sq hb
+
+/-- Every absolute moment of `gaussT` is integrable for `0 < T`. -/
+theorem integrable_abs_pow_gaussT {T : ℝ} (hT : 0 < T) (k : ℕ) :
+    Integrable fun w : ℝ => |w| ^ k * gaussT T w := by
+  have hb : (0 : ℝ) < (2 * T)⁻¹ := by positivity
+  have hen : Integrable fun w : ℝ => (k.factorial : ℝ) * Real.exp (-(2 * T)⁻¹ * w ^ 2 + |w|) := by
+    have h := (integrable_exp_neg_sq_add_abs hb (1 : ℝ) (0 : ℝ)).const_mul (k.factorial : ℝ)
+    convert h using 1
+    funext w
+    congr 2
+    ring
+  apply hen.mono' (((continuous_abs.pow k).mul (continuous_gaussT T)).aestronglyMeasurable)
+  filter_upwards with w
+  show |( |w| ^ k * gaussT T w)| ≤ _
+  rw [abs_mul, abs_of_nonneg (pow_nonneg (abs_nonneg _) _),
+    abs_of_nonneg (gaussT_nonneg T w)]
+  have h1 := abs_pow_le_factorial_mul_exp k (zero_lt_one : (0 : ℝ) < 1) w
+  rw [one_pow, div_one, one_mul] at h1
+  calc |w| ^ k * gaussT T w ≤ ((k.factorial : ℝ) * Real.exp |w|) * gaussT T w :=
+        mul_le_mul_of_nonneg_right h1 (gaussT_nonneg T w)
+    _ = (k.factorial : ℝ) * Real.exp (-(2 * T)⁻¹ * w ^ 2 + |w|) := by
+        rw [gaussT_eq_exp_neg_mul_sq hT, mul_assoc, ← Real.exp_add]
+        congr 1
+        ring_nf
+
+/-- The moments are nonnegative. -/
+theorem gaussMoment_nonneg {T : ℝ} (_hT : 0 < T) (k : ℕ) : 0 ≤ gaussMoment T k := by
+  unfold gaussMoment
+  apply integral_nonneg
+  intro w
+  exact mul_nonneg (pow_nonneg (abs_nonneg w) k) (gaussT_nonneg T w)
+
+/-- The zeroth moment in closed form: `∫ w, gaussT T w = √(2πT)`. -/
+theorem gaussMoment_zero {T : ℝ} (hT : 0 < T) :
+    gaussMoment T 0 = Real.sqrt (Real.pi * (2 * T)) := by
+  unfold gaussMoment
+  simp only [pow_zero, one_mul]
+  rw [show (fun w : ℝ => gaussT T w) = fun w => Real.exp (-(2 * T)⁻¹ * w ^ 2) from
+    funext fun w => gaussT_eq_exp_neg_mul_sq hT w]
+  rw [integral_gaussian]
+  congr 1
+  field_simp
+
+/-- The zeroth moment is positive. -/
+theorem gaussMoment_zero_pos {T : ℝ} (hT : 0 < T) : 0 < gaussMoment T 0 := by
+  rw [gaussMoment_zero hT]
+  positivity
+
+/-- `lintegral` form of the zeroth moment. -/
+theorem lintegral_gaussT {T : ℝ} (hT : 0 < T) :
+    ∫⁻ w : ℝ, ENNReal.ofReal (gaussT T w) = ENNReal.ofReal (gaussMoment T 0) := by
+  have h0 : (fun w : ℝ => gaussT T w) = fun w => |w| ^ 0 * gaussT T w := by
+    funext w
+    simp
+  rw [← ofReal_integral_eq_lintegral_ofReal (integrable_gaussT hT)
+    (Eventually.of_forall fun w => gaussT_nonneg T w)]
+  congr 1
+  unfold gaussMoment
+  rw [h0]
+
+/-- `lintegral` form of the second moment (with the square in un-absolute form). -/
+theorem lintegral_sq_gaussT {T : ℝ} (hT : 0 < T) :
+    ∫⁻ w : ℝ, ENNReal.ofReal (w ^ 2 * gaussT T w) = ENNReal.ofReal (gaussMoment T 2) := by
+  have hint : Integrable fun w : ℝ => w ^ 2 * gaussT T w := by
+    convert integrable_abs_pow_gaussT hT 2 using 1
+    funext w
+    rw [sq_abs]
+  have hnn : (0 : ℝ → ℝ) ≤ᵐ[volume] fun w : ℝ => w ^ 2 * gaussT T w := by
+    refine Eventually.of_forall fun w => ?_
+    exact mul_nonneg (sq_nonneg w) (gaussT_nonneg T w)
+  rw [← ofReal_integral_eq_lintegral_ofReal hint hnn]
+  congr 1
+  unfold gaussMoment
+  congr 1
+  funext w
+  rw [sq_abs]
+
+/-! ## Half-line exponential integrals -/
+
+/-- `exp(-b·t)` is integrable on `(0, ∞)` for `0 < b`. -/
+theorem integrableOn_exp_neg_mul_Ioi {b : ℝ} (hb : 0 < b) :
+    IntegrableOn (fun t : ℝ => Real.exp (-(b * t))) (Set.Ioi 0) := by
+  have h := integrableOn_exp_mul_Ioi (a := -b) (by linarith) (0 : ℝ)
+  convert h using 2
+  congr 1
+  ring
+
+/-- `∫ t in (0,∞), exp(-b·t) = 1/b`. -/
+theorem integral_exp_neg_mul_Ioi {b : ℝ} (hb : 0 < b) :
+    ∫ t in Set.Ioi 0, Real.exp (-(b * t)) = 1 / b := by
+  have h := integral_exp_mul_Ioi (a := -b) (by linarith) (0 : ℝ)
+  rw [mul_zero, Real.exp_zero] at h
+  have hfun : (fun t : ℝ => Real.exp (-(b * t))) = fun t => Real.exp ((-b) * t) := by
+    funext t
+    congr 1
+    ring
+  rw [hfun, h]
+  field_simp
+
+/-- `t²·exp(-b·t)` is integrable on `(0, ∞)` for `0 < b`. -/
+theorem integrableOn_sq_exp_neg_mul_Ioi {b : ℝ} (hb : 0 < b) :
+    IntegrableOn (fun t : ℝ => t ^ 2 * Real.exp (-(b * t))) (Set.Ioi 0) := by
+  have hb2 : (0 : ℝ) < b / 2 := by positivity
+  have hen : IntegrableOn (fun t : ℝ => (8 / b ^ 2) * Real.exp (-(b / 2 * t))) (Set.Ioi 0) :=
+    (integrableOn_exp_neg_mul_Ioi hb2).const_mul _
+  apply integrableOn_of_abs_le_on measurableSet_Ioi hen
+    (by fun_prop : Continuous fun t : ℝ => t ^ 2 * Real.exp (-(b * t))).aestronglyMeasurable
+  intro t ht
+  have ht0 : 0 ≤ t := ht.le
+  have hfact : ((2 : ℕ).factorial : ℝ) = 2 := by norm_num [Nat.factorial]
+  have h1 := abs_pow_le_factorial_mul_exp 2 hb2 t
+  rw [sq_abs, hfact] at h1
+  rw [abs_mul, abs_of_nonneg (Real.exp_pos _).le, abs_of_nonneg (sq_nonneg _)]
+  calc t ^ 2 * Real.exp (-(b * t))
+      ≤ ((2 / (b / 2) ^ 2) * Real.exp (b / 2 * |t|)) * Real.exp (-(b * t)) :=
+        mul_le_mul_of_nonneg_right h1 (Real.exp_pos _).le
+    _ = (8 / b ^ 2) * Real.exp (-(b / 2 * t)) := by
+        rw [abs_of_nonneg ht0, mul_assoc, ← Real.exp_add,
+          show b / 2 * t + -(b * t) = -(b / 2 * t) by ring]
+        ring_nf
+
+/-- `∫ t in (0,∞), t²·exp(-b·t) = 2/b³` (from the Gamma integral). -/
+theorem integral_sq_exp_neg_mul_Ioi {b : ℝ} (hb : 0 < b) :
+    ∫ t in Set.Ioi 0, t ^ 2 * Real.exp (-(b * t)) = 2 / b ^ 3 := by
+  have h := Real.integral_rpow_mul_exp_neg_mul_Ioi (a := ((3 : ℕ) : ℝ)) (r := b)
+    (by norm_num) hb
+  have hfun : (fun t : ℝ => t ^ (((3 : ℕ) : ℝ) - 1) * Real.exp (-(b * t)))
+      = fun t => t ^ 2 * Real.exp (-(b * t)) := by
+    funext t
+    congr 1
+    rw [show (((3 : ℕ) : ℝ) - 1) = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+  rw [hfun] at h
+  rw [Real.rpow_natCast] at h
+  have hG : Real.Gamma ((3 : ℕ) : ℝ) = 2 := by
+    have h1 := Real.Gamma_nat_eq_factorial 2
+    rw [show ((2 : ℕ) : ℝ) + 1 = ((3 : ℕ) : ℝ) by norm_num] at h1
+    rw [h1]
+    norm_num [Nat.factorial]
+  rw [hG] at h
+  rw [h]
+  field_simp
+
+/-- `lintegral` form of `∫ t in (0,∞), exp(-b·t) = 1/b`. -/
+theorem lintegral_exp_neg_mul_Ioi {b : ℝ} (hb : 0 < b) :
+    ∫⁻ t in Set.Ioi 0, ENNReal.ofReal (Real.exp (-(b * t))) = ENNReal.ofReal (1 / b) := by
+  rw [← ofReal_integral_eq_lintegral_ofReal (integrableOn_exp_neg_mul_Ioi hb)
+    (Eventually.of_forall fun t => (Real.exp_pos _).le), integral_exp_neg_mul_Ioi hb]
+
+/-- `lintegral` form of `∫ t in (0,∞), t²·exp(-b·t) = 2/b³`. -/
+theorem lintegral_sq_exp_neg_mul_Ioi {b : ℝ} (hb : 0 < b) :
+    ∫⁻ t in Set.Ioi 0, ENNReal.ofReal (t ^ 2 * Real.exp (-(b * t)))
+      = ENNReal.ofReal (2 / b ^ 3) := by
+  rw [← ofReal_integral_eq_lintegral_ofReal (integrableOn_sq_exp_neg_mul_Ioi hb)
+    (Eventually.of_forall fun t => mul_nonneg (sq_nonneg _) (Real.exp_pos _).le),
+    integral_sq_exp_neg_mul_Ioi hb]
+
+/-! ## The squared kernel on the two regions
+
+`gRefKernel` (resp. `gFreeKernel`) is the explicit pointwise form of
+`(vKernel T a M p)²` on the reflected region `{x ≤ M, z ≤ M}` (resp. its
+complement). -/
+
+/-- Reflected-region explicit form of `(vKernel T a M p)²`:
+`(4πT)⁻¹ (1+z²) exp(-2a(x+z) - (x-z)²/(2T) - 2(M-x)(M-z)/T)`. -/
+noncomputable def gRefKernel (T a M : ℝ) (p : ℝ × ℝ) : ℝ :=
+  (4 * Real.pi * T)⁻¹ * (1 + p.2 ^ 2) *
+    Real.exp (-2 * a * (p.1 + p.2) - (p.1 - p.2) ^ 2 / (2 * T)
+      - 2 * (M - p.1) * (M - p.2) / T)
+
+/-- Free-region explicit form of `(vKernel T a M p)²`:
+`(4πT)⁻¹ (1+z²) exp(-2a(x+z) - (x-z)²/(2T))`. -/
+noncomputable def gFreeKernel (T a : ℝ) (p : ℝ × ℝ) : ℝ :=
+  (4 * Real.pi * T)⁻¹ * (1 + p.2 ^ 2) * Real.exp (-2 * a * (p.1 + p.2) - (p.1 - p.2) ^ 2 / (2 * T))
+
+/-- On the reflected region, `(vKernel)²` agrees with `gRefKernel`. -/
+theorem vKernel_sq_eq_gRefKernel (hT : 0 < T) {M a : ℝ} {p : ℝ × ℝ}
+    (hx : p.1 ≤ M) (hz : p.2 ≤ M) :
+    (vKernel T a M p) ^ 2 = gRefKernel T a M p := by
+  have h2T : T ≠ 0 := hT.ne'
+  rw [vKernel, qMT_eq_reflected hx hz, heatKernel_reflected_eq hT]
+  rw [mul_pow, mul_pow, mul_pow, mul_pow, exp_sq, exp_sq, exp_sq, heatKernel_sq hT,
+    phiWeight_sq]
+  unfold gRefKernel gaussT
+  rw [show ∀ e1 e2 e3 e4 K P : ℝ,
+        (e1 * (K * e2 * e3) * e4) * P = K * P * (e1 * e2 * e3 * e4) from
+      fun _ _ _ _ _ _ => by ring]
+  rw [← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
+  congr 1
+  congr 1
+  field_simp
+  ring
+
+/-- On the complementary region, `(vKernel)²` agrees with `gFreeKernel`. -/
+theorem vKernel_sq_eq_gFreeKernel (hT : 0 < T) {M a : ℝ} {p : ℝ × ℝ}
+    (h : ¬(p.1 ≤ M ∧ p.2 ≤ M)) :
+    (vKernel T a M p) ^ 2 = gFreeKernel T a p := by
+  have h2T : T ≠ 0 := hT.ne'
+  rw [vKernel, qMT_eq_free h]
+  rw [mul_pow, mul_pow, mul_pow, exp_sq, exp_sq, heatKernel_sq hT, phiWeight_sq]
+  unfold gFreeKernel gaussT
+  rw [show ∀ e1 e2 e4 K P : ℝ,
+        (e1 * (K * e2) * e4) * P = K * P * (e1 * e2 * e4) from
+      fun _ _ _ _ _ => by ring]
+  rw [← Real.exp_add, ← Real.exp_add]
+  congr 1
+  congr 1
+  field_simp
+  ring
+
+/-- Completed-square alternate form of `gRefKernel` (paper's key exponent
+identity for the reflected region):
+`gRefKernel = (4πT)⁻¹ e^{2Ta²-4Ma} (1+z²) gaussT((x-M)+(z-M)+2Ta)`. -/
+theorem gRefKernel_eq_alt (hT : 0 < T) (p : ℝ × ℝ) :
+    gRefKernel T a M p = (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+      (1 + p.2 ^ 2) * gaussT T (p.1 + p.2 - 2 * M + 2 * T * a) := by
+  have h2T : T ≠ 0 := hT.ne'
+  unfold gRefKernel gaussT
+  rw [show (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) * (1 + p.2 ^ 2) *
+        Real.exp (-((p.1 + p.2 - 2 * M + 2 * T * a) ^ 2) / (2 * T))
+      = (4 * Real.pi * T)⁻¹ * (1 + p.2 ^ 2) * (Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+        Real.exp (-((p.1 + p.2 - 2 * M + 2 * T * a) ^ 2) / (2 * T))) from by ring]
+  rw [← Real.exp_add]
+  congr 1
+  congr 1
+  field_simp
+  ring
+
+/-- Completed-square alternate form of `gFreeKernel`, solving for the second
+variable: `gFreeKernel (x,z) = (4πT)⁻¹ e^{2Ta²-4ax} (1+z²) gaussT(z-x+2Ta)`. -/
+theorem gFreeKernel_eq_altA (hT : 0 < T) (p : ℝ × ℝ) :
+    gFreeKernel T a p = (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * p.1) *
+      (1 + p.2 ^ 2) * gaussT T (p.2 - p.1 + 2 * T * a) := by
+  have h2T : T ≠ 0 := hT.ne'
+  unfold gFreeKernel gaussT
+  rw [show (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * p.1) * (1 + p.2 ^ 2) *
+        Real.exp (-((p.2 - p.1 + 2 * T * a) ^ 2) / (2 * T))
+      = (4 * Real.pi * T)⁻¹ * (1 + p.2 ^ 2) * (Real.exp (2 * T * a ^ 2 - 4 * a * p.1) *
+        Real.exp (-((p.2 - p.1 + 2 * T * a) ^ 2) / (2 * T))) from by ring]
+  rw [← Real.exp_add]
+  congr 1
+  congr 1
+  field_simp
+  ring
+
+/-- Completed-square alternate form of `gFreeKernel`, solving for the first
+variable: `gFreeKernel (x,z) = (4πT)⁻¹ e^{2Ta²-4az} (1+z²) gaussT(x-z+2Ta)`. -/
+theorem gFreeKernel_eq_altB (hT : 0 < T) (p : ℝ × ℝ) :
+    gFreeKernel T a p = (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * p.2) *
+      (1 + p.2 ^ 2) * gaussT T (p.1 - p.2 + 2 * T * a) := by
+  have h2T : T ≠ 0 := hT.ne'
+  unfold gFreeKernel gaussT
+  rw [show (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * p.2) * (1 + p.2 ^ 2) *
+        Real.exp (-((p.1 - p.2 + 2 * T * a) ^ 2) / (2 * T))
+      = (4 * Real.pi * T)⁻¹ * (1 + p.2 ^ 2) * (Real.exp (2 * T * a ^ 2 - 4 * a * p.2) *
+        Real.exp (-((p.1 - p.2 + 2 * T * a) ^ 2) / (2 * T))) from by ring]
+  rw [← Real.exp_add]
+  congr 1
+  congr 1
+  field_simp
+  ring
+
+/-- `gRefKernel` is measurable. -/
+theorem measurable_gRefKernel (T a M : ℝ) : Measurable (gRefKernel T a M) := by
+  unfold gRefKernel
+  fun_prop
+
+/-- `gFreeKernel` is measurable. -/
+theorem measurable_gFreeKernel (T a : ℝ) : Measurable (gFreeKernel T a) := by
+  unfold gFreeKernel
+  fun_prop
+
+/-- `gRefKernel` is nonnegative for `0 < T`. -/
+theorem gRefKernel_nonneg (hT : 0 < T) (a M : ℝ) (p : ℝ × ℝ) :
+    0 ≤ gRefKernel T a M p := by
+  unfold gRefKernel
+  positivity
+
+/-- `gFreeKernel` is nonnegative for `0 < T`. -/
+theorem gFreeKernel_nonneg (hT : 0 < T) (a : ℝ) (p : ℝ × ℝ) :
+    0 ≤ gFreeKernel T a p := by
+  unfold gFreeKernel
+  positivity
+
+/-! ## The shear substitution for the reflected region -/
+
+/-- The polynomial-weighted Gaussian `v ↦ gaussT T v · (|v|+c)(1+(|v|+c)²)` is
+integrable. -/
+theorem integrable_gaussT_mul_absPoly (hT : 0 < T) (c : ℝ) :
+    Integrable fun v : ℝ => gaussT T v * ((|v| + c) * (1 + (|v| + c) ^ 2)) := by
+  have e : (fun v : ℝ => gaussT T v * ((|v| + c) * (1 + (|v| + c) ^ 2)))
+      = (fun v : ℝ => |v| ^ 1 * gaussT T v) + (fun v => c * (|v| ^ 0 * gaussT T v))
+        + (fun v => |v| ^ 3 * gaussT T v) + (fun v => (3 * c) * (|v| ^ 2 * gaussT T v))
+        + (fun v => (3 * c ^ 2) * (|v| ^ 1 * gaussT T v))
+        + (fun v => c ^ 3 * (|v| ^ 0 * gaussT T v)) := by
+    funext v
+    simp only [Pi.add_apply, pow_zero, pow_one]
+    ring
+  rw [e]
+  exact (((((integrable_abs_pow_gaussT hT 1).add
+    ((integrable_abs_pow_gaussT hT 0).const_mul c)).add
+    (integrable_abs_pow_gaussT hT 3)).add
+    ((integrable_abs_pow_gaussT hT 2).const_mul (3 * c))).add
+    ((integrable_abs_pow_gaussT hT 1).const_mul (3 * c ^ 2))).add
+    ((integrable_abs_pow_gaussT hT 0).const_mul (c ^ 3))
+
+/-- The polynomial-weighted Gaussian integral expands into absolute moments. -/
+theorem integral_gaussT_mul_absPoly (hT : 0 < T) (c : ℝ) :
+    ∫ v : ℝ, gaussT T v * ((|v| + c) * (1 + (|v| + c) ^ 2))
+      = gaussMoment T 1 + c * gaussMoment T 0 + gaussMoment T 3
+        + 3 * c * gaussMoment T 2 + 3 * c ^ 2 * gaussMoment T 1 + c ^ 3 * gaussMoment T 0 := by
+  have h1 : Integrable fun v : ℝ => |v| ^ 1 * gaussT T v := integrable_abs_pow_gaussT hT 1
+  have h0 : Integrable fun v : ℝ => |v| ^ 0 * gaussT T v := integrable_abs_pow_gaussT hT 0
+  have h3 : Integrable fun v : ℝ => |v| ^ 3 * gaussT T v := integrable_abs_pow_gaussT hT 3
+  have h2 : Integrable fun v : ℝ => |v| ^ 2 * gaussT T v := integrable_abs_pow_gaussT hT 2
+  have h0c : Integrable fun v : ℝ => c * (|v| ^ 0 * gaussT T v) := h0.const_mul c
+  have h2c : Integrable fun v : ℝ => (3 * c) * (|v| ^ 2 * gaussT T v) := h2.const_mul (3 * c)
+  have h1c : Integrable fun v : ℝ => (3 * c ^ 2) * (|v| ^ 1 * gaussT T v) :=
+    h1.const_mul (3 * c ^ 2)
+  have h0c3 : Integrable fun v : ℝ => c ^ 3 * (|v| ^ 0 * gaussT T v) := h0.const_mul (c ^ 3)
+  have hA : Integrable fun v : ℝ => |v| ^ 1 * gaussT T v + c * (|v| ^ 0 * gaussT T v) :=
+    h1.add h0c
+  have hB : Integrable fun v : ℝ => |v| ^ 1 * gaussT T v + c * (|v| ^ 0 * gaussT T v)
+      + |v| ^ 3 * gaussT T v := hA.add h3
+  have hC : Integrable fun v : ℝ => |v| ^ 1 * gaussT T v + c * (|v| ^ 0 * gaussT T v)
+      + |v| ^ 3 * gaussT T v + (3 * c) * (|v| ^ 2 * gaussT T v) := hB.add h2c
+  have hD : Integrable fun v : ℝ => |v| ^ 1 * gaussT T v + c * (|v| ^ 0 * gaussT T v)
+      + |v| ^ 3 * gaussT T v + (3 * c) * (|v| ^ 2 * gaussT T v)
+      + (3 * c ^ 2) * (|v| ^ 1 * gaussT T v) := hC.add h1c
+  rw [integral_congr_ae (Eventually.of_forall fun v : ℝ => by
+      show gaussT T v * ((|v| + c) * (1 + (|v| + c) ^ 2))
+        = |v| ^ 1 * gaussT T v + c * (|v| ^ 0 * gaussT T v) + |v| ^ 3 * gaussT T v
+          + (3 * c) * (|v| ^ 2 * gaussT T v) + (3 * c ^ 2) * (|v| ^ 1 * gaussT T v)
+          + c ^ 3 * (|v| ^ 0 * gaussT T v)
+      ring)]
+  rw [integral_add hD h0c3, integral_add hC h1c, integral_add hB h2c, integral_add hA h3,
+    integral_add h1 h0c, integral_const_mul, integral_const_mul, integral_const_mul,
+    integral_const_mul]
+  rfl
+
+/-- **The shear bound** (paper's `J_{λ,T}` estimate):
+for `c = 2Ta`,
+`∫∫_{y,s ≥ 0} (1+s²) exp(-(y+s-c)²/(2T)) ≤ ∫_ℝ (|v|+c)(1+(|v|+c)²) exp(-v²/(2T)) dv`.
+The proof is the shear substitution `u = y + s`: the quadrant
+`{y, s ≥ 0}` becomes the triangle `{0 ≤ s ≤ u}`, the inner integral is
+`∫₀^u (1+(u-s)²) ds ≤ u(1+u²)`, and `v = u - c` recentres the Gaussian. -/
+theorem shear_lintegral_le (hT : 0 < T) (c : ℝ) (hc : 0 ≤ c) :
+    ∫⁻ y in Set.Ici 0, ∫⁻ s in Set.Ici 0, ENNReal.ofReal ((1 + s ^ 2) * gaussT T (y + s - c))
+      ≤ ENNReal.ofReal (∫ v : ℝ, gaussT T v * ((|v| + c) * (1 + (|v| + c) ^ 2))) := by
+  -- measurability data
+  have hSmeas : MeasurableSet {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2} := by
+    have h1 : MeasurableSet {p : ℝ × ℝ | 0 ≤ p.1} := measurableSet_Ici.preimage measurable_fst
+    have h2 : MeasurableSet {p : ℝ × ℝ | p.1 ≤ p.2} := by
+      have heq : {p : ℝ × ℝ | p.1 ≤ p.2} = (fun p : ℝ × ℝ => p.1 - p.2) ⁻¹' Set.Iic 0 := by
+        ext p
+        simp
+      rw [heq]
+      exact measurableSet_Iic.preimage (measurable_fst.sub measurable_snd)
+    exact h1.inter h2
+  have hcont : Continuous fun p : ℝ × ℝ => (1 + (p.2 - p.1) ^ 2) * gaussT T (p.2 - c) :=
+    (((continuous_snd.sub continuous_fst).pow 2).const_add 1).mul
+      ((continuous_gaussT T).comp (continuous_snd.sub continuous_const))
+  have hHmeas : Measurable fun p : ℝ × ℝ =>
+      ENNReal.ofReal ((1 + (p.2 - p.1) ^ 2) * gaussT T (p.2 - c)) :=
+    (ENNReal.continuous_ofReal.comp hcont).measurable
+  have hHind : Measurable ({p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2}.indicator
+      fun p => ENNReal.ofReal ((1 + (p.2 - p.1) ^ 2) * gaussT T (p.2 - c))) :=
+    hHmeas.indicator hSmeas
+  -- Step 1: inner translation `u = y + s`
+  have htrans : ∀ y : ℝ,
+      ∫⁻ s in Set.Ici 0, ENNReal.ofReal ((1 + s ^ 2) * gaussT T (y + s - c))
+        = ∫⁻ u in Set.Ici y, ENNReal.ofReal ((1 + (u - y) ^ 2) * gaussT T (u - c)) := by
+    intro y
+    rw [← lintegral_indicator measurableSet_Ici, ← lintegral_indicator measurableSet_Ici]
+    have hEq : (Set.Ici 0).indicator
+          (fun s => ENNReal.ofReal ((1 + s ^ 2) * gaussT T (y + s - c)))
+        = fun s => (Set.Ici y).indicator
+          (fun u => ENNReal.ofReal ((1 + (u - y) ^ 2) * gaussT T (u - c))) (y + s) := by
+      funext s
+      by_cases hs : 0 ≤ s
+      · have hys : y ≤ y + s := by linarith
+        rw [Set.indicator_of_mem (Set.mem_Ici.mpr hs), Set.indicator_of_mem (Set.mem_Ici.mpr hys)]
+        congr 1
+        ring_nf
+      · have hys : ¬ y ≤ y + s := by linarith
+        rw [Set.indicator_of_notMem (by simpa using hs), Set.indicator_of_notMem (by simpa using hys)]
+    rw [hEq]
+    exact lintegral_add_left_eq_self _ y
+  -- Step 2: Tonelli swap over the triangle `{0 ≤ y, y ≤ u}`
+  have hswapA : ∫⁻ y in Set.Ici 0, ∫⁻ u in Set.Ici y,
+        ENNReal.ofReal ((1 + (u - y) ^ 2) * gaussT T (u - c))
+      = ∫⁻ y : ℝ, ∫⁻ u : ℝ, {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2}.indicator
+        (fun p => ENNReal.ofReal ((1 + (p.2 - p.1) ^ 2) * gaussT T (p.2 - c))) (y, u) := by
+    rw [← lintegral_indicator measurableSet_Ici]
+    apply lintegral_congr
+    intro y
+    by_cases hy : 0 ≤ y
+    · rw [Set.indicator_of_mem (Set.mem_Ici.mpr hy), ← lintegral_indicator measurableSet_Ici]
+      apply lintegral_congr
+      intro u
+      by_cases hu : y ≤ u
+      · rw [Set.indicator_of_mem (Set.mem_Ici.mpr hu),
+          Set.indicator_of_mem (show (y, u) ∈ {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2} from ⟨hy, hu⟩)]
+      · rw [Set.indicator_of_notMem (by simpa using hu),
+          Set.indicator_of_notMem (fun h : (y, u) ∈ {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2} => hu h.2)]
+    · rw [Set.indicator_of_notMem (by simpa using hy)]
+      rw [show (fun u : ℝ => {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2}.indicator
+            (fun p => ENNReal.ofReal ((1 + (p.2 - p.1) ^ 2) * gaussT T (p.2 - c))) (y, u))
+          = fun _ => 0 from
+        funext fun u => Set.indicator_of_notMem
+          (fun h : (y, u) ∈ {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2} => hy h.1) _]
+      exact lintegral_zero.symm
+  have hswapB : (∫⁻ y : ℝ, ∫⁻ u : ℝ, {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2}.indicator
+        (fun p => ENNReal.ofReal ((1 + (p.2 - p.1) ^ 2) * gaussT T (p.2 - c))) (y, u))
+      = ∫⁻ u : ℝ, ∫⁻ y : ℝ, {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2}.indicator
+        (fun p => ENNReal.ofReal ((1 + (p.2 - p.1) ^ 2) * gaussT T (p.2 - c))) (y, u) := by
+    have h := lintegral_lintegral (f := fun y u : ℝ => {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2}.indicator
+      (fun p => ENNReal.ofReal ((1 + (p.2 - p.1) ^ 2) * gaussT T (p.2 - c))) (y, u))
+      (hHind.aemeasurable (μ := volume.prod volume))
+    rw [h]
+    exact lintegral_prod_symm' (μ := volume) (ν := volume) _ hHind
+  have hswapC : (∫⁻ u : ℝ, ∫⁻ y : ℝ, {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2}.indicator
+        (fun p => ENNReal.ofReal ((1 + (p.2 - p.1) ^ 2) * gaussT T (p.2 - c))) (y, u))
+      = ∫⁻ u : ℝ, ∫⁻ y in Set.Icc 0 u, ENNReal.ofReal ((1 + (u - y) ^ 2) * gaussT T (u - c)) := by
+    apply lintegral_congr
+    intro u
+    rw [← lintegral_indicator measurableSet_Icc]
+    apply lintegral_congr
+    intro y
+    by_cases hy : y ∈ Set.Icc 0 u
+    · have hyS : (y, u) ∈ {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2} := hy
+      rw [Set.indicator_of_mem hy, Set.indicator_of_mem hyS]
+    · have hyS : (y, u) ∉ {p : ℝ × ℝ | 0 ≤ p.1 ∧ p.1 ≤ p.2} := by
+        intro hmem
+        exact hy hmem
+      rw [Set.indicator_of_notMem hy, Set.indicator_of_notMem hyS]
+  -- Step 3: bound the inner interval integral
+  have hK : ∀ u : ℝ, ENNReal.ofReal (gaussT T (u - c)) *
+        (∫⁻ y in Set.Icc 0 u, ENNReal.ofReal (1 + (u - y) ^ 2))
+      ≤ ENNReal.ofReal (gaussT T (u - c) * (u * (1 + u ^ 2))) := by
+    intro u
+    rcases Classical.em (0 ≤ u) with hu | hu
+    · have hKu : ∫⁻ y in Set.Icc 0 u, ENNReal.ofReal (1 + (u - y) ^ 2)
+          ≤ ENNReal.ofReal (u * (1 + u ^ 2)) := by
+        calc ∫⁻ y in Set.Icc 0 u, ENNReal.ofReal (1 + (u - y) ^ 2)
+            ≤ ∫⁻ y in Set.Icc 0 u, ENNReal.ofReal (1 + u ^ 2) := by
+              apply setLIntegral_mono' measurableSet_Icc
+              intro y hy
+              apply ENNReal.ofReal_le_ofReal
+              have hy0 : 0 ≤ y := hy.1
+              have hyu : y ≤ u := hy.2
+              have hyy : y * y ≤ (2 * u) * y := mul_le_mul_of_nonneg_right (by linarith) hy0
+              nlinarith [sq_nonneg (u - y)]
+          _ = ENNReal.ofReal (u * (1 + u ^ 2)) := by
+              rw [lintegral_const, Measure.restrict_apply_univ, volume_Icc, sub_zero,
+                ← ENNReal.ofReal_mul (by positivity : (0 : ℝ) ≤ 1 + u ^ 2)]
+              congr 1
+              ring
+      calc ENNReal.ofReal (gaussT T (u - c)) * (∫⁻ y in Set.Icc 0 u, ENNReal.ofReal (1 + (u - y) ^ 2))
+          ≤ ENNReal.ofReal (gaussT T (u - c)) * ENNReal.ofReal (u * (1 + u ^ 2)) :=
+            mul_le_mul_of_nonneg_left hKu (by positivity : (0 : ℝ≥0∞) ≤ _)
+        _ = ENNReal.ofReal (gaussT T (u - c) * (u * (1 + u ^ 2))) :=
+            (ENNReal.ofReal_mul (gaussT_nonneg T _)).symm
+    · have hu' : u < 0 := not_le.mp hu
+      rw [Set.Icc_eq_empty (not_le.mpr hu'), setLIntegral_empty, mul_zero]
+      have hneg : gaussT T (u - c) * (u * (1 + u ^ 2)) ≤ 0 := by
+        have h1 : (0 : ℝ) < 1 + u ^ 2 := by positivity
+        exact mul_nonpos_of_nonneg_of_nonpos (gaussT_nonneg T _)
+          (mul_nonpos_of_nonpos_of_nonneg hu'.le h1.le)
+      rw [ENNReal.ofReal_eq_zero.mpr hneg]
+  -- assemble
+  calc ∫⁻ y in Set.Ici 0, ∫⁻ s in Set.Ici 0, ENNReal.ofReal ((1 + s ^ 2) * gaussT T (y + s - c))
+      = ∫⁻ y in Set.Ici 0, ∫⁻ u in Set.Ici y,
+          ENNReal.ofReal ((1 + (u - y) ^ 2) * gaussT T (u - c)) :=
+        setLIntegral_congr_fun measurableSet_Ici fun y _ => htrans y
+    _ = ∫⁻ u : ℝ, ∫⁻ y in Set.Icc 0 u, ENNReal.ofReal ((1 + (u - y) ^ 2) * gaussT T (u - c)) :=
+        hswapA.trans (hswapB.trans hswapC)
+    _ = ∫⁻ u : ℝ, ENNReal.ofReal (gaussT T (u - c)) *
+          ∫⁻ y in Set.Icc 0 u, ENNReal.ofReal (1 + (u - y) ^ 2) := by
+        apply lintegral_congr
+        intro u
+        have hmul : ∀ y : ℝ, ENNReal.ofReal ((1 + (u - y) ^ 2) * gaussT T (u - c))
+            = ENNReal.ofReal (gaussT T (u - c)) * ENNReal.ofReal (1 + (u - y) ^ 2) := by
+          intro y
+          rw [mul_comm (1 + (u - y) ^ 2) (gaussT T (u - c)), ENNReal.ofReal_mul (gaussT_nonneg T _)]
+        have hfm : Measurable fun y : ℝ => ENNReal.ofReal (1 + (u - y) ^ 2) :=
+          (ENNReal.continuous_ofReal.comp (by fun_prop)).measurable
+        rw [setLIntegral_congr_fun measurableSet_Icc fun y _ => hmul y, lintegral_const_mul _ hfm]
+    _ ≤ ∫⁻ u : ℝ, ENNReal.ofReal (gaussT T (u - c) * (u * (1 + u ^ 2))) := lintegral_mono hK
+    _ = ∫⁻ v : ℝ, ENNReal.ofReal (gaussT T v * ((v + c) * (1 + (v + c) ^ 2))) := by
+        have hF : (fun u : ℝ => ENNReal.ofReal (gaussT T (u - c) * (u * (1 + u ^ 2))))
+            = fun u : ℝ => ENNReal.ofReal
+              (gaussT T (u - c) * (((u - c) + c) * (1 + ((u - c) + c) ^ 2))) := by
+          funext u
+          congr 1
+          ring_nf
+        rw [hF]
+        exact lintegral_sub_right_eq_self (μ := volume)
+          (fun v : ℝ => ENNReal.ofReal (gaussT T v * ((v + c) * (1 + (v + c) ^ 2)))) c
+    _ ≤ ENNReal.ofReal (∫ v : ℝ, gaussT T v * ((|v| + c) * (1 + (|v| + c) ^ 2))) := by
+        rw [ofReal_integral_eq_lintegral_ofReal (integrable_gaussT_mul_absPoly hT c)
+          (Eventually.of_forall fun v => mul_nonneg (gaussT_nonneg T v)
+            (mul_nonneg (by linarith [abs_nonneg v, hc]) (by positivity)))]
+        apply lintegral_mono
+        intro v
+        apply ENNReal.ofReal_le_ofReal
+        apply mul_le_mul_of_nonneg_left _ (gaussT_nonneg T v)
+        rcases Classical.em (0 ≤ v + c) with hvc | hvc
+        · have h2 : v + c ≤ |v| + c := by linarith [le_abs_self v]
+          have hA3 : (v + c) ^ 3 ≤ (|v| + c) ^ 3 := pow_le_pow_left₀ hvc h2 3
+          nlinarith [hvc, h2, hA3]
+        · have hvc' : v + c < 0 := not_le.mp hvc
+          have h1 : (0 : ℝ) < 1 + (v + c) ^ 2 := by positivity
+          have hL : (v + c) * (1 + (v + c) ^ 2) ≤ 0 := mul_nonpos_of_nonpos_of_nonneg hvc'.le h1.le
+          have hR : 0 ≤ (|v| + c) * (1 + (|v| + c) ^ 2) :=
+            mul_nonneg (by linarith [abs_nonneg v, hc]) (by positivity)
+          linarith
+
+/-- The shear bound with the moment expansion unfolded. -/
+theorem shear_lintegral_le' (hT : 0 < T) (c : ℝ) (hc : 0 ≤ c) :
+    ∫⁻ y in Set.Ici 0, ∫⁻ s in Set.Ici 0, ENNReal.ofReal ((1 + s ^ 2) * gaussT T (y + s - c))
+      ≤ ENNReal.ofReal (gaussMoment T 1 + c * gaussMoment T 0 + gaussMoment T 3
+        + 3 * c * gaussMoment T 2 + 3 * c ^ 2 * gaussMoment T 1 + c ^ 3 * gaussMoment T 0) :=
+  (shear_lintegral_le hT c hc).trans
+    (ENNReal.ofReal_le_ofReal (le_of_eq (integral_gaussT_mul_absPoly hT c)))
+
+/-! ## One-dimensional `lintegral` moves and the inner Gaussian moment bound -/
+
+/-- Translating a half-line `lintegral`: `∫⁻ z in (-∞, M], F z = ∫⁻ z in (-∞, 0], F (z+M)`. -/
+theorem lintegral_Iic_add_right (M : ℝ) (F : ℝ → ℝ≥0∞) :
+    ∫⁻ z in Set.Iic M, F z = ∫⁻ z in Set.Iic 0, F (z + M) := by
+  rw [← lintegral_indicator measurableSet_Iic, ← lintegral_indicator measurableSet_Iic]
+  have h : (Set.Iic 0).indicator (fun z => F (z + M))
+      = fun z => (Set.Iic M).indicator F (z + M) := by
+    funext z
+    by_cases hz : z ≤ 0
+    · have hzM : z + M ≤ M := by linarith
+      rw [Set.indicator_of_mem (Set.mem_Iic.mpr hz), Set.indicator_of_mem (Set.mem_Iic.mpr hzM)]
+    · have hzM : ¬ z + M ≤ M := by linarith
+      rw [Set.indicator_of_notMem (by simpa using hz), Set.indicator_of_notMem (by simpa using hzM)]
+  rw [h]
+  exact (lintegral_add_right_eq_self _ M).symm
+
+/-- Translating a half-line `lintegral`: `∫⁻ z in (M, ∞), F z = ∫⁻ z in (0, ∞), F (z+M)`. -/
+theorem lintegral_Ioi_add_right (M : ℝ) (F : ℝ → ℝ≥0∞) :
+    ∫⁻ z in Set.Ioi M, F z = ∫⁻ z in Set.Ioi 0, F (z + M) := by
+  rw [← lintegral_indicator measurableSet_Ioi, ← lintegral_indicator measurableSet_Ioi]
+  have h : (Set.Ioi 0).indicator (fun z => F (z + M))
+      = fun z => (Set.Ioi M).indicator F (z + M) := by
+    funext z
+    by_cases hz : 0 < z
+    · have hzM : M < z + M := by linarith
+      rw [Set.indicator_of_mem (Set.mem_Ioi.mpr hz), Set.indicator_of_mem (Set.mem_Ioi.mpr hzM)]
+    · have hzM : ¬ M < z + M := by linarith
+      rw [Set.indicator_of_notMem (by simpa using hz), Set.indicator_of_notMem (by simpa using hzM)]
+  rw [h]
+  exact (lintegral_add_right_eq_self _ M).symm
+
+/-- Reflecting a half-line `lintegral`: `∫⁻ z in (-∞, 0], F z = ∫⁻ z in [0, ∞), F (-z)`. -/
+theorem lintegral_Iic_neg (F : ℝ → ℝ≥0∞) :
+    ∫⁻ z in Set.Iic 0, F z = ∫⁻ z in Set.Ici 0, F (-z) := by
+  rw [← lintegral_indicator measurableSet_Iic, ← lintegral_indicator measurableSet_Ici]
+  have h : (Set.Ici 0).indicator (fun z => F (-z)) = fun z => (Set.Iic 0).indicator F (-z) := by
+    funext z
+    by_cases hz : 0 ≤ z
+    · have hz' : -z ≤ 0 := by linarith
+      rw [Set.indicator_of_mem (Set.mem_Ici.mpr hz), Set.indicator_of_mem (Set.mem_Iic.mpr hz')]
+    · have hz' : ¬ -z ≤ 0 := by linarith
+      rw [Set.indicator_of_notMem (by simpa using hz), Set.indicator_of_notMem (by simpa using hz')]
+  rw [h]
+  exact (lintegral_neg_eq_self _).symm
+
+/-- The inner Gaussian moment bound after the square-completion substitution:
+`∫⁻ z, (1+z²) exp(-(z-d)²/(2T)) ≤ m₀ + 2m₂ + 2d²m₀`. -/
+theorem lintegral_one_add_sq_gaussT_sub_le (hT : 0 < T) (d : ℝ) :
+    ∫⁻ z : ℝ, ENNReal.ofReal ((1 + z ^ 2) * gaussT T (z - d))
+      ≤ ENNReal.ofReal (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * d ^ 2 * gaussMoment T 0) := by
+  have h2T : (0 : ℝ) < 2 * T := by positivity
+  have htr : (∫⁻ z : ℝ, ENNReal.ofReal ((1 + z ^ 2) * gaussT T (z - d)))
+      = ∫⁻ w : ℝ, ENNReal.ofReal ((1 + (w + d) ^ 2) * gaussT T w) := by
+    have hF : (fun z : ℝ => ENNReal.ofReal ((1 + z ^ 2) * gaussT T (z - d)))
+        = fun z => (fun w : ℝ => ENNReal.ofReal ((1 + (w + d) ^ 2) * gaussT T w)) (z - d) := by
+      funext z
+      show ENNReal.ofReal ((1 + z ^ 2) * gaussT T (z - d))
+        = ENNReal.ofReal ((1 + ((z - d) + d) ^ 2) * gaussT T (z - d))
+      congr 1
+      ring_nf
+    rw [hF]
+    exact lintegral_sub_right_eq_self (μ := volume)
+      (fun w : ℝ => ENNReal.ofReal ((1 + (w + d) ^ 2) * gaussT T w)) d
+  rw [htr]
+  have hpt : ∀ w : ℝ, ENNReal.ofReal ((1 + (w + d) ^ 2) * gaussT T w)
+      ≤ ENNReal.ofReal (gaussT T w) + (ENNReal.ofReal 2 * ENNReal.ofReal (w ^ 2 * gaussT T w)
+        + ENNReal.ofReal (2 * d ^ 2) * ENNReal.ofReal (gaussT T w)) := by
+    intro w
+    have hg : 0 ≤ gaussT T w := gaussT_nonneg T w
+    have hreal : (1 + (w + d) ^ 2) * gaussT T w
+        ≤ gaussT T w + (2 * (w ^ 2 * gaussT T w) + (2 * d ^ 2) * gaussT T w) := by
+      have h1 : (w + d) ^ 2 ≤ 2 * w ^ 2 + 2 * d ^ 2 := by nlinarith [sq_nonneg (w - d)]
+      nlinarith [hg, sq_nonneg w]
+    calc ENNReal.ofReal ((1 + (w + d) ^ 2) * gaussT T w)
+        ≤ ENNReal.ofReal (gaussT T w + (2 * (w ^ 2 * gaussT T w) + (2 * d ^ 2) * gaussT T w)) :=
+          ENNReal.ofReal_le_ofReal hreal
+      _ = ENNReal.ofReal (gaussT T w) + (ENNReal.ofReal 2 * ENNReal.ofReal (w ^ 2 * gaussT T w)
+          + ENNReal.ofReal (2 * d ^ 2) * ENNReal.ofReal (gaussT T w)) := by
+          rw [ENNReal.ofReal_add hg (by positivity : (0:ℝ) ≤ 2 * (w ^ 2 * gaussT T w) + (2 * d ^ 2) * gaussT T w),
+            ENNReal.ofReal_add (by positivity : (0:ℝ) ≤ 2 * (w ^ 2 * gaussT T w))
+              (by positivity : (0:ℝ) ≤ (2 * d ^ 2) * gaussT T w),
+            ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2),
+            ENNReal.ofReal_mul (by positivity : (0:ℝ) ≤ 2 * d ^ 2)]
+  calc ∫⁻ w : ℝ, ENNReal.ofReal ((1 + (w + d) ^ 2) * gaussT T w)
+      ≤ ∫⁻ w : ℝ, ENNReal.ofReal (gaussT T w) + (ENNReal.ofReal 2 * ENNReal.ofReal (w ^ 2 * gaussT T w)
+          + ENNReal.ofReal (2 * d ^ 2) * ENNReal.ofReal (gaussT T w)) := lintegral_mono hpt
+    _ = (∫⁻ w : ℝ, ENNReal.ofReal (gaussT T w)) + (ENNReal.ofReal 2 * (∫⁻ w : ℝ, ENNReal.ofReal (w ^ 2 * gaussT T w))
+          + ENNReal.ofReal (2 * d ^ 2) * (∫⁻ w : ℝ, ENNReal.ofReal (gaussT T w))) := by
+        have hmG : Measurable fun w : ℝ => ENNReal.ofReal (gaussT T w) :=
+          (ENNReal.continuous_ofReal.comp (continuous_gaussT T)).measurable
+        have hm2 : Measurable fun w : ℝ => ENNReal.ofReal (w ^ 2 * gaussT T w) :=
+          (ENNReal.continuous_ofReal.comp ((continuous_pow 2).mul (continuous_gaussT T))).measurable
+        rw [lintegral_add_left hmG,
+          lintegral_add_right _ (hmG.const_mul (ENNReal.ofReal (2 * d ^ 2))),
+          lintegral_const_mul _ hm2, lintegral_const_mul _ hmG]
+    _ = ENNReal.ofReal (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * d ^ 2 * gaussMoment T 0) := by
+        rw [lintegral_gaussT hT, lintegral_sq_gaussT hT,
+          ← ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2),
+          ← ENNReal.ofReal_mul (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) (sq_nonneg d)),
+          ← ENNReal.ofReal_add (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) (gaussMoment_nonneg hT 2))
+            (mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) (sq_nonneg d)) (gaussMoment_nonneg hT 0)),
+          ← ENNReal.ofReal_add (gaussMoment_nonneg hT 0)
+            (add_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) (gaussMoment_nonneg hT 2))
+              (mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) (sq_nonneg d)) (gaussMoment_nonneg hT 0)))]
+        congr 1
+        ring
+
+/-! ## The reflected-region estimate -/
+
+/-- Pointwise weight estimate on the translated reflected region:
+`1 + (Z+M)² ≤ 2(1+M²)(1+Z²)` (the paper's "elementary estimate"). -/
+theorem one_add_sq_add_le (M Z : ℝ) :
+    1 + (Z + M) ^ 2 ≤ 2 * (1 + M ^ 2) * (1 + Z ^ 2) := by
+  nlinarith [sq_nonneg (Z * M - 1 / 2), sq_nonneg Z, sq_nonneg M]
+
+/-- The pair-translation invariance of the reflected-region integrand:
+`∫_{x,z ≤ M} F(x, z) = ∫_{X, Z ≤ 0} F(X + M, Z + M)`. -/
+theorem lintegral_gRef_translate (T a M : ℝ) :
+    (∫⁻ p in Set.Iic M ×ˢ Set.Iic M,
+        ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 - 2 * M + 2 * T * a))
+        ∂(volume.prod volume))
+      = ∫⁻ p in Set.Iic 0 ×ˢ Set.Iic 0,
+        ENNReal.ofReal ((1 + (p.2 + M) ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a))
+        ∂(volume.prod volume) := by
+  rw [← lintegral_indicator (measurableSet_Iic.prod measurableSet_Iic),
+    ← lintegral_indicator (measurableSet_Iic.prod measurableSet_Iic)]
+  have hInd : (fun p : ℝ × ℝ => (Set.Iic 0 ×ˢ Set.Iic 0).indicator
+        (fun p => ENNReal.ofReal ((1 + (p.2 + M) ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a))) p)
+      = fun p => (Set.Iic M ×ˢ Set.Iic M).indicator
+        (fun p => ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 - 2 * M + 2 * T * a)))
+          (p + (M, M)) := by
+    funext p
+    by_cases hp : p ∈ Set.Iic 0 ×ˢ Set.Iic 0
+    · have hpM : p + (M, M) ∈ Set.Iic M ×ˢ Set.Iic M := by
+        obtain ⟨hp1, hp2⟩ := hp
+        have hp1' : p.1 ≤ 0 := hp1
+        have hp2' : p.2 ≤ 0 := hp2
+        exact ⟨Set.mem_Iic.mpr (show p.1 + M ≤ M by linarith),
+          Set.mem_Iic.mpr (show p.2 + M ≤ M by linarith)⟩
+      rw [Set.indicator_of_mem hp, Set.indicator_of_mem hpM]
+      show ENNReal.ofReal ((1 + (p.2 + M) ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a))
+        = ENNReal.ofReal ((1 + ((p + (M, M)).2) ^ 2) * gaussT T
+          ((p + (M, M)).1 + (p + (M, M)).2 - 2 * M + 2 * T * a))
+      rw [show (p + (M, M)).1 = p.1 + M from rfl, show (p + (M, M)).2 = p.2 + M from rfl]
+      rw [show p.1 + M + (p.2 + M) - 2 * M + 2 * T * a = p.1 + p.2 + 2 * T * a by ring]
+    · have hpM : p + (M, M) ∉ Set.Iic M ×ˢ Set.Iic M := by
+        intro hmem
+        obtain ⟨h1, h2⟩ := hmem
+        have h1' : p.1 + M ≤ M := h1
+        have h2' : p.2 + M ≤ M := h2
+        exact hp ⟨Set.mem_Iic.mpr (by linarith), Set.mem_Iic.mpr (by linarith)⟩
+      rw [Set.indicator_of_notMem hp, Set.indicator_of_notMem hpM]
+  rw [hInd]
+  exact (lintegral_add_right_eq_self _ (M, M)).symm
+
+/-- The pair-negation move to the positive quadrant, as an iterated integral. -/
+theorem lintegral_gRef_negate (T a : ℝ) :
+    (∫⁻ p in Set.Iic 0 ×ˢ Set.Iic 0,
+        ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a)) ∂(volume.prod volume))
+      = ∫⁻ y in Set.Ici 0, ∫⁻ s in Set.Ici 0,
+        ENNReal.ofReal ((1 + s ^ 2) * gaussT T (y + s - 2 * T * a)) := by
+  rw [← lintegral_indicator (measurableSet_Iic.prod measurableSet_Iic)]
+  have hInd : (fun p : ℝ × ℝ => (Set.Iic 0 ×ˢ Set.Iic 0).indicator
+        (fun p => ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a))) p)
+      = fun p => (Set.Ici 0 ×ˢ Set.Ici 0).indicator
+        (fun p => ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 - 2 * T * a))) (-p) := by
+    funext p
+    by_cases hp : p ∈ Set.Iic 0 ×ˢ Set.Iic 0
+    · have hpN : -p ∈ Set.Ici 0 ×ˢ Set.Ici 0 := by
+        obtain ⟨hp1, hp2⟩ := hp
+        have hp1' : p.1 ≤ 0 := hp1
+        have hp2' : p.2 ≤ 0 := hp2
+        exact ⟨Set.mem_Ici.mpr (show 0 ≤ -p.1 by linarith),
+          Set.mem_Ici.mpr (show 0 ≤ -p.2 by linarith)⟩
+      rw [Set.indicator_of_mem hp, Set.indicator_of_mem hpN]
+      show ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a))
+        = ENNReal.ofReal ((1 + ((-p).2) ^ 2) * gaussT T ((-p).1 + (-p).2 - 2 * T * a))
+      rw [show (-p).1 = -p.1 from rfl, show (-p).2 = -p.2 from rfl, neg_sq,
+        show -p.1 + -p.2 - 2 * T * a = -(p.1 + p.2 + 2 * T * a) by ring, gaussT_even]
+    · have hpN : -p ∉ Set.Ici 0 ×ˢ Set.Ici 0 := by
+        intro hmem
+        obtain ⟨h1, h2⟩ := hmem
+        have h1' : 0 ≤ -p.1 := h1
+        have h2' : 0 ≤ -p.2 := h2
+        exact hp ⟨Set.mem_Iic.mpr (by linarith), Set.mem_Iic.mpr (by linarith)⟩
+      rw [Set.indicator_of_notMem hp, Set.indicator_of_notMem hpN]
+  rw [hInd, lintegral_neg_eq_self (μ := volume.prod volume)
+      ((Set.Ici 0 ×ˢ Set.Ici 0).indicator
+        (fun p => ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 - 2 * T * a)))),
+    lintegral_indicator (measurableSet_Ici.prod measurableSet_Ici)]
+  have hmeas4 : Measurable (fun p : ℝ × ℝ =>
+      ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 - 2 * T * a))) :=
+    (ENNReal.continuous_ofReal.comp
+      ((Continuous.add continuous_const ((continuous_pow 2).comp continuous_snd)).mul
+        ((continuous_gaussT T).comp (by fun_prop)))).measurable
+  rw [setLIntegral_prod _ (hmeas4.aemeasurable)]
+
+/-- Pair-annotated wrapper of `gFreeKernel_eq_altA`. -/
+theorem gFreeKernel_eq_altA' (hT : 0 < T) (x z : ℝ) :
+    gFreeKernel T a (x, z) = (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * x) *
+      (1 + z ^ 2) * gaussT T (z - x + 2 * T * a) :=
+  gFreeKernel_eq_altA hT (x, z)
+
+/-- Pair-annotated wrapper of `gFreeKernel_eq_altB`. -/
+theorem gFreeKernel_eq_altB' (hT : 0 < T) (x z : ℝ) :
+    gFreeKernel T a (x, z) = (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * z) *
+      (1 + z ^ 2) * gaussT T (x - z + 2 * T * a) :=
+  gFreeKernel_eq_altB hT (x, z)
+
+/-- **Complementary region, first half** (paper's `∫_0^∞ dX ∫_ℝ dZ`): the `{x > M}` part of the free-kernel integral is
+bounded by `cK · e^{2Ta²-4Ma} · ((m₀+2m₂+4m₀(M-2Ta)²)/(4a) + 8m₀/(4a)³)`. -/
+theorem lintegral_gFreeKernel_fst_le (hT : 0 < T) (_hM : 0 < M) (ha : T + 1 ≤ a) :
+    ∫⁻ p in {p : ℝ × ℝ | M < p.1}, ENNReal.ofReal (gFreeKernel T a p) ∂(volume.prod volume)
+      ≤ ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+        ((gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2)
+          / (4 * a) + 8 * gaussMoment T 0 / (4 * a) ^ 3)) := by
+  have hT1 : (0 : ℝ) < T + 1 := by linarith
+  have ha0 : 0 < a := by linarith
+  have h4a : (0 : ℝ) < 4 * a := by positivity
+  have hcK : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ := by positivity
+  have hm0 : 0 ≤ gaussMoment T 0 := gaussMoment_nonneg hT 0
+  have hm2 : 0 ≤ gaussMoment T 2 := gaussMoment_nonneg hT 2
+  have hreg : {p : ℝ × ℝ | M < p.1} = Set.Ioi M ×ˢ Set.univ := by
+    ext ⟨x, z⟩
+    simp [Set.mem_prod]
+  have hmeasF : Measurable (fun p : ℝ × ℝ => ENNReal.ofReal (gFreeKernel T a p)) :=
+    (ENNReal.continuous_ofReal.measurable.comp (measurable_gFreeKernel T a))
+  have hA : (0 : ℝ) ≤ gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2 := by
+    positivity
+  have h4a' : (4 * a) ≠ 0 := h4a.ne'
+  -- per-x inner integral bound
+  have hInner : ∀ x : ℝ, (∫⁻ z : ℝ, ENNReal.ofReal (gFreeKernel T a (x, z)))
+      ≤ ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * x) *
+        (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * (x - 2 * T * a) ^ 2 * gaussMoment T 0)) := by
+    intro x
+    have hmeas1 : Measurable (fun z : ℝ => ENNReal.ofReal ((1 + z ^ 2) * gaussT T (z - (x - 2 * T * a)))) :=
+      (ENNReal.continuous_ofReal.comp (((continuous_pow 2).const_add 1).mul
+        ((continuous_gaussT T).comp (by fun_prop)))).measurable
+    calc (∫⁻ z : ℝ, ENNReal.ofReal (gFreeKernel T a (x, z)))
+        = ∫⁻ z : ℝ, ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * x))
+            * ENNReal.ofReal ((1 + z ^ 2) * gaussT T (z - (x - 2 * T * a))) := by
+          apply lintegral_congr
+          intro z
+          rw [gFreeKernel_eq_altA' hT x z]
+          rw [show z - x + 2 * T * a = z - (x - 2 * T * a) by ring]
+          rw [show (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * x) * (1 + z ^ 2) *
+                gaussT T (z - (x - 2 * T * a))
+              = ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * x)) *
+                ((1 + z ^ 2) * gaussT T (z - (x - 2 * T * a))) from by ring]
+          exact ENNReal.ofReal_mul (by positivity)
+      _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * x)) *
+            ∫⁻ z : ℝ, ENNReal.ofReal ((1 + z ^ 2) * gaussT T (z - (x - 2 * T * a))) := by
+          rw [lintegral_const_mul _ hmeas1]
+      _ ≤ ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * x)) *
+            ENNReal.ofReal (gaussMoment T 0 + 2 * gaussMoment T 2
+              + 2 * (x - 2 * T * a) ^ 2 * gaussMoment T 0) :=
+          mul_le_mul_of_nonneg_left (lintegral_one_add_sq_gaussT_sub_le hT (x - 2 * T * a))
+            (by positivity)
+      _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * x) *
+            (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * (x - 2 * T * a) ^ 2 * gaussMoment T 0)) := by
+          rw [← ENNReal.ofReal_mul (by positivity)]
+  calc ∫⁻ p in {p : ℝ × ℝ | M < p.1}, ENNReal.ofReal (gFreeKernel T a p) ∂(volume.prod volume)
+      = ∫⁻ x in Set.Ioi M, ∫⁻ z : ℝ, ENNReal.ofReal (gFreeKernel T a (x, z)) := by
+        rw [hreg, setLIntegral_prod _ (hmeasF.aemeasurable), Measure.restrict_univ]
+    _ ≤ ∫⁻ x in Set.Ioi M, ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * x) *
+          (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * (x - 2 * T * a) ^ 2 * gaussMoment T 0)) :=
+        setLIntegral_mono' measurableSet_Ioi fun x _ => hInner x
+    _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+          ∫⁻ t in Set.Ioi 0, ENNReal.ofReal (Real.exp (-(4 * a * t)) *
+            (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * (t + M - 2 * T * a) ^ 2 * gaussMoment T 0)) := by
+        rw [lintegral_Ioi_add_right M _]
+        have hpt : ∀ t : ℝ, ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * (t + M)) *
+              (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * (t + M - 2 * T * a) ^ 2 * gaussMoment T 0))
+            = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+              ENNReal.ofReal (Real.exp (-(4 * a * t)) *
+                (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * (t + M - 2 * T * a) ^ 2 * gaussMoment T 0)) := by
+          intro t
+          rw [← ENNReal.ofReal_mul (by positivity : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ *
+            Real.exp (2 * T * a ^ 2 - 4 * M * a))]
+          congr 1
+          rw [show 2 * T * a ^ 2 - 4 * a * (t + M) = (2 * T * a ^ 2 - 4 * M * a) + -(4 * a * t) by ring,
+            Real.exp_add]
+          ring
+        have hmeasRest : Measurable (fun t : ℝ => ENNReal.ofReal (Real.exp (-(4 * a * t)) *
+            (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * (t + M - 2 * T * a) ^ 2 * gaussMoment T 0))) :=
+          (ENNReal.continuous_ofReal.comp (by fun_prop)).measurable
+        rw [setLIntegral_congr_fun measurableSet_Ioi fun t _ => hpt t, lintegral_const_mul _ hmeasRest]
+    _ ≤ ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+          (ENNReal.ofReal (gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2)
+            * ENNReal.ofReal (1 / (4 * a))
+            + ENNReal.ofReal (4 * gaussMoment T 0) * ENNReal.ofReal (2 / (4 * a) ^ 3)) := by
+        apply mul_le_mul_of_nonneg_left _ zero_le
+        -- pointwise polynomial bound
+        have hpt : ∀ t : ℝ, ENNReal.ofReal (Real.exp (-(4 * a * t)) *
+              (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * (t + M - 2 * T * a) ^ 2 * gaussMoment T 0))
+            ≤ ENNReal.ofReal ((gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2)
+                * Real.exp (-(4 * a * t)))
+              + ENNReal.ofReal ((4 * gaussMoment T 0) * (t ^ 2 * Real.exp (-(4 * a * t)))) := by
+          intro t
+          have he : (0 : ℝ) < Real.exp (-(4 * a * t)) := Real.exp_pos _
+          have hreal : Real.exp (-(4 * a * t)) * (gaussMoment T 0 + 2 * gaussMoment T 2
+                + 2 * (t + M - 2 * T * a) ^ 2 * gaussMoment T 0)
+              ≤ (gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2)
+                * Real.exp (-(4 * a * t)) + (4 * gaussMoment T 0) * (t ^ 2 * Real.exp (-(4 * a * t))) := by
+            have h1 : (t + M - 2 * T * a) ^ 2 ≤ 2 * t ^ 2 + 2 * (M - 2 * T * a) ^ 2 := by
+              nlinarith [sq_nonneg (t - (M - 2 * T * a))]
+            have h2 := mul_le_mul_of_nonneg_left h1 hm0
+            have h3 : gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * (t + M - 2 * T * a) ^ 2 * gaussMoment T 0
+                ≤ gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2
+                  + 4 * gaussMoment T 0 * t ^ 2 := by
+              nlinarith [h2]
+            have h4 := mul_le_mul_of_nonneg_left h3 he.le
+            calc Real.exp (-(4 * a * t)) * (gaussMoment T 0 + 2 * gaussMoment T 2
+                  + 2 * (t + M - 2 * T * a) ^ 2 * gaussMoment T 0)
+                ≤ Real.exp (-(4 * a * t)) * ((gaussMoment T 0 + 2 * gaussMoment T 2
+                    + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) + 4 * gaussMoment T 0 * t ^ 2) := h4
+              _ = (gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2)
+                  * Real.exp (-(4 * a * t)) + (4 * gaussMoment T 0) * (t ^ 2 * Real.exp (-(4 * a * t))) := by
+                  ring
+          calc ENNReal.ofReal (Real.exp (-(4 * a * t)) * (gaussMoment T 0 + 2 * gaussMoment T 2
+                + 2 * (t + M - 2 * T * a) ^ 2 * gaussMoment T 0))
+              ≤ ENNReal.ofReal ((gaussMoment T 0 + 2 * gaussMoment T 2
+                  + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) * Real.exp (-(4 * a * t))
+                  + (4 * gaussMoment T 0) * (t ^ 2 * Real.exp (-(4 * a * t)))) :=
+                ENNReal.ofReal_le_ofReal hreal
+            _ = _ := by
+                rw [ENNReal.ofReal_add (by positivity) (by positivity),
+                  ENNReal.ofReal_mul hA, ENNReal.ofReal_mul (by positivity)]
+        have hmeasE : Measurable fun t : ℝ => ENNReal.ofReal (Real.exp (-(4 * a * t))) :=
+          (ENNReal.continuous_ofReal.comp (by fun_prop)).measurable
+        have hmeasSq : Measurable fun t : ℝ => ENNReal.ofReal (t ^ 2 * Real.exp (-(4 * a * t))) :=
+          (ENNReal.continuous_ofReal.comp (by fun_prop)).measurable
+        calc (∫⁻ t in Set.Ioi 0, ENNReal.ofReal (Real.exp (-(4 * a * t)) *
+              (gaussMoment T 0 + 2 * gaussMoment T 2 + 2 * (t + M - 2 * T * a) ^ 2 * gaussMoment T 0)))
+            ≤ ∫⁻ t in Set.Ioi 0, ENNReal.ofReal ((gaussMoment T 0 + 2 * gaussMoment T 2
+                + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) * Real.exp (-(4 * a * t)))
+              + ENNReal.ofReal ((4 * gaussMoment T 0) * (t ^ 2 * Real.exp (-(4 * a * t)))) :=
+              setLIntegral_mono' measurableSet_Ioi fun t _ => hpt t
+          _ = ENNReal.ofReal (gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2)
+                * ENNReal.ofReal (1 / (4 * a))
+              + ENNReal.ofReal (4 * gaussMoment T 0) * ENNReal.ofReal (2 / (4 * a) ^ 3) := by
+              have hmeasA : Measurable fun t : ℝ => ENNReal.ofReal ((gaussMoment T 0
+                  + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2)
+                  * Real.exp (-(4 * a * t))) :=
+                (ENNReal.continuous_ofReal.comp
+                  (continuous_const.mul (Real.continuous_exp.comp (by fun_prop)))).measurable
+              rw [lintegral_add_left hmeasA]
+              rw [lintegral_congr (fun t : ℝ => ENNReal.ofReal_mul hA),
+                lintegral_const_mul _ hmeasE, lintegral_exp_neg_mul_Ioi h4a]
+              rw [lintegral_congr (fun t : ℝ => ENNReal.ofReal_mul
+                  (mul_nonneg (by norm_num : (0:ℝ) ≤ 4) hm0)),
+                lintegral_const_mul _ hmeasSq, lintegral_sq_exp_neg_mul_Ioi h4a]
+    _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+          ((gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2)
+            / (4 * a) + 8 * gaussMoment T 0 / (4 * a) ^ 3)) := by
+        rw [← ENNReal.ofReal_mul hA, ← ENNReal.ofReal_mul (mul_nonneg (by norm_num : (0:ℝ) ≤ 4) hm0),
+          mul_one_div, ← ENNReal.ofReal_add (by positivity) (by positivity),
+          ← ENNReal.ofReal_mul (by positivity)]
+        congr 1
+        field_simp
+        ring
+
+/-- **Complementary region, second half** (paper's `∫_0^∞ dZ ∫_ℝ dX`): the `{z > M}` part of the free-kernel integral is
+bounded by `cK · m₀ · e^{2Ta²-4Ma} · ((1+2M²)/(4a) + 4/(4a)³)`. -/
+theorem lintegral_gFreeKernel_snd_le (hT : 0 < T) (_hM : 0 < M) (ha : T + 1 ≤ a) :
+    ∫⁻ p in {p : ℝ × ℝ | M < p.2}, ENNReal.ofReal (gFreeKernel T a p) ∂(volume.prod volume)
+      ≤ ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+        ((1 + 2 * M ^ 2) / (4 * a) + 4 / (4 * a) ^ 3)) := by
+  have hT1 : (0 : ℝ) < T + 1 := by linarith
+  have ha0 : 0 < a := by linarith
+  have h4a : (0 : ℝ) < 4 * a := by positivity
+  have hcK : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ := by positivity
+  have hm0 : 0 ≤ gaussMoment T 0 := gaussMoment_nonneg hT 0
+  have hreg : {p : ℝ × ℝ | M < p.2} = Set.univ ×ˢ Set.Ioi M := by
+    ext ⟨x, z⟩
+    simp [Set.mem_prod]
+  have hmeasF : Measurable (fun p : ℝ × ℝ => ENNReal.ofReal (gFreeKernel T a p)) :=
+    (ENNReal.continuous_ofReal.measurable.comp (measurable_gFreeKernel T a))
+  -- per-z inner integral value
+  have hInner : ∀ z : ℝ, (∫⁻ x : ℝ, ENNReal.ofReal (gFreeKernel T a (x, z)))
+      = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * z) * (1 + z ^ 2))
+        * ENNReal.ofReal (gaussMoment T 0) := by
+    intro z
+    have hmeasG : Measurable fun x : ℝ => ENNReal.ofReal (gaussT T (x - (z - 2 * T * a))) :=
+      (ENNReal.continuous_ofReal.comp ((continuous_gaussT T).comp (by fun_prop))).measurable
+    calc (∫⁻ x : ℝ, ENNReal.ofReal (gFreeKernel T a (x, z)))
+        = ∫⁻ x : ℝ, ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * z)
+            * (1 + z ^ 2)) * ENNReal.ofReal (gaussT T (x - (z - 2 * T * a))) := by
+          apply lintegral_congr
+          intro x
+          rw [gFreeKernel_eq_altB' hT x z]
+          rw [show x - z + 2 * T * a = x - (z - 2 * T * a) by ring]
+          rw [show (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * z) * (1 + z ^ 2) *
+                gaussT T (x - (z - 2 * T * a))
+              = ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * z) * (1 + z ^ 2)) *
+                gaussT T (x - (z - 2 * T * a)) from by ring]
+          exact ENNReal.ofReal_mul (by positivity)
+      _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * z) * (1 + z ^ 2)) *
+            ∫⁻ x : ℝ, ENNReal.ofReal (gaussT T (x - (z - 2 * T * a))) :=
+          lintegral_const_mul _ hmeasG
+      _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * z) * (1 + z ^ 2)) *
+            ENNReal.ofReal (gaussMoment T 0) := by
+          congr 1
+          rw [lintegral_sub_right_eq_self (μ := volume) (fun w : ℝ => ENNReal.ofReal (gaussT T w))
+            (z - 2 * T * a)]
+          exact lintegral_gaussT hT
+  calc ∫⁻ p in {p : ℝ × ℝ | M < p.2}, ENNReal.ofReal (gFreeKernel T a p) ∂(volume.prod volume)
+      = ∫⁻ z in Set.Ioi M, ∫⁻ x : ℝ, ENNReal.ofReal (gFreeKernel T a (x, z)) := by
+        rw [hreg, setLIntegral_prod_symm _ (hmeasF.aemeasurable), Measure.restrict_univ]
+    _ = ∫⁻ z in Set.Ioi M, ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * z)
+          * (1 + z ^ 2)) * ENNReal.ofReal (gaussMoment T 0) :=
+        setLIntegral_congr_fun measurableSet_Ioi fun z _ => hInner z
+    _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+          ∫⁻ t in Set.Ioi 0, ENNReal.ofReal ((1 + (t + M) ^ 2) * Real.exp (-(4 * a * t))) := by
+        rw [lintegral_Ioi_add_right M _]
+        have hpt : ∀ t : ℝ, ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * a * (t + M))
+              * (1 + (t + M) ^ 2)) * ENNReal.ofReal (gaussMoment T 0)
+            = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+              ENNReal.ofReal ((1 + (t + M) ^ 2) * Real.exp (-(4 * a * t))) := by
+          intro t
+          rw [← ENNReal.ofReal_mul (by positivity : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ *
+              Real.exp (2 * T * a ^ 2 - 4 * a * (t + M)) * (1 + (t + M) ^ 2)),
+            ← ENNReal.ofReal_mul (mul_nonneg (mul_nonneg hcK hm0) (Real.exp_pos _).le)]
+          congr 1
+          rw [show 2 * T * a ^ 2 - 4 * a * (t + M) = (2 * T * a ^ 2 - 4 * M * a) + -(4 * a * t) by ring,
+            Real.exp_add]
+          ring
+        have hmeasRest : Measurable (fun t : ℝ => ENNReal.ofReal ((1 + (t + M) ^ 2) * Real.exp (-(4 * a * t)))) :=
+          (ENNReal.continuous_ofReal.comp (by fun_prop)).measurable
+        rw [setLIntegral_congr_fun measurableSet_Ioi fun t _ => hpt t, lintegral_const_mul _ hmeasRest]
+    _ ≤ ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+          (ENNReal.ofReal (1 + 2 * M ^ 2) * ENNReal.ofReal (1 / (4 * a))
+            + ENNReal.ofReal 2 * ENNReal.ofReal (2 / (4 * a) ^ 3)) := by
+        apply mul_le_mul_of_nonneg_left _ zero_le
+        have hpt : ∀ t : ℝ, ENNReal.ofReal ((1 + (t + M) ^ 2) * Real.exp (-(4 * a * t)))
+            ≤ ENNReal.ofReal ((1 + 2 * M ^ 2) * Real.exp (-(4 * a * t)))
+              + ENNReal.ofReal (2 * (t ^ 2 * Real.exp (-(4 * a * t)))) := by
+          intro t
+          have he : (0 : ℝ) < Real.exp (-(4 * a * t)) := Real.exp_pos _
+          have hreal : (1 + (t + M) ^ 2) * Real.exp (-(4 * a * t))
+              ≤ (1 + 2 * M ^ 2) * Real.exp (-(4 * a * t)) + 2 * (t ^ 2 * Real.exp (-(4 * a * t))) := by
+            have h1 : (t + M) ^ 2 ≤ 2 * t ^ 2 + 2 * M ^ 2 := by nlinarith [sq_nonneg (t - M)]
+            nlinarith [he.le, h1]
+          calc ENNReal.ofReal ((1 + (t + M) ^ 2) * Real.exp (-(4 * a * t)))
+              ≤ ENNReal.ofReal ((1 + 2 * M ^ 2) * Real.exp (-(4 * a * t))
+                  + 2 * (t ^ 2 * Real.exp (-(4 * a * t)))) := ENNReal.ofReal_le_ofReal hreal
+            _ = _ := by
+                rw [ENNReal.ofReal_add (by positivity) (by positivity),
+                  ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2)]
+        have hmeasE : Measurable fun t : ℝ => ENNReal.ofReal (Real.exp (-(4 * a * t))) :=
+          (ENNReal.continuous_ofReal.comp (by fun_prop)).measurable
+        have hmeasSq : Measurable fun t : ℝ => ENNReal.ofReal (t ^ 2 * Real.exp (-(4 * a * t))) :=
+          (ENNReal.continuous_ofReal.comp (by fun_prop)).measurable
+        calc (∫⁻ t in Set.Ioi 0, ENNReal.ofReal ((1 + (t + M) ^ 2) * Real.exp (-(4 * a * t))))
+            ≤ ∫⁻ t in Set.Ioi 0, ENNReal.ofReal ((1 + 2 * M ^ 2) * Real.exp (-(4 * a * t)))
+              + ENNReal.ofReal (2 * (t ^ 2 * Real.exp (-(4 * a * t)))) :=
+              setLIntegral_mono' measurableSet_Ioi fun t _ => hpt t
+          _ = ENNReal.ofReal (1 + 2 * M ^ 2) * ENNReal.ofReal (1 / (4 * a))
+              + ENNReal.ofReal 2 * ENNReal.ofReal (2 / (4 * a) ^ 3) := by
+              have hmeasA : Measurable fun t : ℝ => ENNReal.ofReal ((1 + 2 * M ^ 2) * Real.exp (-(4 * a * t))) :=
+                (ENNReal.continuous_ofReal.comp
+                  (continuous_const.mul (Real.continuous_exp.comp (by fun_prop)))).measurable
+              rw [lintegral_add_left hmeasA]
+              rw [lintegral_congr (fun t : ℝ => ENNReal.ofReal_mul (by positivity : (0:ℝ) ≤ 1 + 2 * M^2)),
+                lintegral_const_mul _ hmeasE, lintegral_exp_neg_mul_Ioi h4a]
+              rw [lintegral_congr (fun t : ℝ => ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2)),
+                lintegral_const_mul _ hmeasSq, lintegral_sq_exp_neg_mul_Ioi h4a]
+    _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+          ((1 + 2 * M ^ 2) / (4 * a) + 4 / (4 * a) ^ 3)) := by
+        rw [← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2),
+          mul_one_div, ← ENNReal.ofReal_add (by positivity) (by positivity),
+          ← ENNReal.ofReal_mul (by positivity)]
+        congr 1
+        field_simp
+        ring
+
+/-- **Reflected region** (the paper's reflected-region Hilbert–Schmidt estimate): the
+`{x ≤ M, z ≤ M}` part of `‖V‖₂²` is bounded by
+`2 · cK · (1+M²) · e^{2Ta²-4Ma} · shearPoly(2Ta)`. -/
+theorem lintegral_gRefKernel_le (hT : 0 < T) (_hM : 0 < M) (ha : T + 1 ≤ a) :
+    ∫⁻ p in {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}, ENNReal.ofReal (gRefKernel T a M p) ∂(volume.prod volume)
+      ≤ ENNReal.ofReal (2 * (4 * Real.pi * T)⁻¹ * (1 + M ^ 2) * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+        (gaussMoment T 1 + (2 * T * a) * gaussMoment T 0 + gaussMoment T 3
+          + 3 * (2 * T * a) * gaussMoment T 2 + 3 * (2 * T * a) ^ 2 * gaussMoment T 1
+          + (2 * T * a) ^ 3 * gaussMoment T 0)) := by
+  have ha0 : 0 < a := by linarith
+  have hreg : {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M} = Set.Iic M ×ˢ Set.Iic M := by
+    ext ⟨x, z⟩
+    simp
+  have hmeasAlt : Measurable (fun p : ℝ × ℝ =>
+      ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 - 2 * M + 2 * T * a))) :=
+    (ENNReal.continuous_ofReal.comp ((Continuous.add continuous_const
+      ((continuous_pow 2).comp continuous_snd)).mul
+      ((continuous_gaussT T).comp (by fun_prop)))).measurable
+  have hmeasW : Measurable (fun p : ℝ × ℝ =>
+      ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a))) :=
+    (ENNReal.continuous_ofReal.comp ((Continuous.add continuous_const
+      ((continuous_pow 2).comp continuous_snd)).mul
+      ((continuous_gaussT T).comp (by fun_prop)))).measurable
+  calc ∫⁻ p in {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}, ENNReal.ofReal (gRefKernel T a M p) ∂(volume.prod volume)
+      = ∫⁻ p in Set.Iic M ×ˢ Set.Iic M, ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a))
+          * ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 - 2 * M + 2 * T * a)) ∂(volume.prod volume) := by
+        rw [hreg]
+        apply setLIntegral_congr_fun (measurableSet_Iic.prod measurableSet_Iic)
+        intro p hp
+        dsimp only
+        rw [gRefKernel_eq_alt hT p]
+        rw [show (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) * (1 + p.2 ^ 2) *
+              gaussT T (p.1 + p.2 - 2 * M + 2 * T * a)
+            = ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+              ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 - 2 * M + 2 * T * a)) from by ring]
+        exact ENNReal.ofReal_mul (by positivity)
+    _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+          ∫⁻ p in Set.Iic M ×ˢ Set.Iic M, ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 - 2 * M + 2 * T * a)) ∂(volume.prod volume) := by
+        rw [lintegral_const_mul _ hmeasAlt]
+    _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+          ∫⁻ p in Set.Iic 0 ×ˢ Set.Iic 0, ENNReal.ofReal ((1 + (p.2 + M) ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a)) ∂(volume.prod volume) := by
+        rw [lintegral_gRef_translate]
+    _ ≤ ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+          (ENNReal.ofReal (2 * (1 + M ^ 2)) * ∫⁻ p in Set.Iic 0 ×ˢ Set.Iic 0,
+            ENNReal.ofReal ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a)) ∂(volume.prod volume)) := by
+        apply mul_le_mul_of_nonneg_left _ zero_le
+        rw [← lintegral_const_mul _ hmeasW]
+        apply setLIntegral_mono' (measurableSet_Iic.prod measurableSet_Iic)
+        intro p hp
+        rw [← ENNReal.ofReal_mul (by positivity : (0 : ℝ) ≤ 2 * (1 + M ^ 2))]
+        apply ENNReal.ofReal_le_ofReal
+        have hg : 0 ≤ gaussT T (p.1 + p.2 + 2 * T * a) := gaussT_nonneg _ _
+        calc (1 + (p.2 + M) ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a)
+            ≤ (2 * (1 + M ^ 2) * (1 + p.2 ^ 2)) * gaussT T (p.1 + p.2 + 2 * T * a) :=
+              mul_le_mul_of_nonneg_right (one_add_sq_add_le M p.2) hg
+          _ = 2 * (1 + M ^ 2) * ((1 + p.2 ^ 2) * gaussT T (p.1 + p.2 + 2 * T * a)) := by ring
+    _ = ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+          (ENNReal.ofReal (2 * (1 + M ^ 2)) * ∫⁻ y in Set.Ici 0, ∫⁻ s in Set.Ici 0,
+            ENNReal.ofReal ((1 + s ^ 2) * gaussT T (y + s - 2 * T * a))) := by
+        rw [lintegral_gRef_negate]
+    _ ≤ ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a)) *
+          (ENNReal.ofReal (2 * (1 + M ^ 2)) * ENNReal.ofReal (gaussMoment T 1 + (2 * T * a) * gaussMoment T 0
+            + gaussMoment T 3 + 3 * (2 * T * a) * gaussMoment T 2 + 3 * (2 * T * a) ^ 2 * gaussMoment T 1
+            + (2 * T * a) ^ 3 * gaussMoment T 0)) := by
+        apply mul_le_mul_of_nonneg_left _ zero_le
+        apply mul_le_mul_of_nonneg_left _ zero_le
+        exact shear_lintegral_le' hT (2 * T * a) (by positivity)
+    _ = ENNReal.ofReal (2 * (4 * Real.pi * T)⁻¹ * (1 + M ^ 2) * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+          (gaussMoment T 1 + (2 * T * a) * gaussMoment T 0 + gaussMoment T 3
+            + 3 * (2 * T * a) * gaussMoment T 2 + 3 * (2 * T * a) ^ 2 * gaussMoment T 1
+            + (2 * T * a) ^ 3 * gaussMoment T 0)) := by
+        rw [← ENNReal.ofReal_mul (by positivity : (0 : ℝ) ≤ 2 * (1 + M ^ 2)),
+          ← ENNReal.ofReal_mul (by positivity : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a))]
+        congr 1
+        ring
+
+set_option maxHeartbeats 1600000 in
+/-- **The final algebraic absorption**: the three region bounds, each of the
+form `(const) · (1+M²) · (1+a³) · e^{2Ta²-4Ma}` with constants built from the
+Gaussian moments, combine into `C_T · (1+M)² · (1+a³) · e^{2Ta²-4Ma}` using
+`a ≥ T+1` (so `1 ≤ a`, `a ≤ a³`, `a² ≤ a³`) and `1/(4a) ≤ 1/(4(T+1))`. -/
+theorem vKernel_absorb (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a) :
+    2 * (4 * Real.pi * T)⁻¹ * (1 + M ^ 2) * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+        (gaussMoment T 1 + (2 * T * a) * gaussMoment T 0 + gaussMoment T 3
+          + 3 * (2 * T * a) * gaussMoment T 2 + 3 * (2 * T * a) ^ 2 * gaussMoment T 1
+          + (2 * T * a) ^ 3 * gaussMoment T 0)
+      + (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+        ((gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) / (4 * a)
+          + 8 * gaussMoment T 0 / (4 * a) ^ 3)
+      + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+        ((1 + 2 * M ^ 2) / (4 * a) + 4 / (4 * a) ^ 3)
+      ≤ (2 * (4 * Real.pi * T)⁻¹ * (gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3
+            + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0)
+          + (4 * Real.pi * T)⁻¹ * ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+            + 8 * gaussMoment T 0 / (4 * (T + 1)) + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))
+            + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+          + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3))
+        * (1 + M) ^ 2 * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a) := by
+  have hm : ∀ k : ℕ, 0 ≤ gaussMoment T k := fun k => gaussMoment_nonneg hT k
+  have hm0 : 0 < gaussMoment T 0 := gaussMoment_zero_pos hT
+  have hcK : (0 : ℝ) < (4 * Real.pi * T)⁻¹ := by positivity
+  have ha0 : 0 < a := by linarith
+  have ha1 : (1 : ℝ) ≤ a := by linarith
+  have hT1 : (0 : ℝ) < T + 1 := by linarith
+  have h4a : (0 : ℝ) < 4 * a := by positivity
+  have h4T1 : (0 : ℝ) < 4 * (T + 1) := by positivity
+  have hE : (0 : ℝ) < Real.exp (2 * T * a ^ 2 - 4 * M * a) := Real.exp_pos _
+  have h1a3 : (1 : ℝ) ≤ 1 + a ^ 3 := by
+    have h : 0 ≤ a ^ 3 := pow_nonneg ha0.le 3
+    linarith
+  have hP : (1 : ℝ) ≤ (1 + M ^ 2) * (1 + a ^ 3) := by
+    have h1 : (1 : ℝ) ≤ 1 + M ^ 2 := by nlinarith [sq_nonneg M]
+    calc (1 : ℝ) = 1 * 1 := (mul_one 1).symm
+      _ ≤ (1 + M ^ 2) * (1 + a ^ 3) := mul_le_mul h1 h1a3 zero_le_one (by nlinarith [sq_nonneg M])
+  have ha13 : a ≤ a ^ 3 := by
+    have h1 : a ≤ a * a := by
+      calc a = a * 1 := by ring
+        _ ≤ a * a := mul_le_mul_of_nonneg_left ha1 ha0.le
+    have h2 : a ^ 2 ≤ a ^ 2 * a := by
+      calc a ^ 2 = a ^ 2 * 1 := by ring
+        _ ≤ a ^ 2 * a := mul_le_mul_of_nonneg_left ha1 (sq_nonneg a)
+    nlinarith [h1, h2]
+  have ha23 : a ^ 2 ≤ a ^ 3 := by
+    calc a ^ 2 = a ^ 2 * 1 := by ring
+      _ ≤ a ^ 2 * a := mul_le_mul_of_nonneg_left ha1 (sq_nonneg a)
+      _ = a ^ 3 := by ring
+  have hM2P : M ^ 2 ≤ (1 + M ^ 2) * (1 + a ^ 3) := by
+    nlinarith [sq_nonneg M, h1a3, mul_nonneg (sq_nonneg M) (pow_nonneg ha0.le 3)]
+  have ha3P : a ^ 3 ≤ (1 + M ^ 2) * (1 + a ^ 3) := by
+    nlinarith [sq_nonneg M, h1a3, mul_nonneg (sq_nonneg M) (pow_nonneg ha0.le 3)]
+  -- (i) the shear polynomial absorbs into `S0 · (1 + a³)`
+  have hShear : gaussMoment T 1 + (2 * T * a) * gaussMoment T 0 + gaussMoment T 3
+        + 3 * (2 * T * a) * gaussMoment T 2 + 3 * (2 * T * a) ^ 2 * gaussMoment T 1
+        + (2 * T * a) ^ 3 * gaussMoment T 0
+      ≤ (gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3 + 6 * T * gaussMoment T 2
+        + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0) * (1 + a ^ 3) := by
+    nlinarith [mul_nonneg (hm 1) (pow_nonneg ha0.le 3),
+      mul_nonneg (mul_nonneg (by positivity : (0 : ℝ) ≤ 2 * T) (hm 0))
+        (by linarith [ha13] : (0 : ℝ) ≤ 1 + a ^ 3 - a),
+      mul_nonneg (hm 3) (pow_nonneg ha0.le 3),
+      mul_nonneg (mul_nonneg (by positivity : (0 : ℝ) ≤ 6 * T) (hm 2))
+        (by linarith [ha13] : (0 : ℝ) ≤ 1 + a ^ 3 - a),
+      mul_nonneg (mul_nonneg (by positivity : (0 : ℝ) ≤ 12 * T ^ 2) (hm 1))
+        (by linarith [ha23] : (0 : ℝ) ≤ 1 + a ^ 3 - a ^ 2),
+      mul_nonneg (by positivity : (0 : ℝ) ≤ 8 * T ^ 3) (hm 0)]
+  -- (ii) the region-A bracket absorbs into `CA'' · (1+M²)(1+a³)`
+  have hMsq : (M - 2 * T * a) ^ 2 ≤ 2 * M ^ 2 + 8 * T ^ 2 * a ^ 2 := by
+    nlinarith [sq_nonneg (M + 2 * T * a)]
+  have hnum : gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2
+      ≤ gaussMoment T 0 + 2 * gaussMoment T 2 + 8 * gaussMoment T 0 * M ^ 2
+        + 32 * gaussMoment T 0 * T ^ 2 * a ^ 2 := by
+    have h := mul_le_mul_of_nonneg_left hMsq (mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) (hm 0))
+    nlinarith [h]
+  have hnumnn : 0 ≤ gaussMoment T 0 + 2 * gaussMoment T 2 + 8 * gaussMoment T 0 * M ^ 2
+      + 32 * gaussMoment T 0 * T ^ 2 * a ^ 2 := by
+    have e1 : 0 ≤ 8 * gaussMoment T 0 * M ^ 2 :=
+      mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 8) (hm 0)) (sq_nonneg M)
+    have h1 : 0 ≤ 32 * gaussMoment T 0 * T ^ 2 :=
+      mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 32) (hm 0)) (sq_nonneg T)
+    have e2 : 0 ≤ 32 * gaussMoment T 0 * T ^ 2 * a ^ 2 := mul_nonneg h1 (sq_nonneg a)
+    exact add_nonneg (add_nonneg (add_nonneg (hm 0) (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) (hm 2))) e1) e2
+  have hA : (gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) / (4 * a)
+        + 8 * gaussMoment T 0 / (4 * a) ^ 3
+      ≤ ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1)) + 8 * gaussMoment T 0 / (4 * (T + 1))
+        + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1)) + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+        * (1 + M ^ 2) * (1 + a ^ 3) := by
+    have h4T1' : (4 * (T + 1)) ≠ 0 := h4T1.ne'
+    have hL1 : (gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) / (4 * a)
+        + 8 * gaussMoment T 0 / (4 * a) ^ 3
+        ≤ (gaussMoment T 0 + 2 * gaussMoment T 2 + 8 * gaussMoment T 0 * M ^ 2
+          + 32 * gaussMoment T 0 * T ^ 2 * a ^ 2) / (4 * a) + 8 * gaussMoment T 0 / (4 * a) ^ 3 :=
+      add_le_add_left (div_le_div_of_nonneg_right hnum h4a.le) _
+    have hL2 : (gaussMoment T 0 + 2 * gaussMoment T 2 + 8 * gaussMoment T 0 * M ^ 2
+          + 32 * gaussMoment T 0 * T ^ 2 * a ^ 2) / (4 * a) + 8 * gaussMoment T 0 / (4 * a) ^ 3
+        ≤ (gaussMoment T 0 + 2 * gaussMoment T 2 + 8 * gaussMoment T 0 * M ^ 2
+          + 32 * gaussMoment T 0 * T ^ 2 * a ^ 2) / (4 * (T + 1)) + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3 := by
+      apply add_le_add
+      · exact div_le_div_of_nonneg_left hnumnn h4T1 (by linarith)
+      · exact div_le_div_of_nonneg_left (mul_nonneg (by norm_num : (0:ℝ) ≤ 8) (hm 0)) (by positivity)
+          (pow_le_pow_left₀ h4T1.le (by linarith) 3)
+    calc (gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) / (4 * a)
+          + 8 * gaussMoment T 0 / (4 * a) ^ 3
+        ≤ (gaussMoment T 0 + 2 * gaussMoment T 2 + 8 * gaussMoment T 0 * M ^ 2
+          + 32 * gaussMoment T 0 * T ^ 2 * a ^ 2) / (4 * (T + 1)) + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3 :=
+        hL1.trans hL2
+      _ = ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+          + 8 * gaussMoment T 0 * M ^ 2 / (4 * (T + 1))
+          + 32 * gaussMoment T 0 * T ^ 2 * a ^ 2 / (4 * (T + 1)))
+          + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3 := by rw [add_div, add_div]
+      _ ≤ ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))) * ((1 + M ^ 2) * (1 + a ^ 3))
+          + (8 * gaussMoment T 0 / (4 * (T + 1))) * ((1 + M ^ 2) * (1 + a ^ 3))
+          + (32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))) * ((1 + M ^ 2) * (1 + a ^ 3))
+          + (8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3) * ((1 + M ^ 2) * (1 + a ^ 3)) := by
+        apply add_le_add
+        apply add_le_add
+        apply add_le_add
+        · exact le_mul_of_one_le_right (div_nonneg (add_nonneg (hm 0) (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) (hm 2)))
+            h4T1.le) hP
+        · rw [show 8 * gaussMoment T 0 * M ^ 2 / (4 * (T + 1))
+              = (8 * gaussMoment T 0 / (4 * (T + 1))) * M ^ 2 by field_simp]
+          exact mul_le_mul_of_nonneg_left hM2P
+            (div_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 8) (hm 0)) h4T1.le)
+        · rw [show 32 * gaussMoment T 0 * T ^ 2 * a ^ 2 / (4 * (T + 1))
+              = (32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))) * a ^ 2 by field_simp]
+          exact (mul_le_mul_of_nonneg_left ha23
+            (div_nonneg (mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 32) (hm 0)) (sq_nonneg T)) h4T1.le)).trans (mul_le_mul_of_nonneg_left ha3P
+            (div_nonneg (mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 32) (hm 0)) (sq_nonneg T)) h4T1.le))
+        · exact le_mul_of_one_le_right (div_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 8) (hm 0))
+            (pow_nonneg h4T1.le 3)) hP
+      _ = ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1)) + 8 * gaussMoment T 0 / (4 * (T + 1))
+          + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1)) + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+          * (1 + M ^ 2) * (1 + a ^ 3) := by ring
+  -- (iii) the region-B bracket absorbs into `CB' · (1+M²)(1+a³)`
+  have hB : (1 + 2 * M ^ 2) / (4 * a) + 4 / (4 * a) ^ 3
+      ≤ (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3) * (1 + M ^ 2) * (1 + a ^ 3) := by
+    have h1 : (1 + 2 * M ^ 2) / (4 * a) ≤ (1 + 2 * M ^ 2) / (4 * (T + 1)) :=
+      div_le_div_of_nonneg_left (by positivity) h4T1 (by linarith)
+    have h2 : (1 + 2 * M ^ 2) / (4 * (T + 1)) ≤ (2 * (1 + M ^ 2)) / (4 * (T + 1)) := by
+      apply div_le_div_of_nonneg_right _ h4T1.le
+      nlinarith [sq_nonneg M]
+    have h2' : (2 * (1 + M ^ 2)) / (4 * (T + 1)) = (2 / (4 * (T + 1))) * (1 + M ^ 2) := by
+      field_simp
+    have hM1P : 1 + M ^ 2 ≤ (1 + M ^ 2) * (1 + a ^ 3) :=
+      le_mul_of_one_le_right (by nlinarith [sq_nonneg M]) h1a3
+    have h3 : (4 : ℝ) / (4 * a) ^ 3 ≤ 4 / (4 * (T + 1)) ^ 3 :=
+      div_le_div_of_nonneg_left (by norm_num : (0:ℝ) ≤ 4) (by positivity)
+        (pow_le_pow_left₀ h4T1.le (by linarith) 3)
+    calc (1 + 2 * M ^ 2) / (4 * a) + 4 / (4 * a) ^ 3
+        ≤ (2 / (4 * (T + 1))) * (1 + M ^ 2) + 4 / (4 * (T + 1)) ^ 3 := add_le_add (h1.trans (h2.trans_eq h2')) h3
+      _ ≤ (2 / (4 * (T + 1))) * ((1 + M ^ 2) * (1 + a ^ 3))
+          + (4 / (4 * (T + 1)) ^ 3) * ((1 + M ^ 2) * (1 + a ^ 3)) :=
+        add_le_add (mul_le_mul_of_nonneg_left hM1P (div_nonneg (by norm_num : (0:ℝ) ≤ 2) h4T1.le))
+          (le_mul_of_one_le_right (div_nonneg (by norm_num : (0:ℝ) ≤ 4) (pow_nonneg h4T1.le 3)) hP)
+      _ = (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3) * (1 + M ^ 2) * (1 + a ^ 3) := by ring
+  -- assemble with the exponential factor
+  have hnnR : (0 : ℝ) ≤ 2 * (4 * Real.pi * T)⁻¹ * (1 + M ^ 2) * Real.exp (2 * T * a ^ 2 - 4 * M * a) :=
+    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) hcK.le) (by nlinarith [sq_nonneg M])) hE.le
+  have hnnA : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) :=
+    mul_nonneg hcK.le hE.le
+  have hnnB : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a) :=
+    mul_nonneg (mul_nonneg hcK.le (hm 0)) hE.le
+  have hM12 : 1 + M ^ 2 ≤ (1 + M) ^ 2 := by nlinarith [hM.le]
+  have hCnn : (0 : ℝ) ≤ (2 * (4 * Real.pi * T)⁻¹ * (gaussMoment T 1 + 2 * T * gaussMoment T 0
+      + gaussMoment T 3 + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1
+      + 8 * T ^ 3 * gaussMoment T 0)
+    + (4 * Real.pi * T)⁻¹ * ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+      + 8 * gaussMoment T 0 / (4 * (T + 1)) + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))
+      + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+    + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3)) * (1 + a ^ 3)
+      * Real.exp (2 * T * a ^ 2 - 4 * M * a) := by
+    apply mul_nonneg _ hE.le
+    apply mul_nonneg _ (zero_le_one.trans h1a3)
+    · -- the big constant is nonneg
+      apply add_nonneg
+      apply add_nonneg
+      · apply mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) hcK.le)
+        refine add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (hm 1)
+          (mul_nonneg (by positivity) (hm 0))) (hm 3))
+          (mul_nonneg (by positivity) (hm 2))) (mul_nonneg (by positivity) (hm 1))) ?_
+        exact mul_nonneg (by positivity) (hm 0)
+      · apply mul_nonneg hcK.le
+        refine add_nonneg (add_nonneg (add_nonneg (div_nonneg (add_nonneg (hm 0)
+          (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) (hm 2))) h4T1.le) (div_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 8) (hm 0))
+          h4T1.le)) (div_nonneg (mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 32) (hm 0))
+          (sq_nonneg T)) h4T1.le)) ?_
+        exact div_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 8) (hm 0)) (pow_nonneg h4T1.le 3)
+      · exact mul_nonneg (mul_nonneg hcK.le (hm 0)) (add_nonneg
+          (div_nonneg (by norm_num : (0:ℝ) ≤ 2) h4T1.le) (div_nonneg (by norm_num : (0:ℝ) ≤ 4) (pow_nonneg h4T1.le 3)))
+  calc 2 * (4 * Real.pi * T)⁻¹ * (1 + M ^ 2) * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+          (gaussMoment T 1 + (2 * T * a) * gaussMoment T 0 + gaussMoment T 3
+            + 3 * (2 * T * a) * gaussMoment T 2 + 3 * (2 * T * a) ^ 2 * gaussMoment T 1
+            + (2 * T * a) ^ 3 * gaussMoment T 0)
+        + (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+          ((gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) / (4 * a)
+            + 8 * gaussMoment T 0 / (4 * a) ^ 3)
+        + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+          ((1 + 2 * M ^ 2) / (4 * a) + 4 / (4 * a) ^ 3)
+      ≤ 2 * (4 * Real.pi * T)⁻¹ * (1 + M ^ 2) * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+          ((gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3 + 6 * T * gaussMoment T 2
+            + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0) * (1 + a ^ 3))
+        + ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+          (((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1)) + 8 * gaussMoment T 0 / (4 * (T + 1))
+            + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1)) + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+            * (1 + M ^ 2) * (1 + a ^ 3)))
+        + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+          ((2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3) * (1 + M ^ 2) * (1 + a ^ 3)) :=
+        add_le_add (add_le_add (mul_le_mul_of_nonneg_left hShear hnnR)
+          (mul_le_mul_of_nonneg_left hA hnnA)) (mul_le_mul_of_nonneg_left hB hnnB)
+    _ = (2 * (4 * Real.pi * T)⁻¹ * (gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3
+            + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0)
+          + (4 * Real.pi * T)⁻¹ * ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+            + 8 * gaussMoment T 0 / (4 * (T + 1)) + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))
+            + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+          + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3))
+        * (1 + M ^ 2) * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a) := by ring
+    _ ≤ (2 * (4 * Real.pi * T)⁻¹ * (gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3
+            + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0)
+          + (4 * Real.pi * T)⁻¹ * ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+            + 8 * gaussMoment T 0 / (4 * (T + 1)) + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))
+            + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+          + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3))
+        * (1 + M) ^ 2 * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a) := by
+      calc (2 * (4 * Real.pi * T)⁻¹ * (gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3
+              + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0)
+            + (4 * Real.pi * T)⁻¹ * ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+              + 8 * gaussMoment T 0 / (4 * (T + 1)) + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))
+              + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+            + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3))
+          * (1 + M ^ 2) * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a)
+          = ((2 * (4 * Real.pi * T)⁻¹ * (gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3
+              + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0)
+            + (4 * Real.pi * T)⁻¹ * ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+              + 8 * gaussMoment T 0 / (4 * (T + 1)) + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))
+              + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+            + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3))
+            * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a)) * (1 + M ^ 2) := by ring
+        _ ≤ ((2 * (4 * Real.pi * T)⁻¹ * (gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3
+              + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0)
+            + (4 * Real.pi * T)⁻¹ * ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+              + 8 * gaussMoment T 0 / (4 * (T + 1)) + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))
+              + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+            + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3))
+            * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a)) * (1 + M) ^ 2 :=
+          mul_le_mul_of_nonneg_left hM12 hCnn
+        _ = (2 * (4 * Real.pi * T)⁻¹ * (gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3
+              + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0)
+            + (4 * Real.pi * T)⁻¹ * ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+              + 8 * gaussMoment T 0 / (4 * (T + 1)) + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))
+              + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+            + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3))
+          * (1 + M) ^ 2 * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a) := by ring
+
+
+/-- The paper's Hilbert–Schmidt lemma for `V_{T,a}`: for fixed `0 < T` there is `C_T > 0` such that
+for every `0 < M` and every `a ≥ T + 1`,
+`‖V_{T,a}‖₂² = ∫∫ (vKernel)² ≤ C_T (1+M)² (1+a³) e^{2Ta² - 4Ma}`.
+Assembled from the reflected-region estimate (`lintegral_gRefKernel_le`) and the
+two complementary parts (`lintegral_gFreeKernel_fst_le`,
+`lintegral_gFreeKernel_snd_le`), merged by `vKernel_absorb`. -/
+theorem vKernel_sq_integral_le (T : ℝ) (hT : 0 < T) :
+    ∃ C : ℝ, 0 < C ∧ ∀ M a : ℝ, 0 < M → T + 1 ≤ a →
+      Integrable (fun p : ℝ × ℝ => (vKernel T a M p) ^ 2) (volume.prod volume) ∧
+      ∫ p : ℝ × ℝ, (vKernel T a M p) ^ 2 ∂(volume.prod volume) ≤
+        C * (1 + M) ^ 2 * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a) := by
+  -- the constant: built from the Gaussian moments `m_k = ∫ |w|^k e^{-w²/2T}`
+  set C : ℝ := 2 * (4 * Real.pi * T)⁻¹ * (gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3
+        + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0)
+      + (4 * Real.pi * T)⁻¹ * ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+        + 8 * gaussMoment T 0 / (4 * (T + 1)) + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))
+        + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3)
+      + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3) with hCdef
+  have hm : ∀ k : ℕ, 0 ≤ gaussMoment T k := fun k => gaussMoment_nonneg hT k
+  have hm0 : 0 < gaussMoment T 0 := gaussMoment_zero_pos hT
+  have hcK : (0 : ℝ) < (4 * Real.pi * T)⁻¹ := by positivity
+  have hT1 : (0 : ℝ) < T + 1 := by positivity
+  -- positivity of the constant: the reflected-region constant is already positive
+  have hCpos : 0 < C := by
+    have hS0 : 0 < gaussMoment T 1 + 2 * T * gaussMoment T 0 + gaussMoment T 3
+        + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1 + 8 * T ^ 3 * gaussMoment T 0 := by
+      have h8 : (0 : ℝ) < 8 * T ^ 3 * gaussMoment T 0 := by positivity
+      linarith [hm 1, hm 2, hm 3, hm0,
+        mul_nonneg (by positivity : (0 : ℝ) ≤ 2 * T) (hm 0),
+        mul_nonneg (by positivity : (0 : ℝ) ≤ 6 * T) (hm 2),
+        mul_nonneg (by positivity : (0 : ℝ) ≤ 12 * T ^ 2) (hm 1)]
+    have hC1 : (0 : ℝ) < 2 * (4 * Real.pi * T)⁻¹ * (gaussMoment T 1 + 2 * T * gaussMoment T 0
+        + gaussMoment T 3 + 6 * T * gaussMoment T 2 + 12 * T ^ 2 * gaussMoment T 1
+        + 8 * T ^ 3 * gaussMoment T 0) := mul_pos (mul_pos (by norm_num) hcK) hS0
+    have hC2 : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ * ((gaussMoment T 0 + 2 * gaussMoment T 2) / (4 * (T + 1))
+        + 8 * gaussMoment T 0 / (4 * (T + 1)) + 32 * gaussMoment T 0 * T ^ 2 / (4 * (T + 1))
+        + 8 * gaussMoment T 0 / (4 * (T + 1)) ^ 3) := by
+      apply mul_nonneg hcK.le
+      refine add_nonneg (add_nonneg (add_nonneg (div_nonneg (add_nonneg (hm 0)
+        (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) (hm 2))) (by positivity))
+        (div_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 8) (hm 0)) (by positivity)))
+        (div_nonneg (mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 32) (hm 0))
+          (sq_nonneg T)) (by positivity))) ?_
+      exact div_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 8) (hm 0))
+        (pow_nonneg (by positivity : (0 : ℝ) ≤ 4 * (T + 1)) 3)
+    have hC3 : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ * gaussMoment T 0
+        * (2 / (4 * (T + 1)) + 4 / (4 * (T + 1)) ^ 3) :=
+      mul_nonneg (mul_nonneg hcK.le (hm 0))
+        (add_nonneg (div_nonneg (by norm_num : (0 : ℝ) ≤ 2) (by positivity))
+          (div_nonneg (by norm_num : (0 : ℝ) ≤ 4) (pow_nonneg (by positivity : (0 : ℝ) ≤ 4 * (T + 1)) 3)))
+    exact add_pos_of_pos_of_nonneg (add_pos_of_pos_of_nonneg hC1 hC2) hC3
+  refine ⟨C, hCpos, ?_⟩
+  intro M a hM ha
+  have ha0 : 0 < a := by linarith
+  have hE : (0 : ℝ) < Real.exp (2 * T * a ^ 2 - 4 * M * a) := Real.exp_pos _
+  have h1a3 : (1 : ℝ) ≤ 1 + a ^ 3 := by
+    have h : 0 ≤ a ^ 3 := pow_nonneg ha0.le 3
+    linarith
+  have hSRmeas : MeasurableSet {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M} := measurableSet_reflectedRegion M
+  have hSAmeas : MeasurableSet {p : ℝ × ℝ | M < p.1} := measurableSet_Ioi.preimage measurable_fst
+  have hSBmeas : MeasurableSet {p : ℝ × ℝ | M < p.2} := measurableSet_Ioi.preimage measurable_snd
+  have hRnn : ∀ p : ℝ × ℝ, 0 ≤ {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}.indicator (gRefKernel T a M) p :=
+    Set.indicator_nonneg (fun q _ => gRefKernel_nonneg hT a M q)
+  have hAnn : ∀ p : ℝ × ℝ, 0 ≤ {p : ℝ × ℝ | M < p.1}.indicator (gFreeKernel T a) p :=
+    Set.indicator_nonneg (fun q _ => gFreeKernel_nonneg hT a q)
+  have hBnn : ∀ p : ℝ × ℝ, 0 ≤ {p : ℝ × ℝ | M < p.2}.indicator (gFreeKernel T a) p :=
+    Set.indicator_nonneg (fun q _ => gFreeKernel_nonneg hT a q)
+  -- pointwise domination of `(vKernel)²` by the three region indicators
+  have hdom : ∀ p : ℝ × ℝ, (vKernel T a M p) ^ 2
+      ≤ {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}.indicator (gRefKernel T a M) p
+        + {p : ℝ × ℝ | M < p.1}.indicator (gFreeKernel T a) p
+        + {p : ℝ × ℝ | M < p.2}.indicator (gFreeKernel T a) p := by
+    intro p
+    rcases Classical.em (p.1 ≤ M) with hx | hx
+    · rcases Classical.em (p.2 ≤ M) with hz | hz
+      · rw [Set.indicator_of_mem (show p ∈ {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M} from ⟨hx, hz⟩)]
+        rw [vKernel_sq_eq_gRefKernel hT hx hz]
+        linarith [hAnn p, hBnn p]
+      · rw [Set.indicator_of_mem (show p ∈ {p : ℝ × ℝ | M < p.2} from not_le.mp hz)]
+        rw [vKernel_sq_eq_gFreeKernel hT (fun h => hz h.2)]
+        linarith [hRnn p, hAnn p]
+    · rw [Set.indicator_of_mem (show p ∈ {p : ℝ × ℝ | M < p.1} from not_le.mp hx)]
+      rw [vKernel_sq_eq_gFreeKernel hT (fun h => hx h.1)]
+      linarith [hRnn p, hBnn p]
+  -- nonnegativity of the three real region bounds
+  have hSPnn : 0 ≤ gaussMoment T 1 + (2 * T * a) * gaussMoment T 0 + gaussMoment T 3
+      + 3 * (2 * T * a) * gaussMoment T 2 + 3 * (2 * T * a) ^ 2 * gaussMoment T 1
+      + (2 * T * a) ^ 3 * gaussMoment T 0 := by
+    refine add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (hm 1)
+      (mul_nonneg (by positivity) (hm 0))) (hm 3))
+      (mul_nonneg (mul_nonneg (by positivity) (by positivity)) (hm 2)))
+      (mul_nonneg (mul_nonneg (by positivity) (by positivity)) (hm 1))) ?_
+    exact mul_nonneg (by positivity) (hm 0)
+  have hAnn2 : (0 : ℝ) ≤ (gaussMoment T 0 + 2 * gaussMoment T 2
+      + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) / (4 * a) + 8 * gaussMoment T 0 / (4 * a) ^ 3 := by
+    refine add_nonneg (div_nonneg ?_ (by positivity)) (div_nonneg
+      (mul_nonneg (by norm_num : (0 : ℝ) ≤ 8) (hm 0)) (by positivity))
+    refine add_nonneg (add_nonneg (hm 0) (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) (hm 2))) ?_
+    exact mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) (hm 0)) (sq_nonneg _)
+  have hBnn2 : (0 : ℝ) ≤ (1 + 2 * M ^ 2) / (4 * a) + 4 / (4 * a) ^ 3 :=
+    add_nonneg (div_nonneg (by positivity) (by positivity))
+      (div_nonneg (by norm_num : (0 : ℝ) ≤ 4) (by positivity))
+  have hBRnn : (0 : ℝ) ≤ 2 * (4 * Real.pi * T)⁻¹ * (1 + M ^ 2) * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+      (gaussMoment T 1 + (2 * T * a) * gaussMoment T 0 + gaussMoment T 3
+        + 3 * (2 * T * a) * gaussMoment T 2 + 3 * (2 * T * a) ^ 2 * gaussMoment T 1
+        + (2 * T * a) ^ 3 * gaussMoment T 0) :=
+    mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hcK.le)
+      (by nlinarith [sq_nonneg M])) hE.le) hSPnn
+  have hBAnn : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+      ((gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) / (4 * a)
+        + 8 * gaussMoment T 0 / (4 * a) ^ 3) :=
+    mul_nonneg (mul_nonneg hcK.le hE.le) hAnn2
+  have hBBnn : (0 : ℝ) ≤ (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+      ((1 + 2 * M ^ 2) / (4 * a) + 4 / (4 * a) ^ 3) :=
+    mul_nonneg (mul_nonneg (mul_nonneg hcK.le (hm 0)) hE.le) hBnn2
+  -- the lintegral bound, by region decomposition
+  have hmeasR : Measurable ({p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}.indicator
+      fun p => ENNReal.ofReal (gRefKernel T a M p)) :=
+    ((ENNReal.continuous_ofReal.measurable.comp (measurable_gRefKernel T a M))).indicator hSRmeas
+  have hmeasA : Measurable ({p : ℝ × ℝ | M < p.1}.indicator
+      fun p => ENNReal.ofReal (gFreeKernel T a p)) :=
+    ((ENNReal.continuous_ofReal.measurable.comp (measurable_gFreeKernel T a))).indicator hSAmeas
+  have hmeasB : Measurable ({p : ℝ × ℝ | M < p.2}.indicator
+      fun p => ENNReal.ofReal (gFreeKernel T a p)) :=
+    ((ENNReal.continuous_ofReal.measurable.comp (measurable_gFreeKernel T a))).indicator hSBmeas
+  have hLint : ∫⁻ p : ℝ × ℝ, ENNReal.ofReal ((vKernel T a M p) ^ 2) ∂(volume.prod volume)
+      ≤ ENNReal.ofReal (C * (1 + M) ^ 2 * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a)) := by
+    calc ∫⁻ p : ℝ × ℝ, ENNReal.ofReal ((vKernel T a M p) ^ 2) ∂(volume.prod volume)
+        ≤ ∫⁻ p : ℝ × ℝ, ENNReal.ofReal ({p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}.indicator (gRefKernel T a M) p
+            + {p : ℝ × ℝ | M < p.1}.indicator (gFreeKernel T a) p
+            + {p : ℝ × ℝ | M < p.2}.indicator (gFreeKernel T a) p) ∂(volume.prod volume) :=
+          lintegral_mono fun p => ENNReal.ofReal_le_ofReal (hdom p)
+      _ = ∫⁻ p : ℝ × ℝ, ({p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}.indicator
+            (fun p => ENNReal.ofReal (gRefKernel T a M p)) p
+          + {p : ℝ × ℝ | M < p.1}.indicator (fun p => ENNReal.ofReal (gFreeKernel T a p)) p
+          + {p : ℝ × ℝ | M < p.2}.indicator (fun p => ENNReal.ofReal (gFreeKernel T a p)) p)
+          ∂(volume.prod volume) := by
+        apply lintegral_congr
+        intro p
+        have h1 : ENNReal.ofReal ({p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}.indicator (gRefKernel T a M) p)
+            = {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}.indicator (fun p => ENNReal.ofReal (gRefKernel T a M p)) p := by
+          by_cases hp : p ∈ {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}
+          · rw [Set.indicator_of_mem hp, Set.indicator_of_mem hp]
+          · rw [Set.indicator_of_notMem hp, Set.indicator_of_notMem hp, ENNReal.ofReal_zero]
+        have h2 : ENNReal.ofReal ({p : ℝ × ℝ | M < p.1}.indicator (gFreeKernel T a) p)
+            = {p : ℝ × ℝ | M < p.1}.indicator (fun p => ENNReal.ofReal (gFreeKernel T a p)) p := by
+          by_cases hp : p ∈ {p : ℝ × ℝ | M < p.1}
+          · rw [Set.indicator_of_mem hp, Set.indicator_of_mem hp]
+          · rw [Set.indicator_of_notMem hp, Set.indicator_of_notMem hp, ENNReal.ofReal_zero]
+        have h3 : ENNReal.ofReal ({p : ℝ × ℝ | M < p.2}.indicator (gFreeKernel T a) p)
+            = {p : ℝ × ℝ | M < p.2}.indicator (fun p => ENNReal.ofReal (gFreeKernel T a p)) p := by
+          by_cases hp : p ∈ {p : ℝ × ℝ | M < p.2}
+          · rw [Set.indicator_of_mem hp, Set.indicator_of_mem hp]
+          · rw [Set.indicator_of_notMem hp, Set.indicator_of_notMem hp, ENNReal.ofReal_zero]
+        rw [← h1, ← h2, ← h3, ← ENNReal.ofReal_add (hRnn p) (hAnn p),
+          ← ENNReal.ofReal_add (add_nonneg (hRnn p) (hAnn p)) (hBnn p)]
+      _ = (∫⁻ p : ℝ × ℝ, {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}.indicator
+            (fun p => ENNReal.ofReal (gRefKernel T a M p)) p ∂(volume.prod volume))
+          + (∫⁻ p : ℝ × ℝ, {p : ℝ × ℝ | M < p.1}.indicator
+            (fun p => ENNReal.ofReal (gFreeKernel T a p)) p ∂(volume.prod volume))
+          + (∫⁻ p : ℝ × ℝ, {p : ℝ × ℝ | M < p.2}.indicator
+            (fun p => ENNReal.ofReal (gFreeKernel T a p)) p ∂(volume.prod volume)) := by
+        rw [lintegral_add_right _ hmeasB, lintegral_add_right _ hmeasA]
+      _ = (∫⁻ p in {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M}, ENNReal.ofReal (gRefKernel T a M p)
+            ∂(volume.prod volume))
+          + (∫⁻ p in {p : ℝ × ℝ | M < p.1}, ENNReal.ofReal (gFreeKernel T a p) ∂(volume.prod volume))
+          + (∫⁻ p in {p : ℝ × ℝ | M < p.2}, ENNReal.ofReal (gFreeKernel T a p) ∂(volume.prod volume)) := by
+        rw [lintegral_indicator hSRmeas, lintegral_indicator hSAmeas, lintegral_indicator hSBmeas]
+      _ ≤ ENNReal.ofReal (2 * (4 * Real.pi * T)⁻¹ * (1 + M ^ 2) * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+            (gaussMoment T 1 + (2 * T * a) * gaussMoment T 0 + gaussMoment T 3
+              + 3 * (2 * T * a) * gaussMoment T 2 + 3 * (2 * T * a) ^ 2 * gaussMoment T 1
+              + (2 * T * a) ^ 3 * gaussMoment T 0))
+          + ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+            ((gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) / (4 * a)
+              + 8 * gaussMoment T 0 / (4 * a) ^ 3))
+          + ENNReal.ofReal ((4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+            ((1 + 2 * M ^ 2) / (4 * a) + 4 / (4 * a) ^ 3)) :=
+        add_le_add (add_le_add (lintegral_gRefKernel_le hT hM ha) (lintegral_gFreeKernel_fst_le hT hM ha))
+          (lintegral_gFreeKernel_snd_le hT hM ha)
+      _ = ENNReal.ofReal (2 * (4 * Real.pi * T)⁻¹ * (1 + M ^ 2) * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+            (gaussMoment T 1 + (2 * T * a) * gaussMoment T 0 + gaussMoment T 3
+              + 3 * (2 * T * a) * gaussMoment T 2 + 3 * (2 * T * a) ^ 2 * gaussMoment T 1
+              + (2 * T * a) ^ 3 * gaussMoment T 0)
+          + (4 * Real.pi * T)⁻¹ * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+            ((gaussMoment T 0 + 2 * gaussMoment T 2 + 4 * gaussMoment T 0 * (M - 2 * T * a) ^ 2) / (4 * a)
+              + 8 * gaussMoment T 0 / (4 * a) ^ 3)
+          + (4 * Real.pi * T)⁻¹ * gaussMoment T 0 * Real.exp (2 * T * a ^ 2 - 4 * M * a) *
+            ((1 + 2 * M ^ 2) / (4 * a) + 4 / (4 * a) ^ 3)) := by
+        rw [← ENNReal.ofReal_add hBRnn hBAnn, ← ENNReal.ofReal_add (add_nonneg hBRnn hBAnn) hBBnn]
+      _ ≤ ENNReal.ofReal (C * (1 + M) ^ 2 * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a)) := by
+        apply ENNReal.ofReal_le_ofReal
+        rw [hCdef]
+        exact vKernel_absorb hT hM ha
+  -- integrability and the Bochner bound
+  have hCnn : (0 : ℝ) ≤ C * (1 + M) ^ 2 * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a) :=
+    mul_nonneg (mul_nonneg (mul_nonneg hCpos.le (by positivity)) (zero_le_one.trans h1a3)) hE.le
+  refine ⟨?_, ?_⟩
+  · -- `Integrable (vKernel)²`
+    have hmeas2 : AEStronglyMeasurable (fun p : ℝ × ℝ => (vKernel T a M p) ^ 2) (volume.prod volume) :=
+      ((measurable_vKernel T a M).pow_const 2).aestronglyMeasurable
+    refine ⟨hmeas2, ?_⟩
+    rw [hasFiniteIntegral_iff_norm]
+    calc ∫⁻ p : ℝ × ℝ, ENNReal.ofReal ‖(vKernel T a M p) ^ 2‖ ∂(volume.prod volume)
+        = ∫⁻ p : ℝ × ℝ, ENNReal.ofReal ((vKernel T a M p) ^ 2) ∂(volume.prod volume) :=
+          lintegral_congr fun p => by rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
+      _ ≤ ENNReal.ofReal (C * (1 + M) ^ 2 * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a)) := hLint
+      _ < ⊤ := ENNReal.ofReal_lt_top
+  · -- the Bochner bound
+    rw [integral_eq_lintegral_of_nonneg_ae (Eventually.of_forall fun p => sq_nonneg _)
+      ((measurable_vKernel T a M).pow_const 2).aestronglyMeasurable]
+    calc (∫⁻ p : ℝ × ℝ, ENNReal.ofReal ((vKernel T a M p) ^ 2) ∂(volume.prod volume)).toReal
+        ≤ (ENNReal.ofReal (C * (1 + M) ^ 2 * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a))).toReal :=
+          ENNReal.toReal_mono ENNReal.ofReal_ne_top hLint
+      _ = C * (1 + M) ^ 2 * (1 + a ^ 3) * Real.exp (2 * T * a ^ 2 - 4 * M * a) :=
+          ENNReal.toReal_ofReal hCnn
+
+end AiryConj

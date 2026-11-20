@@ -1,0 +1,961 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.Fdd.FddOp
+import Airy1GumbelContrib.FredholmDet.SimonBound
+
+/-!
+# Continuity of the fdd determinant in the levels
+
+For fixed gaps the map from the level vector to
+`det(I − J̃) = fredholmDet (fddOp …) 1` is continuous, jointly in all levels.
+
+* Representation: `zipLev x gs` pairs the levels `x : ℕ → ℝ` (by position) with a fixed gap
+  list; `fddEntries` of a sorted time list is of this form (`fddEntries_eq_zipLev`), with gaps
+  `gapsOf ts` independent of the levels.
+* Pointwise convergence (`tendsto_lamKerN_zipLev`): if every level converges, the kernel of
+  `Λ e^{τΔ}` converges at every `(u, v)` with `u ≠ x₁` (the inner integrals converge by
+  dominated convergence; the indicator jumps only on the null set `w = x_k`).
+* Uniform `L²` domination (`sq_fddVKer_le_domF`, `integrable_domF`): the bound of
+  `memLp_fddVKer` (`Fdd/FddVBound.lean`) re-run with the split at any `m ≤ x₁` and the Chernoff
+  factors `e^{−θ x_k}`
+  bounded by `e^{−θ ℓ}` for a common lower bound `ℓ` of the levels — one integrable majorant
+  on a neighbourhood of any level vector.
+* `‖V(x') − V(x)‖₂ → 0` (`tendsto_integral_sq_fddVKer_zipLev`), then
+  `tendsto_fredholmDet_comp` with the fixed `W` factor.
+
+Main results: `continuous_fddDetLev` (list form, levels `ℕ → ℝ`) and
+`continuous_airy1FinCdf` (`Continuous (airy1FinCdf I)` for every finite time set `I`).
+-/
+
+namespace AiryFdd
+
+open MeasureTheory Real Set Filter Topology
+open HilbertSchmidt
+
+/-! ## Levels-by-position representation -/
+
+/-- Entries `(x_i, g_i)` from levels indexed by position and a gap list. -/
+def zipLev : (ℕ → ℝ) → List ℝ → List (ℝ × ℝ)
+  | _, [] => []
+  | x, g :: gs => (x 0, g) :: zipLev (fun i => x (i + 1)) gs
+
+theorem zipLev_cons (x : ℕ → ℝ) (g : ℝ) (gs : List ℝ) :
+    zipLev x (g :: gs) = (x 0, g) :: zipLev (fun i => x (i + 1)) gs := rfl
+
+theorem mem_zipLev : ∀ (gs : List ℝ) (x : ℕ → ℝ) (y : ℝ × ℝ), y ∈ zipLev x gs →
+    y.2 ∈ gs ∧ ∃ i < gs.length, y.1 = x i
+  | [], _, y, h => by simp [zipLev] at h
+  | g :: gs, x, y, h => by
+    rw [zipLev_cons, List.mem_cons] at h
+    rcases h with rfl | h
+    · exact ⟨List.mem_cons_self, 0, by simp, rfl⟩
+    · obtain ⟨h1, i, hi, h2⟩ := mem_zipLev gs _ y h
+      exact ⟨List.mem_cons_of_mem _ h1, i + 1, by simp; omega, h2⟩
+
+theorem zipLev_pos {gs : List ℝ} (hgs : ∀ c ∈ gs, 0 < c) (x : ℕ → ℝ) :
+    ∀ y ∈ zipLev x gs, 0 < y.2 := fun y hy => hgs _ (mem_zipLev gs x y hy).1
+
+theorem map_snd_zipLev : ∀ (gs : List ℝ) (x : ℕ → ℝ), (zipLev x gs).map Prod.snd = gs
+  | [], _ => rfl
+  | g :: gs, x => by
+    rw [zipLev_cons, List.map_cons, map_snd_zipLev gs]
+
+theorem gapSum_zipLev : ∀ (gs : List ℝ) (x : ℕ → ℝ) (c g : ℝ),
+    gapSum (c, g) (zipLev x gs) = g + gs.sum
+  | [], _, _, _ => by simp [gapSum, zipLev]
+  | h :: gs, x, _, g => by
+    show g + gapSum (x 0, h) (zipLev _ gs) = g + (h :: gs).sum
+    rw [gapSum_zipLev gs, List.sum_cons]
+
+/-- The last element of `g :: gs`. -/
+def lastOf : ℝ → List ℝ → ℝ
+  | g, [] => g
+  | _, h :: hs => lastOf h hs
+
+theorem lastGap_zipLev : ∀ (gs : List ℝ) (x : ℕ → ℝ) (c g : ℝ),
+    lastGap (c, g) (zipLev x gs) = lastOf g gs
+  | [], _, _, _ => rfl
+  | h :: gs, x, _, _ => lastGap_zipLev gs _ (x 0) h
+
+/-- The second components of the Chernoff points depend on the gaps only. -/
+def chSnd : ℝ → List ℝ → List ℝ
+  | _, [] => []
+  | g, h :: hs => g :: (chSnd h hs).map (· + g)
+
+theorem chernoffPts_snd : ∀ (L : List (ℝ × ℝ)) (e : ℝ × ℝ),
+    (chernoffPts e L).map Prod.snd = chSnd e.2 (L.map Prod.snd)
+  | [], _ => rfl
+  | y :: L, e => by
+    simp only [chernoffPts, List.map_cons, List.map_map, chSnd, ← chernoffPts_snd L y]
+    rfl
+
+theorem chernoffPts_zipLev_snd (gs : List ℝ) (x : ℕ → ℝ) (c g : ℝ) :
+    (chernoffPts (c, g) (zipLev x gs)).map Prod.snd = chSnd g gs := by
+  rw [chernoffPts_snd, map_snd_zipLev]
+
+/-- The first components of the Chernoff points are levels of the tail. -/
+theorem chernoffPts_fst : ∀ (L : List (ℝ × ℝ)) (e : ℝ × ℝ),
+    ∀ cs ∈ chernoffPts e L, ∃ y ∈ L, cs.1 = y.1
+  | [], _, cs, h => by simp [chernoffPts] at h
+  | y :: L, e, cs, h => by
+    simp only [chernoffPts, List.mem_cons, List.mem_map] at h
+    rcases h with rfl | ⟨cs', hcs', rfl⟩
+    · exact ⟨y, List.mem_cons_self, rfl⟩
+    · obtain ⟨z, hz, hz1⟩ := chernoffPts_fst L y cs' hcs'
+      exact ⟨z, List.mem_cons_of_mem _ hz, hz1⟩
+
+/-! ## Pointwise convergence of the kernels -/
+
+theorem tendsto_indicator_Iic_one {α : Type*} {l : Filter α} {c : α → ℝ} {c₀ u : ℝ}
+    (hc : Tendsto c l (𝓝 c₀)) (hu : u ≠ c₀) :
+    Tendsto (fun n => (Iic (c n)).indicator (fun _ => (1 : ℝ)) u) l
+      (𝓝 ((Iic c₀).indicator (fun _ => (1 : ℝ)) u)) := by
+  rcases hu.lt_or_gt with h | h
+  · have hev : ∀ᶠ n in l, u < c n := hc.eventually (lt_mem_nhds h)
+    rw [Set.indicator_of_mem (show u ∈ Iic c₀ from h.le)]
+    exact tendsto_const_nhds.congr' (hev.mono fun n hn =>
+      (Set.indicator_of_mem (show u ∈ Iic (c n) from hn.le) _).symm)
+  · have hev : ∀ᶠ n in l, c n < u := hc.eventually (gt_mem_nhds h)
+    rw [Set.indicator_of_notMem (show u ∉ Iic c₀ from not_le.2 h)]
+    exact tendsto_const_nhds.congr' (hev.mono fun n hn =>
+      (Set.indicator_of_notMem (show u ∉ Iic (c n) from not_le.2 hn) _).symm)
+
+/-- **Pointwise convergence of `Λ e^{τΔ}`**: if every level converges, the kernel converges
+at every `(u, v)` with `u ≠ x₁` (dominated convergence in each inner integral). -/
+theorem tendsto_lamKerN_zipLev {α : Type*} {l : Filter α} [l.IsCountablyGenerated] :
+    ∀ (gs : List ℝ) (g : ℝ) (x : ℕ → ℝ) (xn : α → ℕ → ℝ), 0 < g → (∀ c ∈ gs, 0 < c) →
+      (∀ i, Tendsto (fun n => xn n i) l (𝓝 (x i))) → ∀ u v : ℝ, u ≠ x 0 →
+      Tendsto (fun n => lamKerN (xn n 0, g) (zipLev (fun i => xn n (i + 1)) gs) (u, v)) l
+        (𝓝 (lamKerN (x 0, g) (zipLev (fun i => x (i + 1)) gs) (u, v)))
+  | [], g, x, xn, _, _, hx, u, v, hu => by
+    show Tendsto (fun n => lamKer1 (xn n 0) g (u, v)) l (𝓝 (lamKer1 (x 0) g (u, v)))
+    unfold lamKer1
+    exact (tendsto_indicator_Iic_one (hx 0) hu).mul_const _
+  | h :: gs, g, x, xn, hg, hgs, hx, u, v, hu => by
+    have hh : 0 < h := hgs h List.mem_cons_self
+    have hgs' : ∀ c ∈ gs, 0 < c := fun c hc => hgs c (List.mem_cons_of_mem _ hc)
+    have hS : 0 < h + gs.sum := by
+      have := gapSum_pos (zipLev x gs) (0, h) hh (zipLev_pos hgs' x)
+      rwa [gapSum_zipLev] at this
+    have hb : ∀ (c : ℝ) (y : ℕ → ℝ) (w : ℝ),
+        |lamKerN (c, h) (zipLev y gs) (w, v)| ≤ heatKernel (h + gs.sum) (w - v) := by
+      intro c y w
+      obtain ⟨-, h0, h1⟩ := lamKerN_props (zipLev y gs) (c, h) hh (zipLev_pos hgs' y)
+      rw [abs_of_nonneg (h0 _)]
+      have := h1 (w, v)
+      rwa [gapSum_zipLev] at this
+    have hm : ∀ (c : ℝ) (y : ℕ → ℝ), Measurable (lamKerN (c, h) (zipLev y gs)) :=
+      fun c y => (lamKerN_props (zipLev y gs) (c, h) hh (zipLev_pos hgs' y)).1
+    have IH := tendsto_lamKerN_zipLev gs h (fun i => x (i + 1)) (fun n i => xn n (i + 1)) hh
+      hgs' (fun i => hx (i + 1))
+    have hint : Tendsto (fun n => AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+        (lamKerN (xn n 1, h) (zipLev (fun i => xn n (i + 1 + 1)) gs)) (u, v)) l
+        (𝓝 (AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+          (lamKerN (x 1, h) (zipLev (fun i => x (i + 1 + 1)) gs)) (u, v))) := by
+      unfold AiryConj.compKernel
+      refine tendsto_integral_filter_of_dominated_convergence
+        (fun w => heatKernel g (u - w) * heatKernel (h + gs.sum) (w - v)) ?_ ?_
+        (integrable_heat_mul_heat hg hS u v) ?_
+      · exact Eventually.of_forall fun n =>
+          (((AiryTwoInt.measurable_heatKerTwo g).comp
+            (measurable_const.prodMk measurable_id)).mul
+            ((hm _ _).comp (measurable_id.prodMk measurable_const))).aestronglyMeasurable
+      · refine Eventually.of_forall fun n => ae_of_all _ fun w => ?_
+        rw [Real.norm_eq_abs, abs_mul]
+        exact mul_le_mul (AiryTwoInt.heatKerTwo_abs_le_self hg (u, w)) (hb _ _ w)
+          (abs_nonneg _) (heatKernel_pos hg _).le
+      · filter_upwards [(Set.countable_singleton (x 1)).ae_notMem volume] with w hw
+        exact (IH w v hw).const_mul _
+    show Tendsto (fun n => (Iic (xn n 0)).indicator (fun _ => (1 : ℝ)) u
+        * AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+          (lamKerN (xn n 1, h) (zipLev (fun i => xn n (i + 1 + 1)) gs)) (u, v)) l
+      (𝓝 ((Iic (x 0)).indicator (fun _ => (1 : ℝ)) u
+        * AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+          (lamKerN (x 1, h) (zipLev (fun i => x (i + 1 + 1)) gs)) (u, v)))
+    exact (tendsto_indicator_Iic_one (hx 0) hu).mul hint
+
+/-- Pointwise convergence of the weighted kernel `V` off the null set `u = x₁`. -/
+theorem tendsto_fddVKer_zipLev {α : Type*} {l : Filter α} [l.IsCountablyGenerated]
+    {gs : List ℝ} {g : ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c) {x : ℕ → ℝ}
+    {xn : α → ℕ → ℝ} (hx : ∀ i, Tendsto (fun n => xn n i) l (𝓝 (x i))) (a : ℝ) {p : ℝ × ℝ}
+    (hp : p.1 ≠ x 0) :
+    Tendsto (fun n => fddVKer (hitKerN (xn n 0, g) (zipLev (fun i => xn n (i + 1)) gs)) a p) l
+      (𝓝 (fddVKer (hitKerN (x 0, g) (zipLev (fun i => x (i + 1)) gs)) a p)) := by
+  obtain ⟨u, v⟩ := p
+  unfold fddVKer hitKerN
+  simp only [gapSum_zipLev]
+  exact (((tendsto_const_nhds.mul (tendsto_const_nhds.sub
+    (tendsto_lamKerN_zipLev gs g x xn hg hgs hx u v hp))).mul_const _).mul_const _)
+
+/-! ## A uniform `L²` majorant on bounded level sets -/
+
+/-- The majorant of `V²`: the off-quadrant half-plane terms (split at `m`) plus the quadrant
+Chernoff terms with every level replaced by the lower bound `ℓ`. -/
+noncomputable def domF (S a θ m ℓ : ℝ) (ss : List ℝ) (p : ℝ × ℝ) : ℝ :=
+  c0 S * (1 + 2 / a ^ 2) * ((Ioi m).indicator (fun u => Real.exp (-(2 * a) * u)) p.1
+      * (Real.exp (-a * p.2) * heatKernel S (p.1 - p.2)))
+    + c0 S * (1 + 2 / a ^ 2) * ((Ioi m).indicator (fun u => Real.exp (-(2 * a) * u)) p.1
+      * (Real.exp (-(3 * a) * p.2) * heatKernel S (p.1 - p.2)))
+    + c0 S * (1 + 2 / a ^ 2) * ((Ioi m).indicator (fun v => Real.exp (-a * v)) p.2
+      * (Real.exp (-(2 * a) * p.1) * heatKernel S (p.1 - p.2)))
+    + c0 S * (1 + 2 / a ^ 2) * ((Ioi m).indicator (fun v => Real.exp (-(3 * a) * v)) p.2
+      * (Real.exp (-(2 * a) * p.1) * heatKernel S (p.1 - p.2)))
+    + (ss.map fun s => quadDom S a θ m (ℓ, s) p).sum
+
+/-- The majorant is integrable on the plane (Chernoff exponents as in `memLp_fddVKer`). -/
+theorem integrable_domF {S a g₁ τ : ℝ} (hS : 0 < S) (ha : 0 < a) (hg₁ : 0 < g₁) (hτ : 0 < τ)
+    (m ℓ : ℝ) {ss : List ℝ} (hss : ∀ s ∈ ss, g₁ ≤ s ∧ s + τ ≤ S) :
+    Integrable (domF S a ((3 * a + 1) * S * (1 / g₁ + 1 / τ)) m ℓ ss) (volume.prod volume) := by
+  set θ := (3 * a + 1) * S * (1 / g₁ + 1 / τ) with hθdef
+  have hexp : ∀ s ∈ ss, 0 < -(2 * a) + θ - s * θ / S ∧ 0 < -a + s * θ / S ∧
+      0 < -(3 * a) + s * θ / S := by
+    intro s hs
+    obtain ⟨h1, h2⟩ := hss s hs
+    have e1 : s * θ / S = (3 * a + 1) * (s / g₁) + (3 * a + 1) * (s / τ) := by
+      rw [hθdef]; field_simp
+    have e2 : θ - s * θ / S
+        = (3 * a + 1) * ((S - s) / g₁) + (3 * a + 1) * ((S - s) / τ) := by
+      rw [hθdef]; field_simp
+    have hs0 : 0 ≤ s := hg₁.le.trans h1
+    have k1 : 1 ≤ s / g₁ := (one_le_div hg₁).2 h1
+    have k2 : 0 ≤ s / τ := div_nonneg hs0 hτ.le
+    have k3 : 0 ≤ (S - s) / g₁ := div_nonneg (by linarith) hg₁.le
+    have k4 : 1 ≤ (S - s) / τ := (one_le_div hτ).2 (by linarith)
+    have m1 : 3 * a + 1 ≤ (3 * a + 1) * (s / g₁) := le_mul_of_one_le_right (by positivity) k1
+    have m2 : 0 ≤ (3 * a + 1) * (s / τ) := by positivity
+    have m3 : 0 ≤ (3 * a + 1) * ((S - s) / g₁) := by positivity
+    have m4 : 3 * a + 1 ≤ (3 * a + 1) * ((S - s) / τ) :=
+      le_mul_of_one_le_right (by positivity) k4
+    refine ⟨?_, ?_, ?_⟩ <;> linarith
+  set Koff := c0 S * (1 + 2 / a ^ 2)
+  have i1 := (integrable_halfplane_fst hS m (-(2 * a)) (-a) (by linarith)).const_mul Koff
+  have i2 := (integrable_halfplane_fst hS m (-(2 * a)) (-(3 * a)) (by linarith)).const_mul Koff
+  have i3 := (integrable_halfplane_snd hS m (-(2 * a)) (-a) (by linarith)).const_mul Koff
+  have i4 := (integrable_halfplane_snd hS m (-(2 * a)) (-(3 * a)) (by linarith)).const_mul Koff
+  have i5 : Integrable (fun p => (ss.map fun s => quadDom S a θ m (ℓ, s) p).sum)
+      (volume.prod volume) := by
+    refine integrable_list_sum_map _ ss fun s hs => ?_
+    obtain ⟨hA, hB1, hB2⟩ := hexp s hs
+    exact (((integrable_quadrant m hA hB1).add (integrable_quadrant m hA hB2)).const_mul
+      _).congr (Eventually.of_forall fun p => rfl)
+  exact ((((i1.add i2).add i3).add i4).add i5).congr (Eventually.of_forall fun p => rfl)
+
+/-- **Uniform pointwise domination**: for any split point `m ≤ x₁` and any common lower bound
+`ℓ` of the levels `x_k` (`k ≥ 2`), `V² ≤ domF`. -/
+theorem sq_fddVKer_le_domF {e : ℝ × ℝ} {L : List (ℝ × ℝ)} (he : 0 < e.2)
+    (hL : ∀ y ∈ L, 0 < y.2) {a : ℝ} (ha : 0 < a) {S g₁ τ m ℓ : ℝ} {ss : List ℝ}
+    (hS : gapSum e L = S) (hg₁ : e.2 = g₁) (hτ : lastGap e L = τ)
+    (hss : (chernoffPts e L).map Prod.snd = ss) (hm : m ≤ e.1)
+    (hℓ : ∀ cs ∈ chernoffPts e L, ℓ ≤ cs.1) (p : ℝ × ℝ) :
+    fddVKer (hitKerN e L) a p ^ 2
+      ≤ domF S a ((3 * a + 1) * S * (1 / g₁ + 1 / τ)) m ℓ ss p := by
+  subst hS hg₁ hτ hss
+  have hS : 0 < gapSum e L := gapSum_pos L e he hL
+  have hτ : 0 < lastGap e L := lastGap_pos L e he hL
+  unfold domF
+  rw [List.map_map]
+  set S := gapSum e L with hSdef
+  set θ := (3 * a + 1) * S * (1 / e.2 + 1 / lastGap e L) with hθdef
+  have hθ : 0 ≤ θ := by positivity
+  set pts := chernoffPts e L with hpts
+  set Koff := c0 S * (1 + 2 / a ^ 2) with hKoff
+  have hc := c0_pos hS
+  have hKoff0 : 0 ≤ Koff := by positivity
+  have hp := (heatKernel_pos hS (p.1 - p.2)).le
+  have n1 := mul_nonneg hKoff0 (mul_nonneg (indicator_exp_nonneg (Ioi m) (-(2 * a)) p.1)
+    (mul_nonneg (Real.exp_pos (-a * p.2)).le hp))
+  have n2 := mul_nonneg hKoff0 (mul_nonneg (indicator_exp_nonneg (Ioi m) (-(2 * a)) p.1)
+    (mul_nonneg (Real.exp_pos (-(3 * a) * p.2)).le hp))
+  have n3 := mul_nonneg hKoff0 (mul_nonneg (indicator_exp_nonneg (Ioi m) (-a) p.2)
+    (mul_nonneg (Real.exp_pos (-(2 * a) * p.1)).le hp))
+  have n4 := mul_nonneg hKoff0 (mul_nonneg (indicator_exp_nonneg (Ioi m) (-(3 * a)) p.2)
+    (mul_nonneg (Real.exp_pos (-(2 * a) * p.1)).le hp))
+  have n5 : 0 ≤ (pts.map ((fun s => quadDom S a θ m (ℓ, s) p) ∘ Prod.snd)).sum :=
+    List.sum_nonneg fun x hx => by
+      obtain ⟨cs, -, rfl⟩ := List.mem_map.1 hx
+      simp only [Function.comp_apply]
+      unfold quadDom
+      have := indicator_exp_nonneg (Iic m) (-(2 * a) + θ - cs.2 * θ / S) p.1
+      have := indicator_exp_nonneg (Iic m) (-a + cs.2 * θ / S) p.2
+      have := indicator_exp_nonneg (Iic m) (-(3 * a) + cs.2 * θ / S) p.2
+      positivity
+  have hoff := sq_fddVKer_le_off hS ha (abs_hitKerN_le he hL p)
+  rw [← hKoff] at hoff
+  by_cases h1 : p.1 ∈ Ioi m
+  · have e : (Ioi m).indicator (fun u => Real.exp (-(2 * a) * u)) p.1
+        = Real.exp (-(2 * a) * p.1) := Set.indicator_of_mem h1 _
+    rw [e] at n1 n2 ⊢
+    linarith
+  · by_cases h2 : p.2 ∈ Ioi m
+    · have e3 : (Ioi m).indicator (fun v => Real.exp (-a * v)) p.2 = Real.exp (-a * p.2) :=
+        Set.indicator_of_mem h2 _
+      have e4 : (Ioi m).indicator (fun v => Real.exp (-(3 * a) * v)) p.2
+          = Real.exp (-(3 * a) * p.2) := Set.indicator_of_mem h2 _
+      rw [e3] at n3 ⊢
+      rw [e4] at n4 ⊢
+      have r : Koff * (Real.exp (-(2 * a) * p.1) * (Real.exp (-a * p.2)
+            * heatKernel S (p.1 - p.2))
+          + Real.exp (-(2 * a) * p.1) * (Real.exp (-(3 * a) * p.2)
+            * heatKernel S (p.1 - p.2)))
+          = Koff * (Real.exp (-a * p.2) * (Real.exp (-(2 * a) * p.1)
+            * heatKernel S (p.1 - p.2)))
+          + Koff * (Real.exp (-(3 * a) * p.2) * (Real.exp (-(2 * a) * p.1)
+            * heatKernel S (p.1 - p.2))) := by ring
+      linarith
+    · -- the quadrant `u ≤ m`, `v ≤ m` (so `u ≤ x₁`)
+      have hu : p.1 ≤ m := not_lt.1 h1
+      have hv : p.2 ≤ m := not_lt.1 h2
+      obtain ⟨u, v⟩ := p
+      set H := hitKerN e L (u, v) with hHdef
+      have hH0 : 0 ≤ H := hitKerN_nonneg he hL _
+      have hHp : H ≤ heatKernel S (u - v) := by
+        have := abs_hitKerN_le he hL (u, v)
+        rw [abs_of_nonneg hH0] at this
+        exact this
+      have hHc : H ≤ c0 S := hHp.trans (AiryTwoInt.heatKernel_le hS _)
+      have hHE : H ≤ eBnd θ S pts (u, v) := by
+        have := hitKerN_le_eBnd hθ L e he hL (u, v)
+        rwa [Set.indicator_of_notMem (show (u, v).1 ∉ Ioi e.1 from not_lt.2 (hu.trans hm)),
+          zero_mul, zero_add] at this
+      have hY := one_add_sq_le_exp ha v
+      have hq : fddVKer (hitKerN e L) a (u, v) ^ 2
+          ≤ (pts.map fun cs => c0 S * (1 + 2 / a ^ 2) * (Real.exp (-(2 * a) * u)
+              * eTerm θ S cs.1 cs.2 (u, v) * Real.exp (-(2 * a) * v)
+              * (Real.exp (a * v) + Real.exp (-(a * v))))).sum := by
+        rw [sq_fddVKer]
+        have hX : H ^ 2 ≤ c0 S * eBnd θ S pts (u, v) := by
+          calc H ^ 2 = H * H := sq H
+            _ ≤ c0 S * H := mul_le_mul_of_nonneg_right hHc hH0
+            _ ≤ c0 S * eBnd θ S pts (u, v) := mul_le_mul_of_nonneg_left hHE hc.le
+        calc Real.exp (-(2 * a) * (u, v).1) * H ^ 2 * Real.exp (-(2 * a) * (u, v).2)
+              * (1 + (u, v).2 ^ 2)
+            ≤ Real.exp (-(2 * a) * u) * (c0 S * eBnd θ S pts (u, v))
+                * Real.exp (-(2 * a) * v)
+                * ((1 + 2 / a ^ 2) * (Real.exp (a * v) + Real.exp (-(a * v)))) := by
+              apply mul_le_mul _ hY (by positivity) (by
+                have := eBnd_nonneg hS θ pts (u, v); positivity)
+              exact mul_le_mul_of_nonneg_right
+                (mul_le_mul_of_nonneg_left hX (Real.exp_pos _).le) (Real.exp_pos _).le
+          _ = c0 S * (1 + 2 / a ^ 2) * (Real.exp (-(2 * a) * u) * eBnd θ S pts (u, v)
+                * Real.exp (-(2 * a) * v) * (Real.exp (a * v) + Real.exp (-(a * v)))) := by
+              ring
+          _ = _ := by
+              unfold eBnd
+              have hfun : (fun cs : ℝ × ℝ => c0 S * (1 + 2 / a ^ 2)
+                  * (Real.exp (-(2 * a) * u) * eTerm θ S cs.1 cs.2 (u, v)
+                    * Real.exp (-(2 * a) * v) * (Real.exp (a * v) + Real.exp (-(a * v)))))
+                  = fun cs => (c0 S * (1 + 2 / a ^ 2) * Real.exp (-(2 * a) * u)
+                    * Real.exp (-(2 * a) * v) * (Real.exp (a * v) + Real.exp (-(a * v))))
+                    * eTerm θ S cs.1 cs.2 (u, v) := by
+                funext cs; ring
+              rw [hfun, List.sum_map_mul_left]
+              ring
+      have hq2 : (pts.map fun cs => c0 S * (1 + 2 / a ^ 2) * (Real.exp (-(2 * a) * u)
+              * eTerm θ S cs.1 cs.2 (u, v) * Real.exp (-(2 * a) * v)
+              * (Real.exp (a * v) + Real.exp (-(a * v))))).sum
+          ≤ (pts.map ((fun s => quadDom S a θ m (ℓ, s) (u, v)) ∘ Prod.snd)).sum := by
+        refine List.sum_le_sum fun cs hcs => ?_
+        simp only [Function.comp_apply]
+        unfold quadDom
+        simp only
+        rw [Set.indicator_of_mem (show u ∈ Iic m from hu),
+          Set.indicator_of_mem (show v ∈ Iic m from hv),
+          Set.indicator_of_mem (show v ∈ Iic m from hv), ← Real.exp_add, ← Real.exp_add]
+        refine (quadTerm_le hS cs.1 cs.2 u v).trans ?_
+        have hcl : θ * ℓ ≤ θ * cs.1 := mul_le_mul_of_nonneg_left (hℓ cs hcs) hθ
+        apply mul_le_mul_of_nonneg_right _ (by positivity)
+        apply mul_le_mul_of_nonneg_left _ (by positivity)
+        exact Real.exp_le_exp.2 (by linarith)
+      linarith
+
+/-! ## `‖V(x') − V(x)‖₂ → 0` and continuity of the determinant -/
+
+/-- **`L²` convergence of the `V` kernels** when every level converges (fixed gaps, any
+weight `a > 0`). -/
+theorem tendsto_integral_sq_fddVKer_zipLev {α : Type*} {l : Filter α} [l.IsCountablyGenerated]
+    {gs : List ℝ} {g : ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c) {a : ℝ} (ha : 0 < a)
+    {x : ℕ → ℝ} {xn : α → ℕ → ℝ} (hx : ∀ i, Tendsto (fun n => xn n i) l (𝓝 (x i))) :
+    Tendsto (fun n => ∫ p, (fddVKer (hitKerN (xn n 0, g) (zipLev (fun i => xn n (i + 1)) gs)) a p
+        - fddVKer (hitKerN (x 0, g) (zipLev (fun i => x (i + 1)) gs)) a p) ^ 2
+          ∂(volume.prod volume)) l (𝓝 0) := by
+  set S := g + gs.sum with hSdef
+  set τ := lastOf g gs with hτdef
+  set ss := chSnd g gs with hssdef
+  set θ := (3 * a + 1) * S * (1 / g + 1 / τ) with hθdef
+  set m := x 0 - 1 with hmdef
+  set N := gs.length + 1 with hNdef
+  set ℓ := -(∑ i ∈ Finset.range N, |x i|) - 1 with hℓdef
+  have hdom : ∀ y : ℕ → ℝ, m ≤ y 0 → (∀ i < N, ℓ ≤ y i) → ∀ p,
+      fddVKer (hitKerN (y 0, g) (zipLev (fun i => y (i + 1)) gs)) a p ^ 2
+        ≤ domF S a θ m ℓ ss p := by
+    intro y hy0 hy p
+    refine sq_fddVKer_le_domF hg (zipLev_pos hgs _) ha (gapSum_zipLev gs _ _ g) rfl
+      (lastGap_zipLev gs _ _ g) (chernoffPts_zipLev_snd gs _ _ g) hy0 ?_ p
+    intro cs hcs
+    obtain ⟨z, hz, hz1⟩ := chernoffPts_fst _ _ cs hcs
+    obtain ⟨-, i, hi, hzi⟩ := mem_zipLev gs _ z hz
+    rw [hz1, hzi]
+    exact hy (i + 1) (by omega)
+  have hx0 : 0 < S := by
+    have := gapSum_pos (zipLev x gs) (0, g) hg (zipLev_pos hgs x)
+    rwa [gapSum_zipLev] at this
+  have hτ : 0 < τ := by
+    have := lastGap_pos (zipLev x gs) (0, g) hg (zipLev_pos hgs x)
+    rwa [lastGap_zipLev] at this
+  have hG : Integrable (domF S a θ m ℓ ss) (volume.prod volume) := by
+    refine integrable_domF hx0 ha hg hτ m ℓ fun s hs => ?_
+    rw [hssdef, ← chernoffPts_zipLev_snd gs x 0 g, List.mem_map] at hs
+    obtain ⟨cs, hcs, rfl⟩ := hs
+    have := chernoffPts_range (zipLev x gs) (0, g) hg (zipLev_pos hgs x) cs hcs
+    rw [gapSum_zipLev, lastGap_zipLev] at this
+    exact this
+  have hℓx : ∀ i < N, ℓ ≤ x i - 1 := by
+    intro i hi
+    have : |x i| ≤ ∑ j ∈ Finset.range N, |x j| :=
+      Finset.single_le_sum (f := fun j => |x j|) (fun j _ => abs_nonneg _)
+        (Finset.mem_range.2 hi)
+    have := neg_abs_le (x i)
+    linarith
+  have hev : ∀ᶠ n in l, m ≤ xn n 0 ∧ ∀ i < N, ℓ ≤ xn n i := by
+    have h0 : ∀ᶠ n in l, x 0 - 1 < xn n 0 := (hx 0).eventually (lt_mem_nhds (by linarith))
+    have hall : ∀ᶠ n in l, ∀ i ∈ Finset.range N, x i - 1 < xn n i :=
+      (Filter.eventually_all_finset _).2 fun i _ => (hx i).eventually (lt_mem_nhds (by linarith))
+    filter_upwards [h0, hall] with n hn0 hn
+    exact ⟨hn0.le, fun i hi => (hℓx i hi).trans (hn i (Finset.mem_range.2 hi)).le⟩
+  have hself : m ≤ x 0 ∧ ∀ i < N, ℓ ≤ x i :=
+    ⟨by linarith, fun i hi => by have := hℓx i hi; linarith⟩
+  have hmeas : ∀ y : ℕ → ℝ,
+      Measurable (fddVKer (hitKerN (y 0, g) (zipLev (fun i => y (i + 1)) gs)) a) :=
+    fun y => measurable_fddVKer (measurable_hitKerN hg (zipLev_pos hgs _)) a
+  have hlim := tendsto_integral_filter_of_dominated_convergence (μ := volume.prod volume)
+    (l := l) (f := fun _ => (0 : ℝ)) (fun p => 4 * domF S a θ m ℓ ss p)
+    (F := fun n p => (fddVKer (hitKerN (xn n 0, g) (zipLev (fun i => xn n (i + 1)) gs)) a p
+        - fddVKer (hitKerN (x 0, g) (zipLev (fun i => x (i + 1)) gs)) a p) ^ 2)
+    (Eventually.of_forall fun n => (((hmeas _).sub (hmeas _)).pow_const 2).aestronglyMeasurable)
+    (hev.mono fun n hn => ae_of_all _ fun p => by
+      rw [Real.norm_of_nonneg (sq_nonneg _)]
+      have h1 := hdom _ hn.1 hn.2 p
+      have h2 := hdom x hself.1 hself.2 p
+      nlinarith [sq_nonneg (fddVKer (hitKerN (xn n 0, g) (zipLev (fun i => xn n (i + 1)) gs)) a p
+        + fddVKer (hitKerN (x 0, g) (zipLev (fun i => x (i + 1)) gs)) a p)])
+    (hG.const_mul 4)
+    (by
+      have hne : ∀ᵐ u ∂(volume : Measure ℝ), u ≠ x 0 :=
+        ((Set.countable_singleton (x 0)).ae_notMem volume).mono fun u hu => hu
+      filter_upwards [Measure.quasiMeasurePreserving_fst.ae hne] with p hp
+      have hc : Tendsto (fun _ : α =>
+          fddVKer (hitKerN (x 0, g) (zipLev (fun i => x (i + 1)) gs)) a p) l
+          (𝓝 (fddVKer (hitKerN (x 0, g) (zipLev (fun i => x (i + 1)) gs)) a p)) :=
+        tendsto_const_nhds
+      have := ((tendsto_fddVKer_zipLev hg hgs hx a hp).sub hc).pow 2
+      simpa using this)
+  simpa using hlim
+
+/-- HS-convergence of the left factor (fixed right factor) gives convergence of the
+determinant of the kernel-operator product. -/
+theorem tendsto_fredholmDet_kernelOperator_comp {α : Type*} {l : Filter α}
+    {Vn : α → ℝ × ℝ → ℝ} {V W : ℝ × ℝ → ℝ} (hVn : ∀ n, MemLp (Vn n) 2 (volume.prod volume))
+    (hV : MemLp V 2 (volume.prod volume)) (hW : MemLp W 2 (volume.prod volume))
+    (hlim : Tendsto (fun n => ∫ p, (Vn n p - V p) ^ 2 ∂(volume.prod volume)) l (𝓝 0))
+    (z : ℝ) :
+    Tendsto (fun n => fredholmDet (kernelOperator (hVn n) ∘L kernelOperator hW) z) l
+      (𝓝 (fredholmDet (kernelOperator hV ∘L kernelOperator hW) z)) := by
+  refine tendsto_fredholmDet_comp (isHilbertSchmidt_kernelOperator hV)
+    (isHilbertSchmidt_kernelOperator hW) (fun n => isHilbertSchmidt_kernelOperator (hVn n))
+    (fun _ => isHilbertSchmidt_kernelOperator hW) ?_ ?_ z
+  · have hle : ∀ n, hsNorm (kernelOperator (hVn n) - kernelOperator hV)
+        ≤ Real.sqrt (∫ p, (Vn n p - V p) ^ 2 ∂(volume.prod volume)) := fun n => by
+      rw [← AiryTwoInt.kernelOperator_sub (hVn n) hV]
+      exact AiryConj.hsNorm_kernelOperator_le_sqrt _ ((hVn n).sub hV).integrable_sq
+    have h2 : Tendsto (fun n => Real.sqrt (∫ p, (Vn n p - V p) ^ 2 ∂(volume.prod volume))) l
+        (𝓝 0) := by
+      have h := (Real.continuous_sqrt.tendsto 0).comp hlim
+      rw [Real.sqrt_zero] at h
+      exact h
+    exact squeeze_zero (fun n => ENNReal.toReal_nonneg) hle h2
+  · simp only [sub_self]
+    have : hsNorm (0 : Lp ℝ 2 (volume : Measure ℝ) →L[ℝ] Lp ℝ 2 (volume : Measure ℝ)) = 0 := by
+      simp [hsNorm, hsENorm_zero']
+    rw [this]
+    exact tendsto_const_nhds
+
+theorem one_le_gapSum_zipLev {g : ℝ} {gs : List ℝ} (h1 : 1 ≤ g + gs.sum) (x : ℕ → ℝ) :
+    1 ≤ gapSum (x 0, g) (zipLev (fun i => x (i + 1)) gs) := by
+  rw [gapSum_zipLev]; exact h1
+
+/-- The fdd determinant `det(I − J̃)` as a function of the level vector (levels by position;
+fixed positive gaps `g :: gs`, total time `≥ 1`). -/
+noncomputable def fddDetLev (g : ℝ) (gs : List ℝ) (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c)
+    (h1 : 1 ≤ g + gs.sum) (x : ℕ → ℝ) : ℝ :=
+  fredholmDet (fddOp (x 0, g) (zipLev (fun i => x (i + 1)) gs) hg (zipLev_pos hgs _)
+    (one_le_gapSum_zipLev h1 x)) 1
+
+/-- `fddOp` with the `V` and `W` kernels written at the level-free weight `a = 2(g + Σ gs)`. -/
+theorem fddOp_zipLev_eq {g : ℝ} {gs : List ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c)
+    (h1 : 1 ≤ g + gs.sum) (x : ℕ → ℝ) :
+    fddOp (x 0, g) (zipLev (fun i => x (i + 1)) gs) hg (zipLev_pos hgs _)
+        (one_le_gapSum_zipLev h1 x)
+      = kernelOperator (memLp_fddVKer (x 0, g) (zipLev (fun i => x (i + 1)) gs) hg
+          (zipLev_pos hgs _) (a := 2 * (g + gs.sum)) (by linarith)) ∘L
+        kernelOperator (AiryConj.memLp_wKernel (T := g + gs.sum) (a := 2 * (g + gs.sum))
+          (by linarith) (by linarith)) := by
+  unfold fddOp
+  congr 1
+  · exact AiryTwoInt.kernelOperator_congr (by rw [gapSum_zipLev]) _ _
+  · exact AiryTwoInt.kernelOperator_congr (by rw [gapSum_zipLev]) _ _
+
+/-- **Continuity in the levels (sequential/filter form)**: if every level converges along a
+countably generated
+filter, the fdd determinant converges. -/
+theorem tendsto_fddDetLev {α : Type*} {l : Filter α} [l.IsCountablyGenerated] {g : ℝ}
+    {gs : List ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c) (h1 : 1 ≤ g + gs.sum) {x : ℕ → ℝ}
+    {xn : α → ℕ → ℝ} (hx : ∀ i, Tendsto (fun n => xn n i) l (𝓝 (x i))) :
+    Tendsto (fun n => fddDetLev g gs hg hgs h1 (xn n)) l (𝓝 (fddDetLev g gs hg hgs h1 x)) := by
+  unfold fddDetLev
+  simp_rw [fddOp_zipLev_eq hg hgs h1]
+  exact tendsto_fredholmDet_kernelOperator_comp _ _ _
+    (tendsto_integral_sq_fddVKer_zipLev hg hgs (by linarith) hx) 1
+
+/-- **Continuity in the levels (list form)**: for fixed positive gaps the fdd determinant is
+continuous in the
+level vector (product topology on `ℕ → ℝ`; only finitely many coordinates are used). -/
+theorem continuous_fddDetLev {g : ℝ} {gs : List ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c)
+    (h1 : 1 ≤ g + gs.sum) : Continuous (fddDetLev g gs hg hgs h1) := by
+  rw [continuous_iff_continuousAt]
+  intro x
+  exact tendsto_fddDetLev hg hgs h1 fun i => (continuous_apply i).tendsto x
+
+/-! ## The finite-time-set form -/
+
+/-- Consecutive gaps of a time list, padding `1` after the last time. -/
+def gapsOf : List ℝ → List ℝ
+  | [] => []
+  | [_] => [1]
+  | t :: s :: L => (s - t) :: gapsOf (s :: L)
+
+/-- `fddEntries` is `zipLev` of the levels at the listed times and the level-free gaps. -/
+theorem fddEntries_eq_zipLev (lev : ℝ → ℝ) :
+    ∀ ts : List ℝ, fddEntries lev ts = zipLev (fun i => lev (ts.getD i 0)) (gapsOf ts)
+  | [] => rfl
+  | [t] => by simp [fddEntries, gapsOf, zipLev]
+  | t :: s :: L => by
+    rw [fddEntries, gapsOf, zipLev_cons, fddEntries_eq_zipLev lev (s :: L)]
+    simp
+
+/-- **Continuity in the levels (finite time sets)**: `x ↦ F_I(x) = airy1FinCdf I x` is continuous,
+jointly in all
+levels. -/
+theorem continuous_airy1FinCdf (I : Finset ℝ) : Continuous (airy1FinCdf I) := by
+  set ts := I.sort (· ≤ ·) with hts
+  have hent : ∀ x : I → ℝ, finEntries I x
+      = zipLev (fun i => levelFn I x (ts.getD i 0)) (gapsOf ts) := fun x =>
+    fddEntries_eq_zipLev _ _
+  cases hG : gapsOf ts with
+  | nil =>
+    have : ∀ x : I → ℝ, airy1FinCdf I x = 1 := fun x =>
+      cdfOfEntries_nil (by rw [hent, hG]; rfl) _ _
+    rw [show airy1FinCdf I = fun _ => 1 from funext this]
+    exact continuous_const
+  | cons g gs =>
+    -- positivity and total time from the entries at any level vector
+    have hE : ∀ x : I → ℝ, finEntries I x
+        = (levelFn I x (ts.getD 0 0), g) :: zipLev (fun i => levelFn I x (ts.getD (i + 1) 0)) gs :=
+      fun x => by rw [hent, hG, zipLev_cons]
+    have hpos := finEntries_pos I (fun _ => 0)
+    rw [hE] at hpos
+    have hg : 0 < g := hpos _ List.mem_cons_self
+    have hgs : ∀ c ∈ gs, 0 < c := by
+      intro c hc
+      rw [← map_snd_zipLev gs (fun i => levelFn I (fun _ => 0) (ts.getD (i + 1) 0)),
+        List.mem_map] at hc
+      obtain ⟨y, hy, rfl⟩ := hc
+      exact hpos y (List.mem_cons_of_mem _ hy)
+    have h1 : 1 ≤ g + gs.sum := by
+      have hl := finEntries_lastGap I (fun _ => 0) _ _ (hE _)
+      have := one_le_gapSum hg (zipLev_pos hgs _) hl
+      rwa [gapSum_zipLev] at this
+    have heq : ∀ x : I → ℝ, airy1FinCdf I x
+        = fddDetLev g gs hg hgs h1 (fun i => levelFn I x (ts.getD i 0)) := fun x =>
+      cdfOfEntries_cons (hE x) _ _ hg (zipLev_pos hgs _)
+        (one_le_gapSum_zipLev h1 (fun i => levelFn I x (ts.getD i 0)))
+    rw [show airy1FinCdf I = fun x => fddDetLev g gs hg hgs h1
+      (fun i => levelFn I x (ts.getD i 0)) from funext heq]
+    refine (continuous_fddDetLev hg hgs h1).comp (continuous_pi fun i => ?_)
+    unfold levelFn
+    by_cases h : ts.getD i 0 ∈ I
+    · simp only [h, dite_true]
+      exact continuous_apply _
+    · simp only [h, dite_false]
+      exact continuous_const
+
+/-! ## Extended levels, `P̄_{+∞} = I`: the analytic core of the drop lemma
+
+Levels in `EReal`: the projection at level `c` is onto `{u | (u : EReal) ≤ c}`, which is the
+whole line at `c = ⊤` (`levSet_top`), so a level at `+∞` removes that time's indicator.  If
+every real level converges in `EReal` to a limit `≠ ⊥` (finite limits, or some `x_k → +∞`),
+the `V` kernels converge in `L²` and the determinant converges
+(`tendsto_fddDetLev_ereal`). -/
+
+/-- `{u | u ≤ c}` for an extended level `c`. -/
+noncomputable def levSet (c : EReal) : Set ℝ := (fun u : ℝ => (u : EReal)) ⁻¹' Iic c
+
+theorem levSet_coe (r : ℝ) : levSet r = Iic r := by
+  ext u; simp [levSet]
+
+/-- `P̄_{+∞} = I`. -/
+theorem levSet_top : levSet ⊤ = univ := by
+  ext u; simp [levSet]
+
+theorem measurableSet_levSet (c : EReal) : MeasurableSet (levSet c) := by
+  induction c using EReal.rec with
+  | bot => rw [show levSet ⊥ = ∅ by ext u; simp [levSet]]; exact MeasurableSet.empty
+  | coe r => rw [levSet_coe]; exact measurableSet_Iic
+  | top => rw [levSet_top]; exact MeasurableSet.univ
+
+theorem levSet_mono {c c' : EReal} (h : c ≤ c') : levSet c ⊆ levSet c' :=
+  fun _ hu => le_trans hu h
+
+/-- `Λ e^{τΔ}` with extended levels (levels by position, gaps `g :: gs`). -/
+noncomputable def lamKerZ : (ℕ → EReal) → ℝ → List ℝ → ℝ × ℝ → ℝ
+  | x, g, [] => fun p => (levSet (x 0)).indicator (fun _ => (1 : ℝ)) p.1 * heatKernel g (p.1 - p.2)
+  | x, g, h :: gs => fun p => (levSet (x 0)).indicator (fun _ => (1 : ℝ)) p.1
+      * AiryConj.compKernel (AiryTwoInt.heatKerTwo g) (lamKerZ (fun i => x (i + 1)) h gs) p
+
+/-- The hitting kernel with extended levels. -/
+noncomputable def hitKerZ (x : ℕ → EReal) (g : ℝ) (gs : List ℝ) (p : ℝ × ℝ) : ℝ :=
+  heatKernel (g + gs.sum) (p.1 - p.2) - lamKerZ x g gs p
+
+/-- Fidelity: real levels give the kernel `lamKerN` of `Fdd/FddKernel.lean`. -/
+theorem lamKerZ_coe : ∀ (gs : List ℝ) (g : ℝ) (y : ℕ → ℝ),
+    lamKerZ (fun i => (y i : EReal)) g gs = lamKerN (y 0, g) (zipLev (fun i => y (i + 1)) gs)
+  | [], g, y => by
+    funext p
+    show (levSet (y 0 : EReal)).indicator (fun _ => (1 : ℝ)) p.1 * heatKernel g (p.1 - p.2)
+      = (Iic (y 0)).indicator (fun _ => (1 : ℝ)) p.1 * heatKernel g (p.1 - p.2)
+    rw [levSet_coe]
+  | h :: gs, g, y => by
+    funext p
+    show (levSet (y 0 : EReal)).indicator (fun _ => (1 : ℝ)) p.1
+        * AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+          (lamKerZ (fun i => (y (i + 1) : EReal)) h gs) p
+      = (Iic (y 0)).indicator (fun _ => (1 : ℝ)) p.1
+        * AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+          (lamKerN (y (0 + 1), h) (zipLev (fun i => y (i + 1 + 1)) gs)) p
+    rw [levSet_coe, lamKerZ_coe gs h (fun i => y (i + 1))]
+
+theorem hitKerZ_coe (gs : List ℝ) (g : ℝ) (y : ℕ → ℝ) :
+    hitKerZ (fun i => (y i : EReal)) g gs = hitKerN (y 0, g) (zipLev (fun i => y (i + 1)) gs) := by
+  funext p
+  unfold hitKerZ hitKerN
+  rw [lamKerZ_coe, gapSum_zipLev]
+
+theorem lamKerZ_props : ∀ (gs : List ℝ) (g : ℝ) (x : ℕ → EReal), 0 < g → (∀ c ∈ gs, 0 < c) →
+    Measurable (lamKerZ x g gs) ∧ (∀ p, 0 ≤ lamKerZ x g gs p) ∧
+      (∀ p, lamKerZ x g gs p ≤ heatKernel (g + gs.sum) (p.1 - p.2))
+  | [], g, x, hg, _ => by
+    have hI0 : ∀ r : ℝ, 0 ≤ (levSet (x 0)).indicator (fun _ => (1 : ℝ)) r :=
+      fun r => Set.indicator_nonneg (fun _ _ => zero_le_one) r
+    have hI1 : ∀ r : ℝ, (levSet (x 0)).indicator (fun _ => (1 : ℝ)) r ≤ 1 :=
+      fun r => Set.indicator_le_self' (fun _ _ => zero_le_one) r
+    refine ⟨((measurable_const.indicator (measurableSet_levSet _)).comp measurable_fst).mul
+      ((continuous_heatKernel g).comp (continuous_fst.sub continuous_snd)).measurable,
+      fun p => mul_nonneg (hI0 _) (heatKernel_pos hg _).le, fun p => ?_⟩
+    show (levSet (x 0)).indicator (fun _ => (1 : ℝ)) p.1 * heatKernel g (p.1 - p.2)
+      ≤ heatKernel (g + ([] : List ℝ).sum) (p.1 - p.2)
+    rw [List.sum_nil, add_zero]
+    exact mul_le_of_le_one_left (heatKernel_pos hg _).le (hI1 _)
+  | h :: gs, g, x, hg, hgs => by
+    have hh : 0 < h := hgs h List.mem_cons_self
+    have hgs' : ∀ c ∈ gs, 0 < c := fun c hc => hgs c (List.mem_cons_of_mem _ hc)
+    obtain ⟨hm, h0, h1⟩ := lamKerZ_props gs h (fun i => x (i + 1)) hh hgs'
+    have hS : 0 < h + gs.sum := by
+      have := gapSum_pos (zipLev (fun _ => 0) gs) (0, h) hh (zipLev_pos hgs' _)
+      rwa [gapSum_zipLev] at this
+    have hI0 : ∀ r : ℝ, 0 ≤ (levSet (x 0)).indicator (fun _ => (1 : ℝ)) r :=
+      fun r => Set.indicator_nonneg (fun _ _ => zero_le_one) r
+    have hI1 : ∀ r : ℝ, (levSet (x 0)).indicator (fun _ => (1 : ℝ)) r ≤ 1 :=
+      fun r => Set.indicator_le_self' (fun _ _ => zero_le_one) r
+    refine ⟨?_, fun p => ?_, fun p => ?_⟩
+    · exact ((measurable_const.indicator (measurableSet_levSet _)).comp measurable_fst).mul
+        (AiryTwoInt.measurable_compKernel (AiryTwoInt.measurable_heatKerTwo _) hm)
+    · exact mul_nonneg (hI0 _) (compKernel_heat_mem hg hS hm h0 h1 p).1
+    · show (levSet (x 0)).indicator (fun _ => (1 : ℝ)) p.1
+          * AiryConj.compKernel (AiryTwoInt.heatKerTwo g) (lamKerZ (fun i => x (i + 1)) h gs) p
+        ≤ heatKernel (g + (h :: gs).sum) (p.1 - p.2)
+      rw [List.sum_cons]
+      exact (mul_le_of_le_one_left (compKernel_heat_mem hg hS hm h0 h1 p).1 (hI1 _)).trans
+        (compKernel_heat_mem hg hS hm h0 h1 p).2
+
+/-- Raising levels raises `Λ` (lowers the hitting kernel). -/
+theorem lamKerZ_mono : ∀ (gs : List ℝ) (g : ℝ) (x x' : ℕ → EReal), 0 < g →
+    (∀ c ∈ gs, 0 < c) → (∀ i, x i ≤ x' i) → ∀ p, lamKerZ x g gs p ≤ lamKerZ x' g gs p
+  | [], g, x, x', hg, _, hxx, p => by
+    show (levSet (x 0)).indicator (fun _ => (1 : ℝ)) p.1 * heatKernel g (p.1 - p.2)
+      ≤ (levSet (x' 0)).indicator (fun _ => (1 : ℝ)) p.1 * heatKernel g (p.1 - p.2)
+    exact mul_le_mul_of_nonneg_right (Set.indicator_le_indicator_of_subset
+      (levSet_mono (hxx 0)) (fun _ => zero_le_one) _) (heatKernel_pos hg _).le
+  | h :: gs, g, x, x', hg, hgs, hxx, p => by
+    have hh : 0 < h := hgs h List.mem_cons_self
+    have hgs' : ∀ c ∈ gs, 0 < c := fun c hc => hgs c (List.mem_cons_of_mem _ hc)
+    obtain ⟨hm, h0, h1⟩ := lamKerZ_props gs h (fun i => x (i + 1)) hh hgs'
+    obtain ⟨hm', h0', h1'⟩ := lamKerZ_props gs h (fun i => x' (i + 1)) hh hgs'
+    have hS : 0 < h + gs.sum := by
+      have := gapSum_pos (zipLev (fun _ => 0) gs) (0, h) hh (zipLev_pos hgs' _)
+      rwa [gapSum_zipLev] at this
+    have IH := lamKerZ_mono gs h (fun i => x (i + 1)) (fun i => x' (i + 1)) hh hgs'
+      (fun i => hxx (i + 1))
+    show (levSet (x 0)).indicator (fun _ => (1 : ℝ)) p.1
+        * AiryConj.compKernel (AiryTwoInt.heatKerTwo g) (lamKerZ (fun i => x (i + 1)) h gs) p
+      ≤ (levSet (x' 0)).indicator (fun _ => (1 : ℝ)) p.1
+        * AiryConj.compKernel (AiryTwoInt.heatKerTwo g) (lamKerZ (fun i => x' (i + 1)) h gs) p
+    have hcomp : AiryConj.compKernel (AiryTwoInt.heatKerTwo g) (lamKerZ (fun i => x (i + 1)) h gs) p
+        ≤ AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+          (lamKerZ (fun i => x' (i + 1)) h gs) p := by
+      obtain ⟨u, v⟩ := p
+      have i1 := AiryTwoInt.integrable_pair_mul_of_heatKernel_le hg hS
+        (AiryTwoInt.measurable_heatKerTwo g) hm
+        (fun a b => AiryTwoInt.heatKerTwo_abs_le_self hg (a, b))
+        (fun a b => by rw [abs_of_nonneg (h0 _)]; exact h1 (a, b)) u v
+      have i2 := AiryTwoInt.integrable_pair_mul_of_heatKernel_le hg hS
+        (AiryTwoInt.measurable_heatKerTwo g) hm'
+        (fun a b => AiryTwoInt.heatKerTwo_abs_le_self hg (a, b))
+        (fun a b => by rw [abs_of_nonneg (h0' _)]; exact h1' (a, b)) u v
+      exact integral_mono i1 i2 fun w =>
+        mul_le_mul_of_nonneg_left (IH (w, v)) (heatKernel_pos hg _).le
+    exact mul_le_mul (Set.indicator_le_indicator_of_subset (levSet_mono (hxx 0))
+      (fun _ => zero_le_one) _) hcomp (compKernel_heat_mem hg hS hm h0 h1 p).1
+      (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+
+theorem measurable_hitKerZ {g : ℝ} {gs : List ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c)
+    (x : ℕ → EReal) : Measurable (hitKerZ x g gs) :=
+  ((continuous_heatKernel _).comp (continuous_fst.sub continuous_snd)).measurable.sub
+    (lamKerZ_props gs g x hg hgs).1
+
+/-- Comparison with real levels below: `V_x² ≤ V_y²` when `y ≤ x` levelwise. -/
+theorem sq_fddVKer_hitKerZ_le {g : ℝ} {gs : List ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c)
+    {x : ℕ → EReal} {y : ℕ → ℝ} (hxy : ∀ i, (y i : EReal) ≤ x i) (a : ℝ) (p : ℝ × ℝ) :
+    fddVKer (hitKerZ x g gs) a p ^ 2
+      ≤ fddVKer (hitKerN (y 0, g) (zipLev (fun i => y (i + 1)) gs)) a p ^ 2 := by
+  have h0 : 0 ≤ hitKerZ x g gs p := sub_nonneg.2 ((lamKerZ_props gs g x hg hgs).2.2 p)
+  have hle : hitKerZ x g gs p ≤ hitKerN (y 0, g) (zipLev (fun i => y (i + 1)) gs) p := by
+    rw [← hitKerZ_coe]
+    unfold hitKerZ
+    linarith [lamKerZ_mono gs g (fun i => (y i : EReal)) x hg hgs hxy p]
+  rw [sq_fddVKer, sq_fddVKer]
+  have := pow_le_pow_left₀ h0 hle 2
+  have hp : 0 ≤ 1 + p.2 ^ 2 := by positivity
+  exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
+    (mul_le_mul_of_nonneg_left this (Real.exp_pos _).le) (Real.exp_pos _).le) hp
+
+theorem exists_real_lt_of_ne_bot {x : ℕ → EReal} (hxb : ∀ i, x i ≠ ⊥) :
+    ∃ r : ℕ → ℝ, ∀ i, (r i : EReal) < x i := by
+  have : ∀ i, ∃ r : ℝ, (r : EReal) < x i := fun i => by
+    obtain ⟨r, -, hr⟩ := EReal.lt_iff_exists_real_btwn.1 (bot_lt_iff_ne_bot.2 (hxb i))
+    exact ⟨r, hr⟩
+  choose r hr using this
+  exact ⟨r, hr⟩
+
+/-- The `V` kernel with extended levels (all `≠ ⊥`) is `L²`. -/
+theorem memLp_fddVKer_hitKerZ {g : ℝ} {gs : List ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c)
+    {x : ℕ → EReal} (hxb : ∀ i, x i ≠ ⊥) {a : ℝ} (ha : 0 < a) :
+    MemLp (fddVKer (hitKerZ x g gs) a) 2 (volume.prod volume) := by
+  obtain ⟨r, hr⟩ := exists_real_lt_of_ne_bot hxb
+  exact memLp_of_sq_le (measurable_fddVKer (measurable_hitKerZ hg hgs x) a)
+    (memLp_fddVKer (r 0, g) (zipLev (fun i => r (i + 1)) gs) hg (zipLev_pos hgs _)
+      ha).integrable_sq
+    (sq_fddVKer_hitKerZ_le hg hgs (fun i => (hr i).le) a)
+
+theorem tendsto_indicator_levSet {α : Type*} {l : Filter α} {c : α → EReal} {c₀ : EReal}
+    {u : ℝ} (hc : Tendsto c l (𝓝 c₀)) (hu : (u : EReal) ≠ c₀) :
+    Tendsto (fun n => (levSet (c n)).indicator (fun _ => (1 : ℝ)) u) l
+      (𝓝 ((levSet c₀).indicator (fun _ => (1 : ℝ)) u)) := by
+  rcases hu.lt_or_gt with h | h
+  · have hev : ∀ᶠ n in l, (u : EReal) < c n := hc.eventually (lt_mem_nhds h)
+    rw [Set.indicator_of_mem (show u ∈ levSet c₀ from h.le)]
+    exact tendsto_const_nhds.congr' (hev.mono fun n hn =>
+      (Set.indicator_of_mem (show u ∈ levSet (c n) from hn.le) _).symm)
+  · have hev : ∀ᶠ n in l, c n < (u : EReal) := hc.eventually (gt_mem_nhds h)
+    rw [Set.indicator_of_notMem (show u ∉ levSet c₀ from not_le.2 h)]
+    exact tendsto_const_nhds.congr' (hev.mono fun n hn =>
+      (Set.indicator_of_notMem (show u ∉ levSet (c n) from not_le.2 hn) _).symm)
+
+theorem ae_coe_ne (c : EReal) : ∀ᵐ (u : ℝ) ∂(volume : Measure ℝ), (u : EReal) ≠ c := by
+  have hs : ({c.toReal} : Set ℝ).Countable := Set.countable_singleton _
+  filter_upwards [hs.ae_notMem (volume : Measure ℝ)] with u hu h
+  exact hu (by rw [Set.mem_singleton_iff, ← h, EReal.toReal_coe])
+
+/-- Pointwise convergence with extended levels, at every `(u, v)` with `u ≠ x₁`. -/
+theorem tendsto_lamKerZ {α : Type*} {l : Filter α} [l.IsCountablyGenerated] :
+    ∀ (gs : List ℝ) (g : ℝ) (x : ℕ → EReal) (xn : α → ℕ → EReal), 0 < g → (∀ c ∈ gs, 0 < c) →
+      (∀ i, Tendsto (fun n => xn n i) l (𝓝 (x i))) → ∀ u v : ℝ, (u : EReal) ≠ x 0 →
+      Tendsto (fun n => lamKerZ (xn n) g gs (u, v)) l (𝓝 (lamKerZ x g gs (u, v)))
+  | [], g, x, xn, _, _, hx, u, v, hu => by
+    show Tendsto (fun n => (levSet (xn n 0)).indicator (fun _ => (1 : ℝ)) u
+        * heatKernel g (u - v)) l
+      (𝓝 ((levSet (x 0)).indicator (fun _ => (1 : ℝ)) u * heatKernel g (u - v)))
+    exact (tendsto_indicator_levSet (hx 0) hu).mul_const _
+  | h :: gs, g, x, xn, hg, hgs, hx, u, v, hu => by
+    have hh : 0 < h := hgs h List.mem_cons_self
+    have hgs' : ∀ c ∈ gs, 0 < c := fun c hc => hgs c (List.mem_cons_of_mem _ hc)
+    have hS : 0 < h + gs.sum := by
+      have := gapSum_pos (zipLev (fun _ => 0) gs) (0, h) hh (zipLev_pos hgs' _)
+      rwa [gapSum_zipLev] at this
+    have IH := tendsto_lamKerZ gs h (fun i => x (i + 1)) (fun n i => xn n (i + 1)) hh hgs'
+      (fun i => hx (i + 1))
+    have hint : Tendsto (fun n => AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+        (lamKerZ (fun i => xn n (i + 1)) h gs) (u, v)) l
+        (𝓝 (AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+          (lamKerZ (fun i => x (i + 1)) h gs) (u, v))) := by
+      unfold AiryConj.compKernel
+      refine tendsto_integral_filter_of_dominated_convergence
+        (fun w => heatKernel g (u - w) * heatKernel (h + gs.sum) (w - v)) ?_ ?_
+        (integrable_heat_mul_heat hg hS u v) ?_
+      · exact Eventually.of_forall fun n =>
+          (((AiryTwoInt.measurable_heatKerTwo g).comp
+            (measurable_const.prodMk measurable_id)).mul
+            ((lamKerZ_props gs h _ hh hgs').1.comp
+              (measurable_id.prodMk measurable_const))).aestronglyMeasurable
+      · refine Eventually.of_forall fun n => ae_of_all _ fun w => ?_
+        obtain ⟨-, h0, h1⟩ := lamKerZ_props gs h (fun i => xn n (i + 1)) hh hgs'
+        rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (h0 _)]
+        exact mul_le_mul (AiryTwoInt.heatKerTwo_abs_le_self hg (u, w)) (h1 (w, v))
+          (h0 _) (heatKernel_pos hg _).le
+      · filter_upwards [ae_coe_ne (x 1)] with w hw
+        exact (IH w v hw).const_mul _
+    show Tendsto (fun n => (levSet (xn n 0)).indicator (fun _ => (1 : ℝ)) u
+        * AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+          (lamKerZ (fun i => xn n (i + 1)) h gs) (u, v)) l
+      (𝓝 ((levSet (x 0)).indicator (fun _ => (1 : ℝ)) u
+        * AiryConj.compKernel (AiryTwoInt.heatKerTwo g)
+          (lamKerZ (fun i => x (i + 1)) h gs) (u, v)))
+    exact (tendsto_indicator_levSet (hx 0) hu).mul hint
+
+/-- **Drop lemma, analytic core (`L²` form)**: if every real level converges in `EReal` to a limit
+`≠ ⊥` (e.g. some `x_k → +∞`, the others converge), then `‖V(xₙ) − V(x)‖₂ → 0`, where at a
+`+∞` level the indicator is removed (`levSet_top`). -/
+theorem tendsto_integral_sq_fddVKer_ereal {α : Type*} {l : Filter α} [l.IsCountablyGenerated]
+    {gs : List ℝ} {g : ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c) {a : ℝ} (ha : 0 < a)
+    {x : ℕ → EReal} (hxb : ∀ i, x i ≠ ⊥) {xn : α → ℕ → ℝ}
+    (hx : ∀ i, Tendsto (fun n => (xn n i : EReal)) l (𝓝 (x i))) :
+    Tendsto (fun n => ∫ p, (fddVKer (hitKerN (xn n 0, g) (zipLev (fun i => xn n (i + 1)) gs)) a p
+        - fddVKer (hitKerZ x g gs) a p) ^ 2 ∂(volume.prod volume)) l (𝓝 0) := by
+  obtain ⟨r, hr⟩ := exists_real_lt_of_ne_bot hxb
+  set S := g + gs.sum with hSdef
+  set τ := lastOf g gs with hτdef
+  set ss := chSnd g gs with hssdef
+  set θ := (3 * a + 1) * S * (1 / g + 1 / τ) with hθdef
+  set m := r 0 with hmdef
+  set N := gs.length + 1 with hNdef
+  set ℓ := -(∑ i ∈ Finset.range N, |r i|) with hℓdef
+  have hdom : ∀ y : ℕ → ℝ, m ≤ y 0 → (∀ i < N, ℓ ≤ y i) → ∀ p,
+      fddVKer (hitKerN (y 0, g) (zipLev (fun i => y (i + 1)) gs)) a p ^ 2
+        ≤ domF S a θ m ℓ ss p := by
+    intro y hy0 hy p
+    refine sq_fddVKer_le_domF hg (zipLev_pos hgs _) ha (gapSum_zipLev gs _ _ g) rfl
+      (lastGap_zipLev gs _ _ g) (chernoffPts_zipLev_snd gs _ _ g) hy0 ?_ p
+    intro cs hcs
+    obtain ⟨z, hz, hz1⟩ := chernoffPts_fst _ _ cs hcs
+    obtain ⟨-, i, hi, hzi⟩ := mem_zipLev gs _ z hz
+    rw [hz1, hzi]
+    exact hy (i + 1) (by omega)
+  have hS0 : 0 < S := by
+    have := gapSum_pos (zipLev r gs) (0, g) hg (zipLev_pos hgs r)
+    rwa [gapSum_zipLev] at this
+  have hτ : 0 < τ := by
+    have := lastGap_pos (zipLev r gs) (0, g) hg (zipLev_pos hgs r)
+    rwa [lastGap_zipLev] at this
+  have hG : Integrable (domF S a θ m ℓ ss) (volume.prod volume) := by
+    refine integrable_domF hS0 ha hg hτ m ℓ fun s hs => ?_
+    rw [hssdef, ← chernoffPts_zipLev_snd gs r 0 g, List.mem_map] at hs
+    obtain ⟨cs, hcs, rfl⟩ := hs
+    have := chernoffPts_range (zipLev r gs) (0, g) hg (zipLev_pos hgs r) cs hcs
+    rw [gapSum_zipLev, lastGap_zipLev] at this
+    exact this
+  have hℓr : ∀ i < N, ℓ ≤ r i := by
+    intro i hi
+    have : |r i| ≤ ∑ j ∈ Finset.range N, |r j| :=
+      Finset.single_le_sum (f := fun j => |r j|) (fun j _ => abs_nonneg _)
+        (Finset.mem_range.2 hi)
+    have := neg_abs_le (r i)
+    linarith
+  have hev : ∀ᶠ n in l, m ≤ xn n 0 ∧ ∀ i < N, ℓ ≤ xn n i := by
+    have hall : ∀ᶠ n in l, ∀ i ∈ Finset.range N, r i < xn n i :=
+      (Filter.eventually_all_finset _).2 fun i _ =>
+        ((hx i).eventually (lt_mem_nhds (hr i))).mono fun n hn => EReal.coe_lt_coe_iff.1 hn
+    have h0 : ∀ᶠ n in l, r 0 < xn n 0 :=
+      ((hx 0).eventually (lt_mem_nhds (hr 0))).mono fun n hn => EReal.coe_lt_coe_iff.1 hn
+    filter_upwards [h0, hall] with n hn0 hn
+    exact ⟨hn0.le, fun i hi => (hℓr i hi).trans (hn i (Finset.mem_range.2 hi)).le⟩
+  have hlimdom : ∀ p, fddVKer (hitKerZ x g gs) a p ^ 2 ≤ domF S a θ m ℓ ss p := fun p =>
+    (sq_fddVKer_hitKerZ_le hg hgs (fun i => (hr i).le) a p).trans
+      (hdom r le_rfl hℓr p)
+  have hmeas : ∀ y : ℕ → ℝ,
+      Measurable (fddVKer (hitKerN (y 0, g) (zipLev (fun i => y (i + 1)) gs)) a) :=
+    fun y => measurable_fddVKer (measurable_hitKerN hg (zipLev_pos hgs _)) a
+  have hmeasZ := measurable_fddVKer (measurable_hitKerZ hg hgs x) a
+  have hlim := tendsto_integral_filter_of_dominated_convergence (μ := volume.prod volume)
+    (l := l) (f := fun _ => (0 : ℝ)) (fun p => 4 * domF S a θ m ℓ ss p)
+    (F := fun n p => (fddVKer (hitKerN (xn n 0, g) (zipLev (fun i => xn n (i + 1)) gs)) a p
+        - fddVKer (hitKerZ x g gs) a p) ^ 2)
+    (Eventually.of_forall fun n => (((hmeas _).sub hmeasZ).pow_const 2).aestronglyMeasurable)
+    (hev.mono fun n hn => ae_of_all _ fun p => by
+      rw [Real.norm_of_nonneg (sq_nonneg _)]
+      have h1 := hdom _ hn.1 hn.2 p
+      have h2 := hlimdom p
+      nlinarith [sq_nonneg (fddVKer (hitKerN (xn n 0, g) (zipLev (fun i => xn n (i + 1)) gs)) a p
+        + fddVKer (hitKerZ x g gs) a p)])
+    (hG.const_mul 4)
+    (by
+      have hne : ∀ᵐ q ∂(volume.prod volume : Measure (ℝ × ℝ)), ((q.1 : ℝ) : EReal) ≠ x 0 :=
+        Measure.quasiMeasurePreserving_fst.ae (ae_coe_ne (x 0))
+      filter_upwards [hne] with p hp
+      have hc : Tendsto (fun _ : α => fddVKer (hitKerZ x g gs) a p) l
+          (𝓝 (fddVKer (hitKerZ x g gs) a p)) := tendsto_const_nhds
+      have hV : Tendsto (fun n =>
+          fddVKer (hitKerN (xn n 0, g) (zipLev (fun i => xn n (i + 1)) gs)) a p) l
+          (𝓝 (fddVKer (hitKerZ x g gs) a p)) := by
+        simp_rw [← hitKerZ_coe gs g]
+        obtain ⟨u, v⟩ := p
+        unfold fddVKer hitKerZ
+        exact (((tendsto_const_nhds.mul (tendsto_const_nhds.sub
+          (tendsto_lamKerZ gs g x (fun n i => (xn n i : EReal)) hg hgs hx u v hp))).mul_const
+            _).mul_const _)
+      have := (hV.sub hc).pow 2
+      simpa using this)
+  simpa using hlim
+
+/-- **Drop lemma, analytic core (determinant form)**: if every real level converges in `EReal` to a
+limit `≠ ⊥` — e.g. `x_k → +∞` with the other levels fixed — the fdd determinant converges to
+`det(I − T_{V_x} T_W)`, the determinant with the `+∞` projections replaced by `I`. -/
+theorem tendsto_fddDetLev_ereal {α : Type*} {l : Filter α} [l.IsCountablyGenerated] {g : ℝ}
+    {gs : List ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c) (h1 : 1 ≤ g + gs.sum) {x : ℕ → EReal}
+    (hxb : ∀ i, x i ≠ ⊥) {xn : α → ℕ → ℝ}
+    (hx : ∀ i, Tendsto (fun n => (xn n i : EReal)) l (𝓝 (x i))) :
+    Tendsto (fun n => fddDetLev g gs hg hgs h1 (xn n)) l
+      (𝓝 (fredholmDet (kernelOperator (memLp_fddVKer_hitKerZ hg hgs hxb
+          (a := 2 * (g + gs.sum)) (by linarith)) ∘L
+        kernelOperator (AiryConj.memLp_wKernel (T := g + gs.sum) (a := 2 * (g + gs.sum))
+          (by linarith) (by linarith))) 1)) := by
+  unfold fddDetLev
+  simp_rw [fddOp_zipLev_eq hg hgs h1]
+  exact tendsto_fredholmDet_kernelOperator_comp _ _ _
+    (tendsto_integral_sq_fddVKer_ereal hg hgs (by linarith) hxb hx) 1
+
+/-- Consistency: at real levels the extended-level limit is `fddDetLev`. -/
+theorem fddDetLev_eq_ereal {g : ℝ} {gs : List ℝ} (hg : 0 < g) (hgs : ∀ c ∈ gs, 0 < c)
+    (h1 : 1 ≤ g + gs.sum) (y : ℕ → ℝ) :
+    fddDetLev g gs hg hgs h1 y
+      = fredholmDet (kernelOperator (memLp_fddVKer_hitKerZ hg hgs
+          (x := fun i => (y i : EReal)) (fun i => EReal.coe_ne_bot _)
+          (a := 2 * (g + gs.sum)) (by linarith)) ∘L
+        kernelOperator (AiryConj.memLp_wKernel (T := g + gs.sum) (a := 2 * (g + gs.sum))
+          (by linarith) (by linarith))) 1 := by
+  unfold fddDetLev
+  rw [fddOp_zipLev_eq hg hgs h1]
+  congr 2
+  exact AiryTwoInt.kernelOperator_congr (by rw [hitKerZ_coe]) _ _
+
+end AiryFdd

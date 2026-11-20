@@ -1,0 +1,129 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.Airy.AiryFourier
+import Mathlib.Analysis.Distribution.FourierMultiplier
+
+/-!
+# The Airy transform on Schwartz space
+
+The Airy transform `B₀ f (x) = ∫ Ai(x + y) f(y) dy` is, on `𝓢(ℝ, ℂ)`, a Fourier multiplier
+composed with reflection:
+`B₀ f = 𝓕⁻ (ψ · 𝓕 (R f))`,  `R f = f(−·)`,  `ψ(ξ) = exp(i (2πξ)³/3)` (`AiryFourier.airySymbol`).
+Convention: Mathlib's `𝓕` (kernel `e^{-2πixξ}`), Airy scale `κ = 1`, phase sign `+`, as in
+`Airy/AiryFourier.lean`.  Since `‖ψ‖ = 1`, Plancherel gives that `B₀` preserves the `L²`
+norm on `𝓢`.
+
+## Main definitions and results
+
+* `AiryTransform.reflectCLM`: reflection `f ↦ f(−·)` as a CLM on `𝓢(ℝ, ℂ)`.
+* `AiryTransform.airyTransformCLM := fourierMultiplierCLM ℂ airySymbol ∘L reflectCLM`.
+* `integral_airyAi_add_mul_eq`: `∫ Ai(x + y) f(y) dy = (fourierMultiplierCLM ℂ ψ (R f)) x`;
+  equivalently `airyTransformCLM_apply`: `airyTransformCLM f x = ∫ Ai(x + y) f(y) dy`.
+* `integral_norm_sq_fourierInv`: Plancherel for `𝓕⁻` on `𝓢(ℝ, ℂ)` (Mathlib states it for `𝓕`).
+* `integral_norm_sq_airyTransformCLM`: **`∫ |B₀ f|² = ∫ |f|²`** for `f ∈ 𝓢(ℝ, ℂ)`.
+
+## Proof idea
+
+Fix `x` and put `φ(ξ) = e^{2πiξx} 𝓕(R f)(ξ)`.  Fourier inversion on `𝓢` gives
+`𝓕 φ (y) = f(y − x)`, so the weak form `∫ Ai · 𝓕φ = ∫ ψ φ`
+(`AiryFourier.integral_airyAi_mul_fourier`) together with the translation `y ↦ y − x` turns
+the kernel integral into `∫ ψ(ξ) 𝓕(R f)(ξ) e^{2πiξx} dξ = 𝓕⁻(ψ · 𝓕(R f))(x)`.  The isometry is
+Plancherel for `𝓕⁻` and `𝓕`, `|ψ| = 1`, and reflection invariance of Lebesgue measure.
+
+## Scope
+
+This file proves the isometry of the Airy transform on Schwartz functions.  The extension of
+`B₀` to an isometry of `L²(ℝ)` and the identification with the two-time kernel blocks
+(`TwoTime/`) are **not** proved here.
+-/
+
+open MeasureTheory Complex SchwartzMap
+open scoped FourierTransform SchwartzMap
+
+noncomputable section
+
+namespace AiryTransform
+
+open AiryFourier
+
+/-- Reflection `f ↦ f(−·)` on `𝓢(ℝ, ℂ)`. -/
+def reflectCLM : 𝓢(ℝ, ℂ) →L[ℂ] 𝓢(ℝ, ℂ) :=
+  compCLMOfContinuousLinearEquiv ℂ (LinearIsometryEquiv.neg ℝ (E := ℝ)).toContinuousLinearEquiv
+
+@[simp]
+lemma reflectCLM_apply (f : 𝓢(ℝ, ℂ)) (y : ℝ) : reflectCLM f y = f (-y) := rfl
+
+/-- The Airy transform `B₀ = 𝓕⁻ ∘ (ψ ·) ∘ 𝓕 ∘ R` on Schwartz space, as a continuous linear
+map. Its kernel form is `airyTransformCLM_apply`. -/
+def airyTransformCLM : 𝓢(ℝ, ℂ) →L[ℂ] 𝓢(ℝ, ℂ) :=
+  fourierMultiplierCLM ℂ airySymbol ∘L reflectCLM
+
+/-- **A3.** The Airy kernel integral is the Fourier multiplier `ψ` applied to the reflection:
+`∫ Ai(x + y) f(y) dy = (fourierMultiplierCLM ℂ ψ (R f)) x`. -/
+theorem integral_airyAi_add_mul_eq (f : 𝓢(ℝ, ℂ)) (x : ℝ) :
+    ∫ y, (airyAiReal (x + y) : ℂ) * f y =
+      fourierMultiplierCLM ℂ airySymbol (reflectCLM f) x := by
+  set h := reflectCLM f with hh
+  set φ : ℝ → ℂ := fun ξ => 𝐞 (ξ * x) • (𝓕 h) ξ with hφdef
+  have hφc : Continuous φ :=
+    (Real.continuous_fourierChar.comp (continuous_id.mul continuous_const)).smul (𝓕 h).continuous
+  have hφ : Integrable φ :=
+    ((𝓕 h).integrable (μ := volume)).norm.mono' hφc.aestronglyMeasurable
+      (Filter.Eventually.of_forall fun ξ => by simp [φ, Circle.norm_smul])
+  have hFh : Integrable (𝓕 (h : ℝ → ℂ)) := by
+    have := (𝓕 h).integrable (μ := volume); rwa [fourier_coe] at this
+  have hFφ : 𝓕 φ = fun y => f (y - x) := by
+    funext y
+    have e1 : 𝓕 φ y = 𝓕⁻ (𝓕 (h : ℝ → ℂ)) (x - y) := by
+      rw [Real.fourier_real_eq, Real.fourierInv_eq]
+      refine integral_congr_ae (Filter.Eventually.of_forall fun ξ => ?_)
+      simp only [φ, smul_smul, ← fourier_coe]
+      congr 1
+      rw [← AddChar.map_add_eq_mul]
+      congr 1
+      simp only [RCLike.inner_apply, conj_trivial]
+      ring
+    rw [e1, h.continuous.fourierInv_fourier_eq h.integrable hFh, hh, reflectCLM_apply, neg_sub]
+  have hw := integral_airyAi_mul_fourier hφ (by rw [hFφ]; exact f.integrable.comp_sub_right x)
+  rw [hFφ] at hw
+  have lhs : ∫ y, (airyAiReal (x + y) : ℂ) * f y = ∫ y, (airyAiReal y : ℂ) * f (y - x) := by
+    rw [← integral_sub_right_eq_self (fun y => (airyAiReal (x + y) : ℂ) * f y) x]
+    simp
+  rw [lhs, hw, fourierMultiplierCLM_apply, fourierInv_coe, Real.fourierInv_eq]
+  refine integral_congr_ae (Filter.Eventually.of_forall fun ξ => ?_)
+  simp only [smulLeftCLM_apply_apply hasTemperateGrowth_airySymbol, φ, smul_eq_mul,
+    RCLike.inner_apply, conj_trivial, Circle.smul_def, mul_comm x ξ]
+  ring
+
+/-- Kernel form of the Airy transform on `𝓢`:
+`airyTransformCLM f x = ∫ Ai(x + y) f(y) dy`. -/
+theorem airyTransformCLM_apply (f : 𝓢(ℝ, ℂ)) (x : ℝ) :
+    airyTransformCLM f x = ∫ y, (airyAiReal (x + y) : ℂ) * f y :=
+  (integral_airyAi_add_mul_eq f x).symm
+
+/-- Plancherel for the inverse Fourier transform on `𝓢(ℝ, ℂ)` (Mathlib's
+`SchwartzMap.integral_norm_sq_fourier` is stated for `𝓕`). -/
+theorem integral_norm_sq_fourierInv (g : 𝓢(ℝ, ℂ)) :
+    ∫ x, ‖(𝓕⁻ g) x‖ ^ 2 = ∫ x, ‖g x‖ ^ 2 := by
+  have := integral_norm_sq_fourier (𝓕⁻ g)
+  rw [FourierTransform.fourier_fourierInv_eq] at this
+  exact this.symm
+
+/-- **A4 on `𝓢`.** The Airy transform preserves the `L²` norm on Schwartz space:
+`∫ |B₀ f|² = ∫ |f|²`. -/
+theorem integral_norm_sq_airyTransformCLM (f : 𝓢(ℝ, ℂ)) :
+    ∫ x, ‖airyTransformCLM f x‖ ^ 2 = ∫ x, ‖f x‖ ^ 2 := by
+  change ∫ x, ‖fourierMultiplierCLM ℂ airySymbol (reflectCLM f) x‖ ^ 2 = _
+  rw [fourierMultiplierCLM_apply, integral_norm_sq_fourierInv]
+  simp only [smulLeftCLM_apply_apply hasTemperateGrowth_airySymbol, smul_eq_mul, norm_mul,
+    norm_airySymbol, one_mul]
+  rw [integral_norm_sq_fourier]
+  simp only [reflectCLM_apply]
+  exact integral_neg_eq_self (fun x => ‖f x‖ ^ 2) volume
+
+end AiryTransform
+
+end

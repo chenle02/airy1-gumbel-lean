@@ -1,0 +1,3391 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.TwoInterval.TwoIntervalTrace
+import Airy1GumbelContrib.AiryKernel.GaussianSaddle
+
+/-!
+# The RR sector bound in the separated-block trace estimate
+
+Part of the two-interval modules (`TwoInterval/`) of the Airy1–Gumbel contrib library: the
+RR-sector half of the trace bound in Step 2 of the paper's separated-block estimate:
+
+  `|Tr C_r^{RR}| ≤ C' e^{−J_M(r)} + C_χ e^{−c_χ M²}`
+
+for the sector trace integral `trSectorRR M r` (TwoIntervalTrace.lean), in the paper's
+existential-constant form, uniformly for `1 ≤ r ≤ χ√(2M)`, `χ < 1`, `M ≥ M₀(χ)`.
+
+## Correspondence with the paper's proof
+
+* The RR region `x, y, z, w ≤ M` with `Q^R(x, y) = 1_{x,y≤M} p₁(2M−x−y)`
+  and the split on the sign of the Airy argument `u = w+x+S²`, `S = 2 + r`.
+* RR+: the Airy bound `|Ai(u)| ≤ C e^{−(2/3)u^{3/2}}`, the exponent `𝓕`, the change of
+  variables `X = (x+w)/2, U = (x−w)/2, Y = (y+z)/2, V = (y−z)/2` with `|J| = 4`, the
+  parallelogram identity, the enlargement in `U, V`, the `(U,V)`-Gaussian `√(2π)√(πr)`
+  cancelling `r^{−1/2}`, the inner-`Y` Gaussian tail and the `X = M−δ` reflection, the
+  saddle exponent `F(δ)`, and the quadratic close `F(δ) ≥ J_M(r) + (δ−δ*)²/2` giving
+  `|Tr RR+| ≤ C' e^{−J_M(r)}`.
+* RR−: the bound `|Ai(u)| ≤ C` for `u < 0`, the same change of variables, the boundary
+  exponent `G(δ) = δ²/2 + 2S(M−δ) + (2/3)S³`, `δ ≥ δmax`, its boundary value
+  `G(δmax) = (2M+S²)²/8 − S³/3`, the subcritical absorption `G(δmax) ≥ c_χ M²` for
+  `r ≤ χ√(2M)`, the linear growth `G(δ) ≥ G(δmax) + (M/2)(δ−δmax)`, and the close
+  `|Tr RR−| ≤ C_χ e^{−c_χ M²}`.
+
+## The `MemLp`-conditional interface
+
+Exactly as in `TwoInterval/TwoIntervalTrace.lean`, the `±` split of the trace integral
+(`trSectorRR_eq_plus_add_minus`) and the final assembly (`trSectorRR_abs_le`)
+are conditional on the hypotheses
+`hA : MemLp (aRKer a M r) 2 (volume.prod volume)` and
+`hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume)` — they are the only two
+declarations here taking them.  Everything between (the change-of-variables
+bound chain) is unconditional pointwise/set analysis on explicit nonnegative
+dominators.
+
+## The Tonelli inputs
+
+The naive collapse of the inner `(y, z)` convolution to `p_{2+r}(x−w)`
+(`heatKernel_conv`) is *not* integrable against `e^{−S(x+w)}` on the strip
+`{x, w ≤ M}` in the RR− region: along `x = w = −K` the integrand is
+`~ e^{2SK}·p_{2+r}(0)`.  (This is the RR-sector instance of the shortcut ruled out in the
+module docstring of TwoIntervalTrace.lean.)  The integrability input used here retains the
+reflected kernels and evaluates the two inner
+Gaussian factors as tail products `(∫_{y≤M} p₁(2M−x−y))(∫_{z≤M} p₁(2M−z−w))`,
+bounded by `C e^{−((M−x)²+(M−w)²)/4}` on the region (`gaussianTail_chernoff`
+through `gaussianTail_scale`), which *is* plane-integrable against
+`e^{−S(x+w)}`.  The change of variables itself (`integral_pair_sym_antisym`)
+is the junk-safe 1-D substitution chain with the swap discharged by the
+lintegral transfer through `Real.map_volume_mul_left`.
+
+## Remarks on the formalization
+
+(i) The inner-`Y` tail is bounded by the uniform Chernoff factor
+    `√(π/2) e^{−δ²/2}` (`gaussianTail_chernoff`) in BOTH sectors, in place of a
+    `C(1 + δ⁻¹1_{δ≥1}) e^{−δ²/2}` form; the uniform factor avoids the `(1+δ⁻¹)`
+    factor near `δ = 0`, which is not integrable against the shifted Gaussian.
+(ii) The RR− monotonicity is proved by factoring
+    `G(δ) − G(δmax) = (δ−δmax)((δ+δmax)/2 − 2S)` (a `ring` identity), not via
+    `G″ = 1`; the explicit slope bound `δmax − 2S ≥ M/2` for `M ≥ 4` makes the
+    largeness condition on `M` explicit.  The explicit threshold `M ≥ 2` gives the
+    saddle input `2 ≤ R`.
+(iii) With `a² = 2M`, so `a⁴ = 4M²`, the absorption bound is stated in terms of `M²` at
+    `rrBoundaryG_boundary_ge`: we prove `c·M² ≤ (2M+S²)²/8 − S³/3` directly with
+    `c = 1/4`.
+(iv) The saddle library writes `S = r+2` while the sector integrals write
+    `S = 2+r`; the interface is normalized by rewriting `2 + r` to `r + 2`
+    (including the rpow base) at the merge into `saddleF`.
+(v) The RR+ Airy factor is packaged junk-free as
+    `e^{−(2/3)(max (t+S²) 0)^{3/2}}` (`rrAiryPlusFactor`): it agrees with
+    `e^{−(2/3)(x+w+S²)^{3/2}}` on the RR+ region `x+w+S² ≥ 0` and
+    is `≤ 1` everywhere, so no negative-base rpow side condition is ever
+    needed.
+(vi) Constants are existential throughout: we do not track explicit values.
+
+## References
+
+Chen and Pu, "Gumbel Fluctuations of the Maximum of the Airy_1 Process", arXiv 2611.23658:
+proof of the separated-block estimate, Step 2, RR sector.
+-/
+
+namespace AiryTwoInt
+
+open MeasureTheory Real Set Filter
+open scoped Topology BigOperators ENNReal NNReal
+
+/-! ## The Airy bound packages -/
+
+/-- **The positive-argument Airy bound**: there is `C > 0` such
+that `|Ai(u)| ≤ C e^{−(2/3)u^{3/2}}` for `u ≥ 0`.  Packaged from `Airy/`'s
+`airyAiReal_le` (the `u^{−1/4}`-prefixed bound, valid for `u ≥ 1`) and `AiryKernel/`'s
+`airyAiReal_abs_le` (global boundedness): on `[0, 1]` the exponential factor is
+at least `e^{−2/3}` and `u^{−1/4} ≤ 1` on `[1, ∞)`. -/
+theorem airyAiReal_abs_le_exp_two_thirds :
+    ∃ C : ℝ, 0 < C ∧ ∀ u : ℝ, 0 ≤ u →
+      |airyAiReal u| ≤ C * Real.exp (-(2/3) * u ^ (3/2 : ℝ)) := by
+  obtain ⟨C₁, hC₁⟩ := airyAiReal_le
+  obtain ⟨C₂, hC₂⟩ := airyAiReal_abs_le
+  refine ⟨|C₁| + |C₂| * Real.exp (2/3) + 1, by positivity, fun u hu => ?_⟩
+  rcases le_total u 1 with hu1 | hu1
+  · -- `0 ≤ u ≤ 1`: `|Ai u| ≤ C₂` and `e^{−(2/3)u^{3/2}} ≥ e^{−2/3}`
+    have hC2 : |airyAiReal u| ≤ |C₂| := (hC₂ u).trans (le_abs_self _)
+    have hexp : Real.exp (-(2/3 : ℝ)) ≤ Real.exp (-(2/3) * u ^ (3/2 : ℝ)) := by
+      apply Real.exp_le_exp.mpr
+      have hle : u ^ (3/2 : ℝ) ≤ 1 := Real.rpow_le_one hu hu1 (by norm_num)
+      have hnn : (0:ℝ) ≤ u ^ (3/2 : ℝ) := Real.rpow_nonneg hu _
+      linarith
+    calc |airyAiReal u| ≤ |C₂| := hC2
+      _ = (|C₂| * Real.exp (2/3)) * Real.exp (-(2/3 : ℝ)) := by
+          rw [mul_assoc, ← Real.exp_add, show (2/3 : ℝ) + -(2/3) = 0 by norm_num,
+            Real.exp_zero, mul_one]
+      _ ≤ (|C₂| * Real.exp (2/3)) * Real.exp (-(2/3) * u ^ (3/2 : ℝ)) :=
+          mul_le_mul_of_nonneg_left hexp (mul_nonneg (abs_nonneg _) (Real.exp_pos _).le)
+      _ ≤ (|C₁| + |C₂| * Real.exp (2/3) + 1) * Real.exp (-(2/3) * u ^ (3/2 : ℝ)) := by
+          apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+          have h0 : (0:ℝ) ≤ |C₂| * Real.exp (2/3) :=
+            mul_nonneg (abs_nonneg _) (Real.exp_pos _).le
+          linarith [abs_nonneg C₁]
+  · -- `1 ≤ u`: the `airyAiReal_le` bound with `u^{−1/4} ≤ 1`
+    have hpos : 0 < airyAiReal u := airyAiReal_pos_of_nonneg (zero_le_one.trans hu1)
+    have hrw : |airyAiReal u| = airyAiReal u := abs_of_nonneg hpos.le
+    have h1 : airyAiReal u ≤ C₁ * u ^ (-1/4 : ℝ) * Real.exp (-(2/3 * u ^ (3/2 : ℝ))) :=
+      hC₁ u hu1
+    have hrp : u ^ (-1/4 : ℝ) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hu1 (by norm_num)
+    have hexpnn : (0:ℝ) ≤ Real.exp (-(2/3 * u ^ (3/2 : ℝ))) := (Real.exp_pos _).le
+    have hexpnn' : (0:ℝ) ≤ Real.exp (-(2/3) * u ^ (3/2 : ℝ)) := (Real.exp_pos _).le
+    have hC₁' : airyAiReal u ≤ |C₁| * Real.exp (-(2/3) * u ^ (3/2 : ℝ)) := by
+      calc airyAiReal u ≤ C₁ * u ^ (-1/4 : ℝ) * Real.exp (-(2/3 * u ^ (3/2 : ℝ))) := h1
+        _ = C₁ * u ^ (-1/4 : ℝ) * Real.exp (-(2/3) * u ^ (3/2 : ℝ)) := by
+            congr 1
+            congr 1
+            ring
+        _ ≤ |C₁| * 1 * Real.exp (-(2/3) * u ^ (3/2 : ℝ)) := by
+            apply mul_le_mul_of_nonneg_right _ hexpnn'
+            exact mul_le_mul (le_abs_self C₁) hrp
+              (Real.rpow_nonneg (zero_le_one.trans hu1) _) (abs_nonneg C₁)
+        _ = |C₁| * Real.exp (-(2/3) * u ^ (3/2 : ℝ)) := by ring
+    rw [hrw]
+    calc airyAiReal u ≤ |C₁| * Real.exp (-(2/3) * u ^ (3/2 : ℝ)) := hC₁'
+      _ ≤ (|C₁| + |C₂| * Real.exp (2/3) + 1) * Real.exp (-(2/3) * u ^ (3/2 : ℝ)) := by
+          apply mul_le_mul_of_nonneg_right _ hexpnn'
+          have h0 : (0:ℝ) ≤ |C₂| * Real.exp (2/3) :=
+            mul_nonneg (abs_nonneg _) (Real.exp_pos _).le
+          linarith [abs_nonneg C₁]
+
+/-- The global Airy bound with a *positive* constant:
+`|Ai(u)| ≤ C` for all `u`. -/
+theorem airyAiReal_abs_le' : ∃ C : ℝ, 0 < C ∧ ∀ u : ℝ, |airyAiReal u| ≤ C := by
+  obtain ⟨C₂, hC₂⟩ := airyAiReal_abs_le
+  exact ⟨|C₂| + 1, by positivity,
+    fun u => (hC₂ u).trans (by linarith [le_abs_self C₂])⟩
+
+/-! ## Pointwise kernel identities and the explicit dominators -/
+
+/-- On the RR region, `Q^R` is exactly the reflected heat kernel. -/
+theorem qRKerTwo_apply_of_le (M x y : ℝ) (hx : x ≤ M) (hy : y ≤ M) :
+    qRKerTwo M (x, y) = heatKernel 1 (2*M - x - y) :=
+  Set.indicator_of_mem (Set.mem_prod.mpr ⟨hx, hy⟩) _
+
+/-- The RR kernel as the product of coordinate indicators times the reflected
+heat kernel (exact, pointwise). -/
+theorem qRKerTwo_apply_eq (M x y : ℝ) :
+    qRKerTwo M (x, y) = (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x
+      * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y * heatKernel 1 (2*M - x - y) := by
+  unfold qRKerTwo
+  by_cases hx : x ≤ M <;> by_cases hy : y ≤ M
+  · rw [Set.indicator_of_mem (Set.mem_prod.mpr ⟨hx, hy⟩) _,
+      Set.indicator_of_mem (Set.mem_Iic.mpr hx) _, Set.indicator_of_mem (Set.mem_Iic.mpr hy) _]
+    ring
+  · have hmem : (x, y) ∉ Set.Iic M ×ˢ Set.Iic M := fun h => hy (Set.mem_prod.mp h).2
+    rw [Set.indicator_of_notMem hmem, Set.indicator_of_mem (Set.mem_Iic.mpr hx) _,
+      Set.indicator_of_notMem (fun h => hy (Set.mem_Iic.mp h)) _]
+    ring
+  · have hmem : (x, y) ∉ Set.Iic M ×ˢ Set.Iic M := fun h => hx (Set.mem_prod.mp h).1
+    rw [Set.indicator_of_notMem hmem,
+      Set.indicator_of_notMem (fun h => hx (Set.mem_Iic.mp h)) _]
+    ring
+  · have hmem : (x, y) ∉ Set.Iic M ×ˢ Set.Iic M := fun h => hx (Set.mem_prod.mp h).1
+    rw [Set.indicator_of_notMem hmem,
+      Set.indicator_of_notMem (fun h => hx (Set.mem_Iic.mp h)) _]
+    ring
+
+/-- The absolute value of the RR sector integrand factors (all factors
+nonnegative but the Airy one). -/
+theorem abs_sectorIntegrand_RR (hr : 0 < r) (M x y z w : ℝ) :
+    |sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w|
+      = qRKerTwo M (x,y) * heatKernel r (y-z) * qRKerTwo M (z,w)
+        * |bAiryKer (2+r) (w,x)| := by
+  unfold sectorIntegrand
+  rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg (qRKerTwo_nonneg M _),
+    abs_of_nonneg (heatKernel_pos hr _).le, abs_of_nonneg (qRKerTwo_nonneg M _)]
+
+/-- The explicit RR dominator with Airy factor `Ca * e^{−(2/3)S³ − S·(w+x)} * φ(w+x)`
+(`S = 2 + r`): the product of the two reflected kernels, the middle heat kernel
+and the estimated backward-Airy factor.  The
+RR-region indicators are carried by the `qRKerTwo` factors. -/
+noncomputable def rrDom (Ca : ℝ) (φ : ℝ → ℝ) (M r x y z w : ℝ) : ℝ :=
+  qRKerTwo M (x, y) * heatKernel r (y - z) * qRKerTwo M (z, w)
+    * (Ca * Real.exp (-(2/3) * (2+r)^3 - (2+r) * (w + x)) * φ (w + x))
+
+/-- The RR+ Airy factor `e^{−(2/3)(max (t + S²) 0)^{3/2}}` (`S = 2 + r`),
+junk-free at `t + S² < 0` (the `max` makes the rpow base nonnegative; on the RR+
+region `w + x + S² ≥ 0` the `max` is the identity and this is exactly the
+paper's `e^{−(2/3)(x+w+S²)^{3/2}}`). -/
+noncomputable def rrAiryPlusFactor (r t : ℝ) : ℝ :=
+  Real.exp (-(2/3) * (max (t + (2+r)^2) 0)^(3/2 : ℝ))
+
+/-- The RR+ Airy factor is nonnegative. -/
+theorem rrAiryPlusFactor_nonneg (r t : ℝ) : 0 ≤ rrAiryPlusFactor r t := (Real.exp_pos _).le
+
+/-- The RR+ Airy factor is at most `1` (the `max` keeps the rpow base
+nonnegative). -/
+theorem rrAiryPlusFactor_le_one (r t : ℝ) : rrAiryPlusFactor r t ≤ 1 := by
+  unfold rrAiryPlusFactor
+  apply Real.exp_le_one_iff.mpr
+  have h1 : (0:ℝ) ≤ (max (t + (2+r)^2) 0)^(3/2 : ℝ) := Real.rpow_nonneg (le_max_right _ _) _
+  linarith
+
+/-- The RR+ Airy factor is measurable (continuous: the exponent `3/2 ≥ 0` keeps
+rpow continuous through the base `0`). -/
+theorem measurable_rrAiryPlusFactor (r : ℝ) : Measurable (rrAiryPlusFactor r) := by
+  have hrpow_cont : Continuous fun t : ℝ => (max (t + (2+r)^2) 0)^(3/2 : ℝ) := by
+    apply continuous_iff_continuousAt.mpr
+    intro t
+    exact (Real.continuousAt_rpow_const _ _ (Or.inr (by norm_num : (0:ℝ) ≤ 3/2))).comp
+      ((continuous_id.add continuous_const).max continuous_const).continuousAt
+  unfold rrAiryPlusFactor
+  exact (Real.continuous_exp.comp (continuous_const.mul hrpow_cont)).measurable
+
+/-- On the RR+ region, the `max` is the identity. -/
+theorem rrAiryPlusFactor_apply_of_nonneg {r t : ℝ} (h : 0 ≤ t + (2+r)^2) :
+    rrAiryPlusFactor r t = Real.exp (-(2/3) * (t + (2+r)^2)^(3/2 : ℝ)) := by
+  unfold rrAiryPlusFactor
+  rw [max_eq_left h]
+
+/-- The RR+ dominator: `rrDom` with the RR+ Airy factor. -/
+noncomputable def rrPlusDom (C M r x y z w : ℝ) : ℝ :=
+  rrDom C (rrAiryPlusFactor r) M r x y z w
+
+/-- The RR− dominator: `rrDom` with the constant Airy
+factor `1`. -/
+noncomputable def rrMinusDom (C M r x y z w : ℝ) : ℝ :=
+  rrDom C (fun _ => 1) M r x y z w
+
+/-- The RR dominator is pointwise nonnegative. -/
+theorem rrDom_nonneg (hr : 0 < r) (Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (M x y z w : ℝ) : 0 ≤ rrDom Ca φ M r x y z w :=
+  mul_nonneg (mul_nonneg (mul_nonneg (qRKerTwo_nonneg M _) (heatKernel_pos hr _).le)
+    (qRKerTwo_nonneg M _))
+    (mul_nonneg (mul_nonneg hCa (Real.exp_pos _).le) (hφnn _))
+
+/-- **The RR+ pointwise domination**: on the RR+ region
+`w + x + S² ≥ 0`, the sector integrand's absolute value is dominated by
+`rrPlusDom`. -/
+theorem abs_sectorIntegrand_RR_le_rrPlusDom (hr : 0 < r) (C : ℝ)
+    (hCA : ∀ u : ℝ, 0 ≤ u → |airyAiReal u| ≤ C * Real.exp (-(2/3) * u^(3/2:ℝ)))
+    (M x y z w : ℝ) (hplus : 0 ≤ w + x + (2+r)^2) :
+    |sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w| ≤ rrPlusDom C M r x y z w := by
+  rw [abs_sectorIntegrand_RR hr M x y z w]
+  unfold rrPlusDom rrDom
+  have hnn : (0:ℝ) ≤ qRKerTwo M (x, y) * heatKernel r (y - z) * qRKerTwo M (z, w) :=
+    mul_nonneg (mul_nonneg (qRKerTwo_nonneg M _) (heatKernel_pos hr _).le)
+      (qRKerTwo_nonneg M _)
+  apply mul_le_mul_of_nonneg_left _ hnn
+  rw [bAiryKer_eq, abs_mul, abs_of_nonneg (Real.exp_pos _).le]
+  have hAi := hCA (w + x + (2+r)^2) hplus
+  rw [rrAiryPlusFactor_apply_of_nonneg hplus]
+  calc Real.exp (-(2/3) * (2+r) ^ 3 - (2+r) * (w + x)) * |airyAiReal (w + x + (2+r)^2)|
+      ≤ Real.exp (-(2/3) * (2+r) ^ 3 - (2+r) * (w + x))
+          * (C * Real.exp (-(2/3) * (w + x + (2+r)^2)^(3/2 : ℝ))) :=
+        mul_le_mul_of_nonneg_left hAi (Real.exp_pos _).le
+    _ = C * Real.exp (-(2/3) * (2+r) ^ 3 - (2+r) * (w + x))
+          * Real.exp (-(2/3) * (w + x + (2+r)^2)^(3/2 : ℝ)) := by ring
+
+/-- **The RR− pointwise domination**: the sector
+integrand's absolute value is dominated by `rrMinusDom` everywhere (the global
+Airy bound is unconditional). -/
+theorem abs_sectorIntegrand_RR_le_rrMinusDom (hr : 0 < r) (C : ℝ)
+    (hCA : ∀ u : ℝ, |airyAiReal u| ≤ C) (M x y z w : ℝ) :
+    |sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w| ≤ rrMinusDom C M r x y z w := by
+  rw [abs_sectorIntegrand_RR hr M x y z w]
+  unfold rrMinusDom rrDom
+  have hnn : (0:ℝ) ≤ qRKerTwo M (x, y) * heatKernel r (y - z) * qRKerTwo M (z, w) :=
+    mul_nonneg (mul_nonneg (qRKerTwo_nonneg M _) (heatKernel_pos hr _).le)
+      (qRKerTwo_nonneg M _)
+  apply mul_le_mul_of_nonneg_left _ hnn
+  rw [bAiryKer_eq, abs_mul, abs_of_nonneg (Real.exp_pos _).le]
+  calc Real.exp (-(2/3) * (2+r) ^ 3 - (2+r) * (w + x)) * |airyAiReal (w + x + (2+r)^2)|
+      ≤ Real.exp (-(2/3) * (2+r) ^ 3 - (2+r) * (w + x)) * C :=
+        mul_le_mul_of_nonneg_left (hCA _) (Real.exp_pos _).le
+    _ = C * Real.exp (-(2/3) * (2+r) ^ 3 - (2+r) * (w + x)) * 1 := by ring
+
+/-! ## The `±` split on the Airy argument
+
+The split `Tr C_r^{RR} = Tr C_r^{RR,+} + Tr C_r^{RR,−}` at
+`u = w + x + S² = 0`, i.e. `w = −x − (2+r)²`.  As in
+`TwoInterval/TwoIntervalTrace.lean`, this
+is the first of the two declarations here that take the `MemLp` hypotheses
+`hA`, `hW` (the Tonelli justification of the trace formula). -/
+
+/-- **The `(y, z)`-plane integrability of the sector integrand** at fixed
+`(x, w)` (unconditional): the Tonelli input for the joint measurability of the
+inner double integral.  The domination is the heat-kernel convolution
+chain of `integrable_sectorInnerY`. -/
+theorem integrable_sectorIntegrand_yz (hr : 0 < r) (M : ℝ)
+    {Qα Qβ : ℝ × ℝ → ℝ} (hQαmeas : Measurable Qα) (hQβmeas : Measurable Qβ)
+    (hQα : ∀ p : ℝ × ℝ, |Qα p| ≤ qKerTwo M p) (hQβ : ∀ p : ℝ × ℝ, |Qβ p| ≤ qKerTwo M p)
+    (x w : ℝ) :
+    Integrable (Function.uncurry fun y z => sectorIntegrand Qα Qβ r x y z w)
+      (volume.prod volume) := by
+  show Integrable (fun q : ℝ × ℝ => sectorIntegrand Qα Qβ r x q.1 q.2 w) (volume.prod volume)
+  rw [MeasureTheory.integrable_prod_iff
+    (measurable_sectorIntegrand_yz hQαmeas hQβmeas r x w).aestronglyMeasurable]
+  refine ⟨Eventually.of_forall fun y =>
+    integrable_sectorIntegrand_z hr M hQαmeas hQβmeas hQα hQβ x y w, ?_⟩
+  have hdom : ∀ y : ℝ, (∫ z : ℝ, ‖sectorIntegrand Qα Qβ r x y z w‖)
+      ≤ |bAiryKer (2+r) (w,x)| * (qKerTwo M (x,y) * heatKernel (r+1) (y-w)) := by
+    intro y
+    have hz := integrable_sectorIntegrand_z hr M hQαmeas hQβmeas hQα hQβ x y w
+    have hQβ' : ∀ p : ℝ × ℝ, |Qβ p| ≤ heatKernel 1 (p.1 - p.2) :=
+      fun p => (hQβ p).trans (qKerTwo_le M p)
+    have hdomz : Integrable fun z : ℝ =>
+        |bAiryKer (2 + r) (w, x)|
+          * (qKerTwo M (x, y) * (heatKernel r (y - z) * heatKernel 1 (z - w))) := by
+      have hb : Integrable fun z : ℝ => heatKerTwo r (y, z) * heatKerTwo 1 (z, w) :=
+        integrable_pair_mul_of_heatKernel_le hr one_pos (measurable_heatKerTwo r)
+          (measurable_heatKerTwo 1) (fun a b => heatKerTwo_abs_le_self hr (a, b))
+          (fun a b => heatKerTwo_abs_le_self one_pos (a, b)) y w
+      exact ((hb.const_mul (qKerTwo M (x, y))).const_mul _).congr
+        (Eventually.of_forall fun z => rfl)
+    calc ∫ z : ℝ, ‖sectorIntegrand Qα Qβ r x y z w‖
+        ≤ ∫ z : ℝ, |bAiryKer (2 + r) (w, x)|
+            * (qKerTwo M (x, y) * (heatKernel r (y - z) * heatKernel 1 (z - w))) := by
+          apply integral_mono hz.norm hdomz
+          intro z
+          show |Qα (x, y) * heatKernel r (y - z) * Qβ (z, w) * bAiryKer (2 + r) (w, x)| ≤ _
+          rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg (heatKernel_pos hr _).le]
+          have h1 := hQα (x, y)
+          have h2 := hQβ' (z, w)
+          have hheat := (heatKernel_pos hr (y - z)).le
+          have hQ := qKerTwo_nonneg M (x, y)
+          have hg := abs_nonneg (bAiryKer (2 + r) (w, x))
+          calc ((|Qα (x, y)| * heatKernel r (y - z)) * |Qβ (z, w)|) * |bAiryKer (2 + r) (w, x)|
+              = (|Qα (x, y)| * heatKernel r (y - z))
+                  * (|Qβ (z, w)| * |bAiryKer (2 + r) (w, x)|) := by ring
+            _ ≤ (qKerTwo M (x, y) * heatKernel r (y - z))
+                  * (heatKernel 1 (z - w) * |bAiryKer (2 + r) (w, x)|) :=
+              mul_le_mul (mul_le_mul_of_nonneg_right h1 hheat)
+                (mul_le_mul_of_nonneg_right h2 hg) (mul_nonneg (abs_nonneg _) hg)
+                (mul_nonneg hQ hheat)
+            _ = |bAiryKer (2 + r) (w, x)|
+                  * (qKerTwo M (x, y) * (heatKernel r (y - z) * heatKernel 1 (z - w))) := by ring
+      _ = |bAiryKer (2 + r) (w, x)| * (qKerTwo M (x, y) * heatKernel (r + 1) (y - w)) := by
+          rw [integral_const_mul, integral_const_mul, heatKernel_conv hr one_pos y w]
+  apply (((integrable_pair_mul_of_heatKernel_le one_pos (by linarith : (0:ℝ) < r + 1)
+      (measurable_qKerTwo M) (measurable_heatKerTwo (r + 1))
+      (fun a b => qKerTwo_abs_le M (a, b))
+      (fun a b => heatKerTwo_abs_le_self (by linarith) (a, b)) x w).const_mul
+    |bAiryKer (2 + r) (w, x)|)).mono' ?_ ?_
+  · exact (((measurable_sectorIntegrand_yz hQαmeas hQβmeas r x w).norm.stronglyMeasurable
+      |>.integral_prod_right' (ν := volume))).measurable.aestronglyMeasurable
+  · filter_upwards with y
+    rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg fun z => norm_nonneg _)]
+    exact hdom y
+
+/-- The sector inner double integral is jointly measurable in `(x, w)`
+(from the four-variable measurability `measurable_sectorIntegrand_xwyz` through
+the product-section permutation, and `integrable_sectorIntegrand_yz` for the
+`integral_prod` conversion). -/
+theorem measurable_uncurry_sectorInnerW {Qα Qβ : ℝ × ℝ → ℝ}
+    (hQα : Measurable Qα) (hQβ : Measurable Qβ) (hr : 0 < r) (M : ℝ)
+    (hQαd : ∀ p : ℝ × ℝ, |Qα p| ≤ qKerTwo M p)
+    (hQβd : ∀ p : ℝ × ℝ, |Qβ p| ≤ qKerTwo M p) :
+    Measurable (Function.uncurry fun x w : ℝ =>
+      ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w) := by
+  have hperm : Continuous fun q : (ℝ × ℝ) × (ℝ × ℝ) => (((q.1.1, q.1.2), q.2.1), q.2.2) := by
+    fun_prop
+  have hG : Measurable (fun q : (ℝ × ℝ) × (ℝ × ℝ) =>
+      sectorIntegrand Qα Qβ r q.1.1 q.2.1 q.2.2 q.1.2) :=
+    (measurable_sectorIntegrand_xwyz hQα hQβ r).comp hperm.measurable
+  have h2 : Measurable fun p : ℝ × ℝ =>
+      ∫ q : ℝ × ℝ, sectorIntegrand Qα Qβ r p.1 q.1 q.2 p.2 :=
+    (hG.stronglyMeasurable.integral_prod_right' (ν := volume)).measurable
+  have heq : (Function.uncurry fun x w : ℝ =>
+        ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w)
+      = fun p : ℝ × ℝ => ∫ q : ℝ × ℝ, sectorIntegrand Qα Qβ r p.1 q.1 q.2 p.2 := by
+    funext p
+    obtain ⟨x, w⟩ := p
+    show (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand Qα Qβ r x y z w)
+      = ∫ q : ℝ × ℝ, sectorIntegrand Qα Qβ r x q.1 q.2 w
+    exact (MeasureTheory.integral_prod _
+      (integrable_sectorIntegrand_yz hr M hQα hQβ hQαd hQβd x w)).symm
+  rw [heq]
+  exact h2
+
+/-- The `±` piece functions at the `x`-level are measurable: the half-line
+boundaries `-x - S²` cut a measurable half-plane in `(x, w)`. -/
+theorem measurable_sectorW_setIntegral (hr : 0 < r) (M : ℝ) (S : Set (ℝ × ℝ))
+    (hS : MeasurableSet S) :
+    Measurable fun x : ℝ => ∫ w : ℝ, S.indicator (Function.uncurry fun x w : ℝ =>
+      ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w) :=
+  (((measurable_uncurry_sectorInnerW (measurable_qRKerTwo M) (measurable_qRKerTwo M) hr M
+    (qRKerTwo_abs_le_qKerTwo M) (qRKerTwo_abs_le_qKerTwo M)).indicator
+    hS).stronglyMeasurable.integral_prod_right' (ν := volume)).measurable
+
+/-- **Piece integrability at the `x`-level** (the `mono'` step against the
+two-fold Cauchy–Schwarz dominator): for any measurable `±` region
+`S ⊆ ℝ²`, the `S`-indicated inner sector integral is integrable in `x`. -/
+theorem integrable_sectorInner_piece (hr : 0 < r) (a M : ℝ)
+    (hA : MemLp (aRKer a M r) 2 (volume.prod volume))
+    (hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume))
+    (S : Set (ℝ × ℝ)) (hS : MeasurableSet S) :
+    Integrable (fun x : ℝ => ∫ w : ℝ, S.indicator (Function.uncurry fun x w : ℝ =>
+      ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w))
+      volume := by
+  have hR : ∀ p : ℝ × ℝ, |qRKerTwo M p| ≤ qKerTwo M p := qRKerTwo_abs_le_qKerTwo M
+  have H := integrable_uncurry_qPrQKer_mul_abs_bAiryKer hr a M hA hW
+  have houter := ((integrable_prod_iff H.aestronglyMeasurable).mp H).2
+  have hslice := ((integrable_prod_iff H.aestronglyMeasurable).mp H).1
+  simp only [Function.uncurry_apply_pair] at houter hslice
+  apply houter.mono' (measurable_sectorW_setIntegral hr M S hS).aestronglyMeasurable
+  filter_upwards [integrable_sectorInnerW_ae hr a M hA hW
+    (measurable_qRKerTwo M) (measurable_qRKerTwo M) hR hR, hslice] with x hx hxH
+  calc ‖∫ w : ℝ, S.indicator (Function.uncurry fun x w : ℝ =>
+        ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w)‖
+      ≤ ∫ w : ℝ, ‖S.indicator (Function.uncurry fun x w : ℝ =>
+          ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w)‖ :=
+        norm_integral_le_integral_norm _
+    _ ≤ ∫ w : ℝ, ‖∫ y : ℝ, ∫ z : ℝ,
+          sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w‖ := by
+        have hmeasInd : AEStronglyMeasurable (fun w : ℝ => S.indicator
+            (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+              sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w)) volume :=
+          (((measurable_uncurry_sectorInnerW (measurable_qRKerTwo M) (measurable_qRKerTwo M) hr M
+            (qRKerTwo_abs_le_qKerTwo M) (qRKerTwo_abs_le_qKerTwo M)).indicator hS).comp
+            (measurable_const.prodMk measurable_id)).aestronglyMeasurable
+        exact integral_mono ((hx.norm).mono' hmeasInd.norm
+          (Eventually.of_forall fun w => by
+            rw [norm_norm]
+            exact norm_indicator_le_norm_self _ _)) hx.norm
+          (fun w => norm_indicator_le_norm_self _ _)
+    _ ≤ ∫ w : ℝ, qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)| := by
+        apply integral_mono hx.norm hxH
+        intro w
+        exact sectorInnerW_abs_le hr M (measurable_qRKerTwo M) (measurable_qRKerTwo M) hR hR x w
+    _ = ∫ w : ℝ, ‖qPrQKer M r (x, w) * |bAiryKer (2 + r) (w, x)|‖ := by
+        apply integral_congr_ae
+        filter_upwards with w
+        rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (qPrQKer_nonneg hr M _), abs_abs]
+
+/-- The RR+ piece of the sector trace: the `w`-integral is
+taken over the positive-Airy-argument half-line `w ≥ −x − (2+r)²`. -/
+noncomputable def trSectorRRplus (M r : ℝ) : ℝ :=
+  ∫ x : ℝ, ∫ w in Set.Ici (-x - (2 + r)^2),
+    ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w
+
+/-- The RR− piece of the sector trace: the `w`-integral is
+taken over the negative-Airy-argument half-line `w < −x − (2+r)²`. -/
+noncomputable def trSectorRRminus (M r : ℝ) : ℝ :=
+  ∫ x : ℝ, ∫ w in Set.Iio (-x - (2 + r)^2),
+    ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w
+
+/-- The half-plane `{0 ≤ x + w + S²}` corresponding to the RR+ `w`-range. -/
+theorem rrPlusRegion_meas (r : ℝ) :
+    MeasurableSet {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2} :=
+  measurableSet_Ici.preimage
+    (((continuous_fst.add continuous_snd).add continuous_const).measurable)
+
+/-- The open half-plane `{x + w + S² < 0}` corresponding to the RR− `w`-range. -/
+theorem rrMinusRegion_meas (r : ℝ) :
+    MeasurableSet {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0} :=
+  measurableSet_Iio.preimage
+    (((continuous_fst.add continuous_snd).add continuous_const).measurable)
+
+/-- The RR+ piece `w`-range as the half-plane indicator. -/
+theorem rrPlusInner_eq_indicator (M r x w : ℝ) :
+    (Set.Ici (-x - (2+r)^2)).indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) w
+      = {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator (Function.uncurry fun x w : ℝ =>
+          ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w) := by
+  by_cases hw : w ∈ Set.Ici (-x - (2+r)^2)
+  · rw [Set.indicator_of_mem hw _, Set.indicator_of_mem]
+    show (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) = _
+    · rfl
+    · rw [Set.mem_Ici] at hw
+      show 0 ≤ x + w + (2+r)^2
+      linarith
+  · rw [Set.indicator_of_notMem hw _, Set.indicator_of_notMem]
+    rw [Set.mem_Ici] at hw
+    show ¬ 0 ≤ x + w + (2+r)^2
+    linarith
+
+/-- The RR− piece `w`-range as the half-plane indicator. -/
+theorem rrMinusInner_eq_indicator (M r x w : ℝ) :
+    (Set.Iio (-x - (2+r)^2)).indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) w
+      = {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator (Function.uncurry fun x w : ℝ =>
+          ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w) := by
+  by_cases hw : w ∈ Set.Iio (-x - (2+r)^2)
+  · rw [Set.indicator_of_mem hw _, Set.indicator_of_mem]
+    show (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) = _
+    · rfl
+    · rw [Set.mem_Iio] at hw
+      show x + w + (2+r)^2 < 0
+      linarith
+  · rw [Set.indicator_of_notMem hw _, Set.indicator_of_notMem]
+    rw [Set.mem_Iio] at hw
+    show ¬ x + w + (2+r)^2 < 0
+    linarith
+
+/-- **The `±` split**: the RR sector trace is the sum of its
+positive- and negative-Airy-argument pieces.  Conditional on the `MemLp`
+hypotheses (the Tonelli justification of the trace formula). -/
+theorem trSectorRR_eq_plus_add_minus (hr : 0 < r) (a M : ℝ)
+    (hA : MemLp (aRKer a M r) 2 (volume.prod volume))
+    (hW : MemLp (wSKer (2 + r) a) 2 (volume.prod volume)) :
+    trSectorRR M r = trSectorRRplus M r + trSectorRRminus M r := by
+  have hR : ∀ p : ℝ × ℝ, |qRKerTwo M p| ≤ qKerTwo M p := qRKerTwo_abs_le_qKerTwo M
+  have hwae := integrable_sectorInnerW_ae hr a M hA hW
+    (measurable_qRKerTwo M) (measurable_qRKerTwo M) hR hR
+  have hsplit : ∀ᵐ x : ℝ ∂volume,
+      (∫ w : ℝ, ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+        = (∫ w in Set.Ici (-x - (2+r)^2), ∫ y : ℝ, ∫ z : ℝ,
+            sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+          + (∫ w in Set.Iio (-x - (2+r)^2), ∫ y : ℝ, ∫ z : ℝ,
+            sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) := by
+    filter_upwards [hwae] with x hx
+    have hdisj : Disjoint (Set.Iio (-x - (2+r)^2)) (Set.Ici (-x - (2+r)^2)) :=
+      Set.Iio_disjoint_Ici (le_refl _)
+    have h1 := setIntegral_union hdisj measurableSet_Ici hx.integrableOn hx.integrableOn
+    rw [Set.Iio_union_Ici, Measure.restrict_univ] at h1
+    exact h1.trans (add_comm _ _)
+  have hIplus : Integrable (fun x : ℝ => ∫ w in Set.Ici (-x - (2+r)^2),
+      ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) volume := by
+    have heq : (fun x : ℝ => ∫ w in Set.Ici (-x - (2+r)^2),
+        ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+        = fun x : ℝ => ∫ w : ℝ, {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+            (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+              sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w) := by
+      funext x
+      rw [← MeasureTheory.integral_indicator measurableSet_Ici]
+      apply integral_congr_ae
+      filter_upwards with w
+      exact rrPlusInner_eq_indicator M r x w
+    rw [heq]
+    exact integrable_sectorInner_piece hr a M hA hW _ (rrPlusRegion_meas r)
+  have hIminus : Integrable (fun x : ℝ => ∫ w in Set.Iio (-x - (2+r)^2),
+      ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) volume := by
+    have heq : (fun x : ℝ => ∫ w in Set.Iio (-x - (2+r)^2),
+        ∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+        = fun x : ℝ => ∫ w : ℝ, {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+            (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+              sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w) := by
+      funext x
+      rw [← MeasureTheory.integral_indicator measurableSet_Iio]
+      apply integral_congr_ae
+      filter_upwards with w
+      exact rrMinusInner_eq_indicator M r x w
+    rw [heq]
+    exact integrable_sectorInner_piece hr a M hA hW _ (rrMinusRegion_meas r)
+  unfold trSectorRR trSectorRRplus trSectorRRminus trSector
+  rw [integral_congr_ae hsplit]
+  exact integral_add hIplus hIminus
+
+
+/-! ## The pair change of variables
+
+The substitution `X = (x+w)/2, U = (x−w)/2` (and its twin for `(y, z)`), whose
+Jacobian `2` per pair gives the total `|J| = 4`.  The proof
+is the junk-safe 1-D substitution chain already used in
+AiryKernel/TraceExpansion.lean: the fibred `w = x − 2U` dilation
+(`MeasureTheory.Measure.integral_comp_mul_left`, unconditional), one
+`integral_integral_swap` (integrability transferred through the junk-safe
+fibred identity, no `ℝ⁴` Jacobian computation), and the junk-safe outer shift
+(`integral_add_right_eq_self`). -/
+
+/-- Junk-safe reflection of an indicator integral:
+`∫ x, (s.indicator fun x => g (c − x)) x = ∫ y, ((c − ·)'' s).indicator g y`. -/
+theorem integral_indicator_comp_const_sub (c : ℝ) (g : ℝ → ℝ) (s : Set ℝ) :
+    ∫ x : ℝ, s.indicator (fun x => g (c - x)) x
+      = ∫ y : ℝ, ((fun x => c - x) '' s).indicator g y := by
+  have hpt : (fun x : ℝ => s.indicator (fun x => g (c - x)) x)
+      = fun x : ℝ => ((fun x => c - x) '' s).indicator g (c - x) := by
+    funext x
+    by_cases hx : x ∈ s
+    · rw [Set.indicator_of_mem hx _,
+        Set.indicator_of_mem (show c - x ∈ (fun x => c - x) '' s from ⟨x, hx, rfl⟩) _]
+    · have hnot : c - x ∉ (fun x => c - x) '' s := by
+        intro hmem
+        obtain ⟨x', hx', hxx'⟩ := (mem_image _ _ _).mp hmem
+        have hx'eq : x' = x := by linarith
+        exact hx (hx'eq ▸ hx')
+      rw [Set.indicator_of_notMem hx _, Set.indicator_of_notMem hnot _]
+  rw [hpt]
+  have hsub := MeasureTheory.integral_sub_right_eq_self (μ := volume)
+    (fun x : ℝ => ((fun x => c - x) '' s).indicator g (-x)) c
+  have hneg := MeasureTheory.integral_neg_eq_self
+    (((fun x => c - x) '' s).indicator g) volume
+  have heq : (fun x : ℝ => ((fun x => c - x) '' s).indicator g (-(x - c)))
+      = fun x : ℝ => ((fun x => c - x) '' s).indicator g (c - x) := by
+    funext x
+    congr 1
+    ring
+  rw [heq] at hsub
+  exact hsub.trans hneg
+
+/-- **The bounded-interval reflection**:
+`∫ x ∈ [a, b], g (c − x) dx = ∫ y ∈ [c−b, c−a], g y dy`. -/
+theorem integral_Icc_comp_const_sub (a b c : ℝ) (g : ℝ → ℝ) :
+    ∫ x in Set.Icc a b, g (c - x) = ∫ y in Set.Icc (c - b) (c - a), g y := by
+  have himg : (fun x : ℝ => c - x) '' Set.Icc a b = Set.Icc (c - b) (c - a) := by
+    ext y
+    simp only [Set.mem_image, Set.mem_Icc]
+    constructor
+    · rintro ⟨x, ⟨h1, h2⟩, rfl⟩
+      exact ⟨by linarith, by linarith⟩
+    · rintro ⟨h1, h2⟩
+      exact ⟨c - y, ⟨by linarith, by linarith⟩, by ring⟩
+  rw [← MeasureTheory.integral_indicator measurableSet_Icc,
+    ← MeasureTheory.integral_indicator measurableSet_Icc,
+    integral_indicator_comp_const_sub c g (Set.Icc a b), himg]
+
+/-- The reflection of `(-∞, a) ∩ (-∞, b]` under `x ↦ c − x` is
+`(c − a, ∞) ∩ [c − b, ∞)` (the RR− `X`-range). -/
+theorem integral_Iio_Iic_comp_const_sub (a b c : ℝ) (g : ℝ → ℝ) :
+    ∫ x in (Set.Iio a ∩ Set.Iic b), g (c - x)
+      = ∫ y in (Set.Ioi (c - a) ∩ Set.Ici (c - b)), g y := by
+  have himg : (fun x : ℝ => c - x) '' (Set.Iio a ∩ Set.Iic b)
+      = Set.Ioi (c - a) ∩ Set.Ici (c - b) := by
+    ext y
+    simp only [Set.mem_image, Set.mem_inter_iff, Set.mem_Iio, Set.mem_Iic, Set.mem_Ioi,
+      Set.mem_Ici]
+    constructor
+    · rintro ⟨x, ⟨h1, h2⟩, rfl⟩
+      exact ⟨by linarith, by linarith⟩
+    · rintro ⟨h1, h2⟩
+      exact ⟨c - y, ⟨by linarith, by linarith⟩, by ring⟩
+  rw [← MeasureTheory.integral_indicator (measurableSet_Iio.inter measurableSet_Iic),
+    ← MeasureTheory.integral_indicator (measurableSet_Ioi.inter measurableSet_Ici),
+    integral_indicator_comp_const_sub c g (Set.Iio a ∩ Set.Iic b), himg]
+
+/-- **The pair symmetrization change of variables**: for a
+nonnegative measurable plane function `F` with `uncurry F` integrable,
+`∫∫ F x w dx dw = 2 ∫∫ F (X+U) (X−U) dX dU` — the `X = (x+w)/2`,
+`U = (x−w)/2` substitution with Jacobian `2`. -/
+theorem integral_pair_sym_antisym {F : ℝ → ℝ → ℝ}
+    (hF : Measurable (Function.uncurry F)) (_hFnn : ∀ x w : ℝ, 0 ≤ F x w)
+    (hint : Integrable (Function.uncurry F) (volume.prod volume)) :
+    ∫ x : ℝ, ∫ w : ℝ, F x w = 2 * ∫ X : ℝ, ∫ U : ℝ, F (X + U) (X - U) := by
+  have hGmeas : Measurable (Function.uncurry fun x X : ℝ => F x (2*X - x)) :=
+    hF.comp ((continuous_fst.prodMk
+      ((continuous_const.mul continuous_snd).sub continuous_fst)).measurable)
+  have hGint : Integrable (Function.uncurry fun x X : ℝ => F x (2*X - x))
+      (volume.prod volume) := by
+    rw [MeasureTheory.integrable_prod_iff hGmeas.aestronglyMeasurable]
+    refine ⟨?_, ?_⟩
+    · filter_upwards [((integrable_prod_iff hF.aestronglyMeasurable).mp hint).1] with x hx
+      simp only [Function.uncurry_apply_pair] at hx ⊢
+      exact (hx.comp_sub_right x).comp_mul_left' two_ne_zero
+    · have hnorm : ∀ x : ℝ, (∫ X : ℝ, ‖F x (2*X - x)‖) = (1/2) * ∫ w : ℝ, ‖F x w‖ := by
+        intro x
+        have h2 : (∫ X : ℝ, ‖F x (2*X - x)‖) = |(2:ℝ)⁻¹| • ∫ t : ℝ, ‖F x (t - x)‖ :=
+          MeasureTheory.Measure.integral_comp_mul_left (fun t : ℝ => ‖F x (t - x)‖) (2 : ℝ)
+        have h3 : (∫ t : ℝ, ‖F x (t - x)‖) = ∫ t : ℝ, ‖F x t‖ :=
+          MeasureTheory.integral_sub_right_eq_self (μ := volume) (fun t : ℝ => ‖F x t‖) x
+        rw [h3] at h2
+        rw [h2, show |(2:ℝ)⁻¹| = 1/2 by norm_num, smul_eq_mul]
+      have hcong : (fun x : ℝ => ∫ X : ℝ, ‖F x (2*X - x)‖)
+          = fun x : ℝ => (1/2) * ∫ w : ℝ, ‖F x w‖ := funext hnorm
+      simp only [Function.uncurry_apply_pair]
+      rw [hcong]
+      exact (((integrable_prod_iff hF.aestronglyMeasurable).mp hint).2).const_mul (1/2)
+  -- the fibred identity (junk-safe): `∫ X, F x (2X − x) = (1/2) ∫ w, F x w`
+  have hfib : ∀ x : ℝ, (∫ X : ℝ, F x (2*X - x)) = (1/2) * ∫ w : ℝ, F x w := by
+    intro x
+    have h2 : (∫ X : ℝ, F x (2*X - x)) = |(2:ℝ)⁻¹| • ∫ t : ℝ, F x (t - x) :=
+      MeasureTheory.Measure.integral_comp_mul_left (fun t : ℝ => F x (t - x)) (2 : ℝ)
+    have h3 : (∫ t : ℝ, F x (t - x)) = ∫ t : ℝ, F x t :=
+      MeasureTheory.integral_sub_right_eq_self (μ := volume) (fun t : ℝ => F x t) x
+    rw [h3] at h2
+    rw [h2, show |(2:ℝ)⁻¹| = 1/2 by norm_num, smul_eq_mul]
+  calc ∫ x : ℝ, ∫ w : ℝ, F x w
+      = ∫ x : ℝ, (2 * ∫ X : ℝ, F x (2*X - x)) := by
+        apply integral_congr_ae
+        filter_upwards with x
+        rw [hfib x]
+        ring
+    _ = 2 * ∫ x : ℝ, ∫ X : ℝ, F x (2*X - x) := by rw [integral_const_mul]
+    _ = 2 * ∫ X : ℝ, ∫ x : ℝ, F x (2*X - x) := by
+        rw [MeasureTheory.integral_integral_swap hGint]
+    _ = 2 * ∫ X : ℝ, ∫ x : ℝ, F (x + X) (X - x) := by
+        congr 1
+        apply integral_congr_ae
+        filter_upwards with X
+        have hsub := MeasureTheory.integral_add_right_eq_self (μ := volume)
+          (fun x : ℝ => F x (2*X - x)) X
+        rw [← hsub]
+        apply integral_congr_ae
+        filter_upwards with x
+        show F (x + X) (2*X - (x + X)) = F (x + X) (X - x)
+        congr 1
+        ring
+    _ = 2 * ∫ X : ℝ, ∫ U : ℝ, F (X + U) (X - U) := by
+        congr 1
+        apply integral_congr_ae
+        filter_upwards with X
+        apply integral_congr_ae
+        filter_upwards with x
+        rw [add_comm x X]
+
+
+/-! ## The dominator collapse chain (the integrability workhorse)
+
+The inner `(y, z)`-integral of the RR dominator collapses to the product of the
+two reflected half-line Gaussian masses (bound the middle `p_r` by its prefactor
+`heatKernel_le`, then factor), each evaluated by reflection
+and bounded by the Chernoff envelope.  This retains the `(M−x)²`, `(M−w)²`
+Gaussian decay that the naive `p_{2+r}(x−w)` collapse loses (see the module
+docstring). -/
+
+/-- The `z`-slice of the RR dominator is measurable. -/
+theorem measurable_rrDom_z (M Ca : ℝ) (φ : ℝ → ℝ) (r x y w : ℝ) :
+    Measurable fun z : ℝ => rrDom Ca φ M r x y z w := by
+  unfold rrDom
+  exact ((((measurable_qRKerTwo M).comp
+    (continuous_const.prodMk continuous_const).measurable).mul
+    (((continuous_heatKernel r).comp (continuous_const.sub continuous_id)).measurable)).mul
+    ((measurable_qRKerTwo M).comp (continuous_id.prodMk continuous_const).measurable)).mul
+    measurable_const
+
+/-- The RR dominator, jointly measurable over the `((x, w), (y, z))` grouping
+(the Tonelli/Fubini input form). -/
+theorem measurable_rrDomG (M Ca : ℝ) (φ : ℝ → ℝ) (hφmeas : Measurable φ) (r : ℝ) :
+    Measurable fun q : (ℝ × ℝ) × (ℝ × ℝ) => rrDom Ca φ M r q.1.1 q.2.1 q.2.2 q.1.2 := by
+  unfold rrDom
+  have hfst : Continuous fun q : (ℝ × ℝ) × (ℝ × ℝ) => q.1.1 := continuous_fst.comp continuous_fst
+  have hsnd : Continuous fun q : (ℝ × ℝ) × (ℝ × ℝ) => q.1.2 := continuous_snd.comp continuous_fst
+  have hy : Continuous fun q : (ℝ × ℝ) × (ℝ × ℝ) => q.2.1 := continuous_fst.comp continuous_snd
+  have hz : Continuous fun q : (ℝ × ℝ) × (ℝ × ℝ) => q.2.2 := continuous_snd.comp continuous_snd
+  exact ((((measurable_qRKerTwo M).comp (hfst.prodMk hy).measurable).mul
+    (((continuous_heatKernel r).comp (hy.sub hz)).measurable)).mul
+    ((measurable_qRKerTwo M).comp (hz.prodMk hsnd).measurable)).mul
+    ((measurable_const.mul
+      (Real.continuous_exp.comp (continuous_const.sub
+        (continuous_const.mul (hsnd.add hfst)))).measurable).mul
+      (hφmeas.comp (hsnd.add hfst).measurable))
+
+
+/-- The `y`-measurable factor of the collapsed RR dominator: the indicator
+times the shifted heat kernel is integrable. -/
+theorem integrable_indicator_heatKernel_refl (M c : ℝ) :
+    Integrable fun u : ℝ => (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) u
+      * heatKernel 1 (c - u) := by
+  have hshift : Integrable fun u : ℝ => heatKernel 1 (c - u) := by
+    apply ((integrable_heatKernel one_pos).comp_sub_right c).congr
+    filter_upwards with u
+    rw [show u - c = -(c - u) from by ring, heatKernel_even]
+  apply hshift.mono' ?_ ?_
+  · exact ((measurable_const.indicator measurableSet_Iic).mul
+      (((continuous_heatKernel 1).comp
+        (continuous_const.sub continuous_id)).measurable)).aestronglyMeasurable
+  · filter_upwards with u
+    rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (heatKernel_pos one_pos _).le]
+    have hle : |(Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) u| ≤ 1 := by
+      by_cases hu : u ≤ M
+      · rw [Set.indicator_of_mem (Set.mem_Iic.mpr hu) _, abs_one]
+      · rw [Set.indicator_of_notMem (fun h => hu (Set.mem_Iic.mp h)) _, abs_zero]
+        norm_num
+    calc |(Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) u| * heatKernel 1 (c - u)
+        ≤ 1 * heatKernel 1 (c - u) :=
+          mul_le_mul_of_nonneg_right hle (heatKernel_pos one_pos _).le
+      _ = heatKernel 1 (c - u) := one_mul _
+
+/-- The reflected half-line heat-kernel mass: `∫ y ≤ M, p₁(2M − x − y) dy =
+(4π)^{−1/2} gaussianTail 1 (M − x)` (reflection `y ↦ M − y` then shift). -/
+theorem integral_Iic_heatKernel_reflected (M x : ℝ) :
+    ∫ y in Set.Iic M, heatKernel 1 (2*M - x - y)
+      = (4*Real.pi)^(-1/2 : ℝ) * gaussianTail 1 (M - x) := by
+  have heq : (fun y : ℝ => heatKernel 1 (2*M - x - y))
+      = fun y : ℝ => (fun w : ℝ => heatKernel 1 (w + (M - x))) (M - y) := by
+    funext y
+    congr 1
+    ring
+  rw [heq, AiryConj.integral_Iic_comp_const_sub (fun w : ℝ => heatKernel 1 (w + (M - x))) M,
+    AiryConj.integral_Ioi_add_const (fun v : ℝ => heatKernel 1 v) 0 (M - x), zero_add]
+  unfold gaussianTail heatKernel
+  rw [integral_const_mul, mul_one]
+
+/-- The Chernoff bound at temperature `1`, transferred from the `T = 1/2`
+form via `gaussianTail_scale`. -/
+theorem gaussianTail_one_le_exp (t : ℝ) (ht : 0 ≤ t) :
+    gaussianTail 1 t ≤ Real.sqrt 2 * Real.sqrt (Real.pi/2) * Real.exp (-t^2/4) := by
+  have h2 : (2 : ℝ) * 1 = 2 := mul_one 2
+  rw [AiryConj.gaussianTail_scale one_pos t, h2]
+  have h := AiryConj.gaussianTail_chernoff (t / Real.sqrt 2) (by positivity)
+  have hexp : -(t / Real.sqrt 2)^2/2 = -t^2/4 := by
+    rw [div_pow, Real.sq_sqrt (by norm_num : (0:ℝ) ≤ 2)]
+    ring
+  rw [hexp] at h
+  calc Real.sqrt 2 * gaussianTail (1/2) (t / Real.sqrt 2)
+      ≤ Real.sqrt 2 * (Real.sqrt (Real.pi/2) * Real.exp (-t^2/4)) :=
+        mul_le_mul_of_nonneg_left h (Real.sqrt_nonneg _)
+    _ = Real.sqrt 2 * Real.sqrt (Real.pi/2) * Real.exp (-t^2/4) := by ring
+
+/-- **The `z`-level collapse** of the RR dominator: bound the middle heat
+kernel by its prefactor `heatKernel_le` and evaluate the reflected `z`-tail. -/
+theorem rrDom_z_le (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (x y w : ℝ) :
+    ∫ z : ℝ, rrDom Ca φ M r x y z w
+      ≤ (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x))
+        * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+        * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+        * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w)
+          * ((4*Real.pi*r)^(-1/2 : ℝ) * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w)))) := by
+  set Cfac : ℝ := Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x) with hCfacdef
+  set K : ℝ := (4*Real.pi*r)^(-1/2 : ℝ) with hKdef
+  have hCfacnn : 0 ≤ Cfac := mul_nonneg (mul_nonneg hCa (Real.exp_pos _).le) (hφnn _)
+  have hpt : ∀ z : ℝ, rrDom Ca φ M r x y z w
+      = (Cfac * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w))
+        * (heatKernel r (y - z) * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z)
+            * heatKernel 1 (2*M - z - w))) := by
+    intro z
+    unfold rrDom
+    rw [qRKerTwo_apply_eq, qRKerTwo_apply_eq, hCfacdef]
+    ring
+  rw [integral_congr_ae (Eventually.of_forall hpt), integral_const_mul]
+  -- the inner `z`-integral bound
+  have hB0 := integrable_indicator_heatKernel_refl M (2*M - w)
+  have hB : Integrable fun z : ℝ =>
+      (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z * heatKernel 1 (2*M - z - w) := by
+    apply hB0.congr
+    filter_upwards with z
+    congr 1
+    ring
+  have hmeasZ : Measurable fun z : ℝ =>
+      heatKernel r (y - z) * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z
+        * heatKernel 1 (2*M - z - w)) :=
+    (((continuous_heatKernel r).comp (continuous_const.sub continuous_id)).measurable.mul
+      ((measurable_const.indicator measurableSet_Iic).mul
+        (((continuous_heatKernel 1).comp
+          ((continuous_const.sub continuous_id).sub continuous_const)).measurable)))
+  have hboundZ : ∀ z : ℝ, heatKernel r (y - z) * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z
+        * heatKernel 1 (2*M - z - w))
+      ≤ K * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z * heatKernel 1 (2*M - z - w)) := by
+    intro z
+    exact mul_le_mul_of_nonneg_right (heatKernel_le hr _)
+      (mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _) (heatKernel_pos one_pos _).le)
+  have hzint : Integrable fun z : ℝ =>
+      heatKernel r (y - z) * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z
+        * heatKernel 1 (2*M - z - w)) :=
+    (hB.const_mul K).mono' hmeasZ.aestronglyMeasurable
+      (Eventually.of_forall fun z => by
+        rw [Real.norm_eq_abs,
+          abs_of_nonneg (mul_nonneg (heatKernel_pos hr _).le
+            (mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+              (heatKernel_pos one_pos _).le))]
+        exact hboundZ z)
+  have hstep : (∫ z : ℝ, heatKernel r (y - z) * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z
+        * heatKernel 1 (2*M - z - w)))
+      ≤ K * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w)) := by
+    calc (∫ z : ℝ, heatKernel r (y - z) * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z
+            * heatKernel 1 (2*M - z - w)))
+        ≤ ∫ z : ℝ, K * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z
+            * heatKernel 1 (2*M - z - w)) := integral_mono hzint (hB.const_mul K) hboundZ
+      _ = K * (∫ z : ℝ, (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z
+            * heatKernel 1 (2*M - z - w)) := integral_const_mul K _
+      _ = K * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w)) := by
+          congr 1
+          rw [← MeasureTheory.integral_indicator measurableSet_Iic]
+          apply integral_congr_ae
+          filter_upwards with z
+          by_cases hz : z ≤ M
+          · rw [Set.indicator_of_mem (Set.mem_Iic.mpr hz) _,
+              Set.indicator_of_mem (Set.mem_Iic.mpr hz) _, one_mul]
+          · rw [Set.indicator_of_notMem (fun h => hz (Set.mem_Iic.mp h)) _,
+              Set.indicator_of_notMem (fun h => hz (Set.mem_Iic.mp h)) _, zero_mul]
+  calc (Cfac * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w))
+        * (∫ z : ℝ, heatKernel r (y - z) * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z
+            * heatKernel 1 (2*M - z - w)))
+      ≤ (Cfac * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w))
+        * (K * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w))) := by
+        apply mul_le_mul_of_nonneg_left hstep
+        exact mul_nonneg (mul_nonneg (mul_nonneg hCfacnn
+          (Set.indicator_nonneg (fun _ _ => zero_le_one) _))
+          (mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+            (heatKernel_pos one_pos _).le))
+          (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+    _ = Cfac * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+        * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+        * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w)
+          * (K * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w)))) := by ring
+
+/-- The `y`-slice inner-`z` integral of the RR dominator is measurable. -/
+theorem measurable_rrDomInnerY (M Ca : ℝ) (φ : ℝ → ℝ) (hφmeas : Measurable φ) (r x w : ℝ) :
+    Measurable fun y : ℝ => ∫ z : ℝ, rrDom Ca φ M r x y z w := by
+  have hG : Measurable fun q : ℝ × ℝ => rrDom Ca φ M r x q.1 q.2 w :=
+    (measurable_rrDomG M Ca φ hφmeas r).comp
+      ((continuous_const.prodMk continuous_const).prodMk
+        (continuous_fst.prodMk continuous_snd) |>.measurable)
+  exact (hG.stronglyMeasurable.integral_prod_right' (ν := volume)).measurable
+
+/-- **The `(y, z)` collapse** of the RR dominator (at the level
+of bounds): the two reflected half-line masses factor out. -/
+theorem rrDom_yz_le (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (hφmeas : Measurable φ) (x w : ℝ) :
+    ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w
+      ≤ (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x))
+        * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+        * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w)
+          * ((4*Real.pi*r)^(-1/2 : ℝ)
+            * ((∫ y in Set.Iic M, heatKernel 1 (2*M - x - y))
+              * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w))))) := by
+  set Cfac : ℝ := Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x) with hCfacdef
+  set K : ℝ := (4*Real.pi*r)^(-1/2 : ℝ) with hKdef
+  set Tz : ℝ := ∫ z in Set.Iic M, heatKernel 1 (2*M - z - w) with hTzdef
+  set R : ℝ := Cfac * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+    * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w) * (K * Tz) with hRdef
+  have hybound : ∀ y : ℝ, (∫ z : ℝ, rrDom Ca φ M r x y z w)
+      ≤ R * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y)) := by
+    intro y
+    have h := rrDom_z_le hr M Ca hCa φ hφnn x y w
+    calc ∫ z : ℝ, rrDom Ca φ M r x y z w
+        ≤ Cfac * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w) * (K * Tz)) := h
+      _ = R * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y)) := by
+          rw [hRdef]
+          ring
+  have hupper : Integrable fun y : ℝ =>
+      R * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y)) :=
+    (integrable_indicator_heatKernel_refl M (2*M - x)).const_mul R
+  have hlower : Integrable fun y : ℝ => ∫ z : ℝ, rrDom Ca φ M r x y z w := by
+    apply hupper.mono' (measurable_rrDomInnerY M Ca φ hφmeas r x w).aestronglyMeasurable
+    filter_upwards with y
+    rw [Real.norm_eq_abs,
+      abs_of_nonneg (integral_nonneg fun z => rrDom_nonneg hr Ca hCa φ hφnn M x y z w)]
+    exact hybound y
+  calc ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w
+      ≤ ∫ y : ℝ, R * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y)
+          * heatKernel 1 (2*M - x - y)) := integral_mono hlower hupper hybound
+    _ = R * (∫ y in Set.Iic M, heatKernel 1 (2*M - x - y)) := by
+        rw [integral_const_mul]
+        congr 1
+        rw [← MeasureTheory.integral_indicator measurableSet_Iic]
+        apply integral_congr_ae
+        filter_upwards with y
+        by_cases hy : y ≤ M
+        · rw [Set.indicator_of_mem (Set.mem_Iic.mpr hy) _,
+            Set.indicator_of_mem (Set.mem_Iic.mpr hy) _, one_mul]
+        · rw [Set.indicator_of_notMem (fun h => hy (Set.mem_Iic.mp h)) _,
+            Set.indicator_of_notMem (fun h => hy (Set.mem_Iic.mp h)) _, zero_mul]
+    _ = Cfac * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+        * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w)
+          * (K * ((∫ y in Set.Iic M, heatKernel 1 (2*M - x - y)) * Tz))) := by
+        rw [hRdef]
+        ring
+    _ = Cfac * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+        * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w)
+          * (K * ((∫ y in Set.Iic M, heatKernel 1 (2*M - x - y))
+            * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w))))) := by rw [hTzdef]
+
+/-- **(a)-level**: the RR dominator is plane-integrable in `(y, z)` at fixed
+`(x, w)` (unconditional — the collapse bound and its Gaussian tails). -/
+theorem integrable_rrDom_yz (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (hφmeas : Measurable φ) (x w : ℝ) :
+    Integrable (Function.uncurry fun y z => rrDom Ca φ M r x y z w) (volume.prod volume) := by
+  show Integrable (fun q : ℝ × ℝ => rrDom Ca φ M r x q.1 q.2 w) (volume.prod volume)
+  have hGmeas : Measurable fun q : ℝ × ℝ => rrDom Ca φ M r x q.1 q.2 w :=
+    (measurable_rrDomG M Ca φ hφmeas r).comp
+      (((continuous_const.prodMk continuous_const).prodMk
+        (continuous_fst.prodMk continuous_snd)).measurable)
+  rw [MeasureTheory.integrable_prod_iff hGmeas.aestronglyMeasurable]
+  refine ⟨?_, ?_⟩
+  · -- `z`-slices: mono' against the `z`-collapse's envelope
+    filter_upwards with y
+    have hB := (integrable_indicator_heatKernel_refl M (2*M - w)).const_mul
+      ((Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x))
+        * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+        * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+        * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w) * (4*Real.pi*r)^(-1/2 : ℝ)))
+    have hB' : Integrable fun z : ℝ =>
+        (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x))
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w) * (4*Real.pi*r)^(-1/2 : ℝ))
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z) * heatKernel 1 (2*M - z - w)) := by
+      apply hB.congr
+      filter_upwards with z
+      ring
+    apply hB'.mono' (measurable_rrDom_z M Ca φ r x y w).aestronglyMeasurable
+    filter_upwards with z
+    rw [Real.norm_eq_abs, abs_of_nonneg (rrDom_nonneg hr Ca hCa φ hφnn M x y z w)]
+    have h := rrDom_z_le hr M Ca hCa φ hφnn x y w
+    -- pointwise: rrDom ≤ the `z`-slice bound with `∫ z ∈ Iic M` replaced by the
+    -- pointwise `B(z)`: undo the z-integral bound
+    have hpt : rrDom Ca φ M r x y z w
+        ≤ (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x))
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w) * (4*Real.pi*r)^(-1/2 : ℝ))
+          * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z) * heatKernel 1 (2*M - z - w)) := by
+      unfold rrDom
+      rw [qRKerTwo_apply_eq, qRKerTwo_apply_eq]
+      have hle := heatKernel_le hr (y - z)
+      have hnn1 : (0:ℝ) ≤ (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x :=
+        Set.indicator_nonneg (fun _ _ => zero_le_one) _
+      have hnn2 : (0:ℝ) ≤ (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y
+          * heatKernel 1 (2*M - x - y) :=
+        mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _) (heatKernel_pos one_pos _).le
+      have hnn3 : (0:ℝ) ≤ (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w :=
+        Set.indicator_nonneg (fun _ _ => zero_le_one) _
+      have hnn4 : (0:ℝ) ≤ (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z
+          * heatKernel 1 (2*M - z - w) :=
+        mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _) (heatKernel_pos one_pos _).le
+      have hCafenn : (0:ℝ) ≤ Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x) :=
+        mul_nonneg (mul_nonneg hCa (Real.exp_pos _).le) (hφnn _)
+      have hrewrite : (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x
+            * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y * heatKernel 1 (2*M - x - y)
+          * heatKernel r (y - z)
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z
+            * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w * heatKernel 1 (2*M - z - w))
+          * (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(w + x)) * φ (w + x))
+          = (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x))
+            * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+            * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+            * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w) * heatKernel r (y - z))
+            * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) z) * heatKernel 1 (2*M - z - w)) := by
+        ring
+      rw [hrewrite]
+      apply mul_le_mul_of_nonneg_right _ hnn4
+      apply mul_le_mul_of_nonneg_left _ (mul_nonneg (mul_nonneg hCafenn hnn1) hnn2)
+      exact mul_le_mul_of_nonneg_left hle hnn3
+    exact hpt
+  · -- the outer `y`-integrability: mono' against the `rrDom_z_le` upper bound
+    set R : ℝ := (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x))
+        * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+        * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w)
+        * ((4*Real.pi*r)^(-1/2 : ℝ) * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w)))
+      with hRdef
+    have hR : Integrable fun y : ℝ =>
+        R * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y)) :=
+      (integrable_indicator_heatKernel_refl M (2*M - x)).const_mul R
+    apply hR.mono'
+    · exact (((hGmeas.norm).stronglyMeasurable.integral_prod_right'
+        (ν := volume)).measurable).aestronglyMeasurable
+    · filter_upwards with y
+      have h := rrDom_z_le hr M Ca hCa φ hφnn x y w
+      rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg fun z => norm_nonneg _)]
+      calc ∫ z : ℝ, ‖rrDom Ca φ M r x y z w‖ = ∫ z : ℝ, rrDom Ca φ M r x y z w := by
+            apply integral_congr_ae
+            filter_upwards with z
+            rw [Real.norm_eq_abs, abs_of_nonneg (rrDom_nonneg hr Ca hCa φ hφnn M x y z w)]
+        _ ≤ (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x))
+            * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) x)
+            * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y))
+            * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) w)
+              * ((4*Real.pi*r)^(-1/2 : ℝ) * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w)))) := h
+        _ = R * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) y) * heatKernel 1 (2*M - x - y)) := by
+            rw [hRdef]
+            ring
+
+/-- The `(x, w)`-plane envelope of the collapsed RR dominator:
+`e^{−S·t} · e^{−(M−t)²/4}` — the Gaussian factor supplies the decay that
+`e^{−S·t}` lacks (see the module docstring's section on the Tonelli inputs). -/
+noncomputable def rrEnvXW (S M : ℝ) (t : ℝ) : ℝ :=
+  Real.exp (-(S * t)) * Real.exp (-(M - t)^2/4)
+
+/-- Completing the square: the envelope is a shifted Gaussian. -/
+theorem rrEnvXW_eq (S M t : ℝ) :
+    rrEnvXW S M t = Real.exp (S^2 - S*M) * Real.exp (-(t - (M - 2*S))^2/4) := by
+  unfold rrEnvXW
+  rw [← Real.exp_add, ← Real.exp_add]
+  congr 1
+  ring
+
+/-- The envelope is nonnegative. -/
+theorem rrEnvXW_nonneg (S M t : ℝ) : 0 ≤ rrEnvXW S M t :=
+  mul_nonneg (Real.exp_pos _).le (Real.exp_pos _).le
+
+/-- The envelope is integrable (a shifted Gaussian). -/
+theorem integrable_rrEnvXW (S M : ℝ) : Integrable (rrEnvXW S M) volume := by
+  rw [show rrEnvXW S M = fun t => Real.exp (S^2 - S*M) * Real.exp (-(t - (M - 2*S))^2/4)
+    from funext fun t => rrEnvXW_eq S M t]
+  apply Integrable.const_mul
+  have h1 : Integrable fun t : ℝ => Real.exp (-(1/4) * t^2) :=
+    integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1/4)
+  have h2 := h1.comp_sub_right (M - 2*S)
+  apply h2.congr
+  filter_upwards with t
+  congr 1
+  ring
+
+/-- The envelope's mass: `e^{S² − SM} √(4π)` (shifted `integral_gaussian`). -/
+theorem integral_rrEnvXW (S M : ℝ) :
+    ∫ t : ℝ, rrEnvXW S M t = Real.exp (S^2 - S*M) * Real.sqrt (4 * Real.pi) := by
+  rw [show rrEnvXW S M = fun t => Real.exp (S^2 - S*M) * Real.exp (-(t - (M - 2*S))^2/4)
+    from funext fun t => rrEnvXW_eq S M t]
+  rw [integral_const_mul]
+  congr 1
+  have hG : (∫ t : ℝ, Real.exp (-(t - (M - 2*S))^2/4)) = Real.sqrt (4 * Real.pi) := by
+    have h2 := MeasureTheory.integral_sub_right_eq_self (μ := volume)
+      (fun t : ℝ => Real.exp (-(1/4) * t^2)) (M - 2*S)
+    rw [show (fun t : ℝ => Real.exp (-(1/4) * (t - (M - 2*S))^2))
+        = fun t : ℝ => Real.exp (-(t - (M - 2*S))^2/4) from funext fun t => by
+      congr 1
+      ring] at h2
+    rw [h2, integral_gaussian]
+    congr 1
+    rw [div_eq_mul_inv, show (1/4 : ℝ)⁻¹ = 4 from by norm_num, mul_comm]
+  rw [hG]
+
+/-- The envelope is jointly integrable on the `(x, w)` plane. -/
+theorem integrable_rrEnvXW_plane (S M : ℝ) :
+    Integrable (Function.uncurry fun x w : ℝ => rrEnvXW S M x * rrEnvXW S M w)
+      (volume.prod volume) := by
+  show Integrable (fun p : ℝ × ℝ => rrEnvXW S M p.1 * rrEnvXW S M p.2) (volume.prod volume)
+  exact (integrable_rrEnvXW S M).mul_prod (integrable_rrEnvXW S M)
+
+/-- The inner double integral of the RR dominator is jointly measurable in
+`(x, w)` (the `integral_prod_right'` measurability from `measurable_rrDomG`,
+with `integrable_rrDom_yz` for the `integral_prod` conversion). -/
+theorem measurable_uncurry_rrDomInner (hr : 0 < r) (M Ca : ℝ) (φ : ℝ → ℝ)
+    (hφmeas : Measurable φ) (hCa : 0 ≤ Ca) (hφnn : ∀ t : ℝ, 0 ≤ φ t) :
+    Measurable (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) := by
+  have h2 : Measurable fun p : ℝ × ℝ => ∫ q : ℝ × ℝ, rrDom Ca φ M r p.1 q.1 q.2 p.2 :=
+    ((measurable_rrDomG M Ca φ hφmeas r).stronglyMeasurable.integral_prod_right'
+      (ν := volume)).measurable
+  have heq : (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w)
+      = fun p : ℝ × ℝ => ∫ q : ℝ × ℝ, rrDom Ca φ M r p.1 q.1 q.2 p.2 := by
+    funext p
+    obtain ⟨x, w⟩ := p
+    show (∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w)
+      = ∫ q : ℝ × ℝ, rrDom Ca φ M r x q.1 q.2 w
+    exact (MeasureTheory.integral_prod _
+      (integrable_rrDom_yz hr M Ca hCa φ hφnn hφmeas x w)).symm
+  rw [heq]
+  exact h2
+
+/-- **The Chernoff-envelope collapse**: the collapsed
+dominator on the RR region is bounded by the Gaussian envelope
+`e^{−S(x+w)} e^{−((M−x)²+(M−w)²)/4}` — the form that is plane-integrable. -/
+theorem rrDom_yz_le_env (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (hφ1 : ∀ t : ℝ, φ t ≤ 1) (hφmeas : Measurable φ) (x w : ℝ) :
+    ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w
+      ≤ Ca * Real.exp (-(2/3)*(2+r)^3)
+        * ((4*Real.pi)^(-1/2:ℝ) * (Real.sqrt 2 * Real.sqrt (Real.pi/2)))^2
+        * (4*Real.pi*r)^(-1/2:ℝ)
+        * (rrEnvXW (2+r) M x * rrEnvXW (2+r) M w) := by
+  set K' : ℝ := (4*Real.pi)^(-1/2:ℝ) * (Real.sqrt 2 * Real.sqrt (Real.pi/2)) with hK'def
+  set K : ℝ := (4*Real.pi*r)^(-1/2 : ℝ) with hKdef
+  have hK'nn : 0 ≤ K' :=
+    mul_nonneg (Real.rpow_nonneg (show (0:ℝ) ≤ 4 * Real.pi by positivity) _)
+      (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+  have hKnn : 0 ≤ K := Real.rpow_nonneg (show (0:ℝ) ≤ 4 * Real.pi * r by positivity) _
+  have hmain := rrDom_yz_le hr M Ca hCa φ hφnn hφmeas x w
+  have hexpsplit : Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w))
+      = Real.exp (-(2/3)*(2+r)^3) * (Real.exp (-((2+r)*x)) * Real.exp (-((2+r)*w))) := by
+    rw [← Real.exp_add, ← Real.exp_add]
+    congr 1
+    ring
+  by_cases hx : x ≤ M
+  · by_cases hw : w ≤ M
+    · rw [Set.indicator_of_mem (Set.mem_Iic.mpr hx) _,
+        Set.indicator_of_mem (Set.mem_Iic.mpr hw) _] at hmain
+      have hTybound : (∫ y in Set.Iic M, heatKernel 1 (2*M - x - y))
+          ≤ K' * Real.exp (-(M - x)^2/4) := by
+        rw [integral_Iic_heatKernel_reflected M x, hK'def, mul_assoc]
+        exact mul_le_mul_of_nonneg_left (gaussianTail_one_le_exp (M - x) (sub_nonneg.mpr hx))
+          (by positivity)
+      have hTzbound : (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w))
+          ≤ K' * Real.exp (-(M - w)^2/4) := by
+        rw [show (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w))
+            = ∫ y in Set.Iic M, heatKernel 1 (2*M - w - y) from by
+          apply setIntegral_congr_fun measurableSet_Iic
+          intro z _
+          ring]
+        rw [integral_Iic_heatKernel_reflected M w, hK'def, mul_assoc]
+        exact mul_le_mul_of_nonneg_left (gaussianTail_one_le_exp (M - w) (sub_nonneg.mpr hw))
+          (by positivity)
+      have hTynn : (0:ℝ) ≤ ∫ y in Set.Iic M, heatKernel 1 (2*M - x - y) :=
+        setIntegral_nonneg measurableSet_Iic fun y _ => (heatKernel_pos one_pos _).le
+      have hTwnn : (0:ℝ) ≤ ∫ z in Set.Iic M, heatKernel 1 (2*M - z - w) :=
+        setIntegral_nonneg measurableSet_Iic fun z _ => (heatKernel_pos one_pos _).le
+      have hTbound : K * ((∫ y in Set.Iic M, heatKernel 1 (2*M - x - y))
+          * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w)))
+          ≤ K * ((K' * Real.exp (-(M - x)^2/4)) * (K' * Real.exp (-(M - w)^2/4))) :=
+        mul_le_mul_of_nonneg_left
+          (mul_le_mul hTybound hTzbound hTwnn (mul_nonneg hK'nn (Real.exp_pos _).le)) hKnn
+      have hCfacbound : Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x)
+          ≤ Ca * Real.exp (-(2/3)*(2+r)^3) * (Real.exp (-((2+r)*x)) * Real.exp (-((2+r)*w))) := by
+        calc Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x)
+            ≤ Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * 1 :=
+              mul_le_mul_of_nonneg_left (hφ1 _)
+                (mul_nonneg hCa (Real.exp_pos _).le)
+          _ = Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) := mul_one _
+          _ = Ca * Real.exp (-(2/3)*(2+r)^3) * (Real.exp (-((2+r)*x)) * Real.exp (-((2+r)*w))) := by
+              rw [hexpsplit]
+              ring
+      calc ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w
+          ≤ (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x)) * 1
+            * (1 * (K * ((∫ y in Set.Iic M, heatKernel 1 (2*M - x - y))
+              * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w))))) := hmain
+        _ = (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(x + w)) * φ (w + x))
+            * (K * ((∫ y in Set.Iic M, heatKernel 1 (2*M - x - y))
+              * (∫ z in Set.Iic M, heatKernel 1 (2*M - z - w)))) := by ring
+        _ ≤ (Ca * Real.exp (-(2/3)*(2+r)^3) * (Real.exp (-((2+r)*x)) * Real.exp (-((2+r)*w))))
+            * (K * ((K' * Real.exp (-(M - x)^2/4)) * (K' * Real.exp (-(M - w)^2/4)))) :=
+            mul_le_mul hCfacbound hTbound
+              (mul_nonneg hKnn (mul_nonneg hTynn hTwnn))
+              (mul_nonneg (mul_nonneg hCa (Real.exp_pos _).le)
+                (mul_nonneg (Real.exp_pos _).le (Real.exp_pos _).le))
+        _ = Ca * Real.exp (-(2/3)*(2+r)^3)
+            * ((4*Real.pi)^(-1/2:ℝ) * (Real.sqrt 2 * Real.sqrt (Real.pi/2)))^2
+            * (4*Real.pi*r)^(-1/2:ℝ)
+            * (rrEnvXW (2+r) M x * rrEnvXW (2+r) M w) := by
+            unfold rrEnvXW
+            rw [hK'def, hKdef]
+            ring
+    · -- `w > M`: the `w`-indicator kills the collapse bound
+      have h0 : ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w ≤ 0 := by
+        apply hmain.trans
+        rw [Set.indicator_of_notMem (fun h => hw (Set.mem_Iic.mp h)) _, zero_mul, mul_zero]
+      refine h0.trans ?_
+      exact mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg hCa (Real.exp_pos _).le)
+        (pow_two_nonneg _)) (Real.rpow_nonneg (show (0:ℝ) ≤ 4 * Real.pi * r by positivity) _))
+        (mul_nonneg (rrEnvXW_nonneg _ _ _) (rrEnvXW_nonneg _ _ _))
+  · -- `x > M`: the `x`-indicator kills the collapse bound
+    have h0 : ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w ≤ 0 := by
+      apply hmain.trans
+      rw [Set.indicator_of_notMem (fun h => hx (Set.mem_Iic.mp h)) _, mul_zero, zero_mul]
+    refine h0.trans ?_
+    exact mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg hCa (Real.exp_pos _).le)
+      (pow_two_nonneg _)) (Real.rpow_nonneg (show (0:ℝ) ≤ 4 * Real.pi * r by positivity) _))
+      (mul_nonneg (rrEnvXW_nonneg _ _ _) (rrEnvXW_nonneg _ _ _))
+
+/-- **(b)-level**: the `W`-indicated inner dominator is plane-integrable in
+`(x, w)` (the envelope `integrable_rrEnvXW_plane`).  This is the change-of-variables
+integrability input for the outer `(x, w)` pair. -/
+theorem integrable_rrDomW_plane (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (hφ1 : ∀ t : ℝ, φ t ≤ 1) (hφmeas : Measurable φ)
+    (Xs0 : Set ℝ) (hXs0 : MeasurableSet Xs0) :
+    Integrable (Function.uncurry fun x w : ℝ =>
+      ({w : ℝ | (x + w)/2 ∈ Xs0}.indicator (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) w))
+      (volume.prod volume) := by
+  apply ((integrable_rrEnvXW_plane (2+r) M).const_mul
+    (Ca * Real.exp (-(2/3)*(2+r)^3)
+      * ((4*Real.pi)^(-1/2:ℝ) * (Real.sqrt 2 * Real.sqrt (Real.pi/2)))^2
+      * (4*Real.pi*r)^(-1/2:ℝ))).mono' ?_ ?_
+  · have heq : (Function.uncurry fun x w : ℝ =>
+        ({w : ℝ | (x + w)/2 ∈ Xs0}).indicator (fun w => ∫ y : ℝ, ∫ z : ℝ,
+          rrDom Ca φ M r x y z w) w)
+        = {p : ℝ × ℝ | (p.1 + p.2)/2 ∈ Xs0}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) := by
+      funext p
+      obtain ⟨x, w⟩ := p
+      show ({w : ℝ | (x + w)/2 ∈ Xs0}).indicator (fun w => ∫ y : ℝ, ∫ z : ℝ,
+          rrDom Ca φ M r x y z w) w
+        = {p : ℝ × ℝ | (p.1 + p.2)/2 ∈ Xs0}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) (x, w)
+      by_cases hw : (x + w)/2 ∈ Xs0
+      · rw [Set.indicator_of_mem (show w ∈ {w : ℝ | (x + w)/2 ∈ Xs0} from hw) _,
+          Set.indicator_of_mem (show (x,w) ∈ {p : ℝ × ℝ | (p.1+p.2)/2 ∈ Xs0} from hw) _]
+        rfl
+      · rw [Set.indicator_of_notMem (show w ∉ {w : ℝ | (x + w)/2 ∈ Xs0} from hw) _,
+          Set.indicator_of_notMem (show (x,w) ∉ {p : ℝ × ℝ | (p.1+p.2)/2 ∈ Xs0} from hw) _]
+    rw [heq]
+    exact ((measurable_uncurry_rrDomInner hr M Ca φ hφmeas hCa hφnn).indicator
+      (hXs0.preimage ((continuous_fst.add continuous_snd).div_const 2).measurable)).aestronglyMeasurable
+  · filter_upwards with p
+    obtain ⟨x, w⟩ := p
+    simp only [Function.uncurry_apply_pair]
+    rw [Real.norm_eq_abs]
+    have hnn : (0:ℝ) ≤ ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w :=
+      integral_nonneg fun y => integral_nonneg fun z => rrDom_nonneg hr Ca hCa φ hφnn M x y z w
+    have habs : |({w : ℝ | (x + w)/2 ∈ Xs0}).indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) w|
+        = ({w : ℝ | (x + w)/2 ∈ Xs0}).indicator
+          (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) w :=
+      abs_of_nonneg (Set.indicator_nonneg (fun _ _ => hnn) _)
+    rw [habs]
+    calc ({w : ℝ | (x + w)/2 ∈ Xs0}).indicator
+          (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) w
+        ≤ ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w := by
+          by_cases hw : w ∈ {w : ℝ | (x + w)/2 ∈ Xs0}
+          · rw [Set.indicator_of_mem hw _]
+          · rw [Set.indicator_of_notMem hw _]
+            exact hnn
+      _ ≤ Ca * Real.exp (-(2/3)*(2+r)^3)
+            * ((4*Real.pi)^(-1/2:ℝ) * (Real.sqrt 2 * Real.sqrt (Real.pi/2)))^2
+            * (4*Real.pi*r)^(-1/2:ℝ)
+            * (rrEnvXW (2+r) M x * rrEnvXW (2+r) M w) :=
+          rrDom_yz_le_env hr M Ca hCa φ hφnn hφ1 hφmeas x w
+      _ = (Ca * Real.exp (-(2/3)*(2+r)^3)
+            * ((4*Real.pi)^(-1/2:ℝ) * (Real.sqrt 2 * Real.sqrt (Real.pi/2)))^2
+            * (4*Real.pi*r)^(-1/2:ℝ))
+          * (rrEnvXW (2+r) M x * rrEnvXW (2+r) M w) := by ring
+
+/-- **(c)-level, fibred**: the inner dominator is `w`-integrable at every fixed
+`x` (the envelope in `w`).  This supplies the norm-chain's pointwise dominator
+for the RR+ and RR− covariance-form bounds. -/
+theorem integrable_rrDomInner_w (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (hφ1 : ∀ t : ℝ, φ t ≤ 1) (hφmeas : Measurable φ) (x : ℝ) :
+    Integrable fun w : ℝ => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w := by
+  apply ((integrable_rrEnvXW (2+r) M).const_mul
+    (Ca * Real.exp (-(2/3)*(2+r)^3)
+      * ((4*Real.pi)^(-1/2:ℝ) * (Real.sqrt 2 * Real.sqrt (Real.pi/2)))^2
+      * (4*Real.pi*r)^(-1/2:ℝ)
+      * rrEnvXW (2+r) M x)).mono' ?_ ?_
+  · exact ((measurable_uncurry_rrDomInner hr M Ca φ hφmeas hCa hφnn).comp
+      (continuous_const.prodMk continuous_id).measurable).aestronglyMeasurable
+  · filter_upwards with w
+    rw [Real.norm_eq_abs,
+      abs_of_nonneg (integral_nonneg fun y => integral_nonneg fun z =>
+        rrDom_nonneg hr Ca hCa φ hφnn M x y z w)]
+    have h := rrDom_yz_le_env hr M Ca hCa φ hφnn hφ1 hφmeas x w
+    calc ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w
+        ≤ Ca * Real.exp (-(2/3)*(2+r)^3)
+          * ((4*Real.pi)^(-1/2:ℝ) * (Real.sqrt 2 * Real.sqrt (Real.pi/2)))^2
+          * (4*Real.pi*r)^(-1/2:ℝ)
+          * (rrEnvXW (2+r) M x * rrEnvXW (2+r) M w) := h
+      _ = (Ca * Real.exp (-(2/3)*(2+r)^3)
+          * ((4*Real.pi)^(-1/2:ℝ) * (Real.sqrt 2 * Real.sqrt (Real.pi/2)))^2
+          * (4*Real.pi*r)^(-1/2:ℝ)
+          * rrEnvXW (2+r) M x) * rrEnvXW (2+r) M w := by ring
+
+/-- **(c)-level**: the `W`-indicated inner dominator, integrated over `w`, is
+integrable in `x` — the top-level integrability of the RR± norm chains. -/
+theorem integrable_rrDomInner_x (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (hφ1 : ∀ t : ℝ, φ t ≤ 1) (hφmeas : Measurable φ)
+    (Xs0 : Set ℝ) (hXs0 : MeasurableSet Xs0) :
+    Integrable (fun x : ℝ => ∫ w in {w : ℝ | (x + w)/2 ∈ Xs0}, ∫ y : ℝ, ∫ z : ℝ,
+      rrDom Ca φ M r x y z w) volume := by
+  have hB := integrable_rrDomW_plane hr M Ca hCa φ hφnn hφ1 hφmeas Xs0 hXs0
+  have houter := ((integrable_prod_iff (hB.aestronglyMeasurable)).mp hB).2
+  simp only [Function.uncurry_apply_pair] at houter
+  apply houter.congr
+  filter_upwards with x
+  have hnorm : ∀ w : ℝ, ‖({w : ℝ | (x + w)/2 ∈ Xs0}.indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) w)‖
+      = ({w : ℝ | (x + w)/2 ∈ Xs0}.indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) w) := by
+    intro w
+    rw [Real.norm_eq_abs, abs_of_nonneg (Set.indicator_nonneg (fun a _ =>
+      integral_nonneg fun y => integral_nonneg fun z =>
+        rrDom_nonneg hr Ca hCa φ hφnn M x y z a) w)]
+  rw [integral_congr_ae (Eventually.of_forall hnorm)]
+  exact MeasureTheory.integral_indicator (f := fun w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+      rrDom Ca φ M r x y z w)
+    (hXs0.preimage ((continuous_const.add continuous_id).div_const 2).measurable)
+
+/-! ## The change of variables evaluated -/
+
+/-- **The transformed RR dominator**: after the pair
+substitutions `x = X+U, w = X−U, y = Y+V, z = Y−V`, the dominator factors into
+the four coordinate indicators, the constant prefactor `(4π)^{−1}(4πr)^{−1/2}`,
+the Airy factor `Ca·φ(2X)`, and the Gaussian of the parallelogram exponent
+`(X+Y−2M)²/2 + (U+V)²/2 + V²/r + 2SX + (2/3)S³` (the "(A+B)²+(A−B)² = 2A²+2B²"
+identity is the `ring` at the end). -/
+theorem rrDomT_eq (hr : 0 < r) (M Ca : ℝ) (φ : ℝ → ℝ) (X U Y V : ℝ) :
+    rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)
+      = (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X+U)
+        * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X-U)
+        * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y+V)
+          * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y-V))
+        * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+        * Real.exp (-((X+Y-2*M)^2/2 + (U+V)^2/2 + V^2/r + 2*(2+r)*X
+          + (2/3)*(2+r)^3)) := by
+  have hr0 : (r : ℝ) ≠ 0 := hr.ne'
+  have hpi : (0:ℝ) < 4 * Real.pi := by positivity
+  have hpre : (4*Real.pi)^(-1/2:ℝ) * ((4*Real.pi*r)^(-1/2:ℝ)) * (4*Real.pi)^(-1/2:ℝ)
+      = (4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ) := by
+    rw [show (4*Real.pi)^(-1:ℝ) = (4*Real.pi)^(-1/2:ℝ) * (4*Real.pi)^(-1/2:ℝ) from by
+      rw [← Real.rpow_add hpi]
+      norm_num]
+    ring
+  have hexp : -(2*M - (X+U) - (Y+V))^2/4 + (-(Y+V - (Y-V))^2/(4*r)
+      + (-(2*M - (Y-V) - (X-U))^2/4 + (-(2/3)*(2+r)^3 - (2+r)*(2*X))))
+      = -((X+Y-2*M)^2/2 + (U+V)^2/2 + V^2/r + 2*(2+r)*X + (2/3)*(2+r)^3) := by
+    field_simp [hr0]
+    ring
+  unfold rrDom
+  rw [qRKerTwo_apply_eq, qRKerTwo_apply_eq]
+  unfold heatKernel
+  simp only [mul_one]
+  rw [show (X-U) + (X+U) = 2*X from by ring]
+  calc ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X+U)
+        * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y+V)
+        * ((4*Real.pi)^(-1/2:ℝ) * Real.exp (-(2*M - (X+U) - (Y+V))^2/4)))
+      * ((4*Real.pi*r)^(-1/2:ℝ) * Real.exp (-(Y+V - (Y-V))^2/(4*r)))
+      * (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y-V)
+        * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X-U))
+        * ((4*Real.pi)^(-1/2:ℝ) * Real.exp (-(2*M - (Y-V) - (X-U))^2/4)))
+      * (Ca * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(2*X)) * φ (2*X))
+      = (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X+U)
+          * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X-U))
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y+V)
+            * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y-V)))
+        * (((4*Real.pi)^(-1/2:ℝ) * (4*Real.pi*r)^(-1/2:ℝ) * (4*Real.pi)^(-1/2:ℝ))
+          * (Ca * φ (2*X)))
+        * (Real.exp (-(2*M - (X+U) - (Y+V))^2/4)
+          * (Real.exp (-(Y+V - (Y-V))^2/(4*r))
+            * (Real.exp (-(2*M - (Y-V) - (X-U))^2/4)
+              * Real.exp (-(2/3)*(2+r)^3 - (2+r)*(2*X))))) := by ring
+    _ = (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X+U)
+          * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X-U))
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y+V)
+            * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y-V)))
+        * (((4*Real.pi)^(-1/2:ℝ) * (4*Real.pi*r)^(-1/2:ℝ) * (4*Real.pi)^(-1/2:ℝ))
+          * (Ca * φ (2*X)))
+        * Real.exp (-(2*M - (X+U) - (Y+V))^2/4 + (-(Y+V - (Y-V))^2/(4*r)
+          + (-(2*M - (Y-V) - (X-U))^2/4 + (-(2/3)*(2+r)^3 - (2+r)*(2*X))))) := by
+        rw [← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
+    _ = (((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X+U)
+          * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X-U))
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y+V)
+            * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y-V)))
+        * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+        * Real.exp (-((X+Y-2*M)^2/2 + (U+V)^2/2 + V^2/r + 2*(2+r)*X
+          + (2/3)*(2+r)^3)) := by
+        rw [hexp, hpre]
+
+/-- The two-indicator bound behind the enlargement:
+`1{a+b≤M}·1{a−b≤M} ≤ 1{a≤M}` (both hold iff `a + |b| ≤ M`). -/
+theorem indicator_Iic_add_le (M : ℝ) (a b : ℝ) :
+    (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (a+b)
+      * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (a-b)
+      ≤ (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) a := by
+  by_cases h1 : a + b ≤ M
+  · by_cases h2 : a - b ≤ M
+    · have ha : a ≤ M := by linarith
+      rw [Set.indicator_of_mem (Set.mem_Iic.mpr ha) _,
+        Set.indicator_of_mem (Set.mem_Iic.mpr h1) _, Set.indicator_of_mem (Set.mem_Iic.mpr h2) _]
+      norm_num
+    · rw [Set.indicator_of_notMem (fun h => h2 (Set.mem_Iic.mp h)) _, mul_zero]
+      exact Set.indicator_nonneg (fun _ _ => zero_le_one) _
+  · rw [Set.indicator_of_notMem (fun h => h1 (Set.mem_Iic.mp h)) _, zero_mul]
+    exact Set.indicator_nonneg (fun _ _ => zero_le_one) _
+
+/-- The `(U, V)`-Gaussian factor (the integrand of the `(U, V)` Gaussian integral). -/
+noncomputable def rrUVpart (r : ℝ) (U V : ℝ) : ℝ := Real.exp (-(U+V)^2/2 - V^2/r)
+
+/-- The `(X, Y)`-factor of the enlarged integrand: the `X`-region indicator
+(`Xs`), the `Y ≤ M` indicator, the constant/Airy factor, and the Gaussian with
+the merged exponent `[(X+Y−2M)²/2 + 2SX + (2/3)S³]`. -/
+noncomputable def rrXYpart (Xs : Set ℝ) (M Ca : ℝ) (φ : ℝ → ℝ) (r : ℝ) (X Y : ℝ) : ℝ :=
+  (Xs.indicator (fun _ : ℝ => (1:ℝ)) X) * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) Y)
+    * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+    * Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))
+
+/-- The enlarged four-fold integrand: the product of the `(X, Y)`- and
+`(U, V)`-factors. -/
+noncomputable def rrEnlarged (Xs0 : Set ℝ) (M Ca : ℝ) (φ : ℝ → ℝ) (r : ℝ) (X U Y V : ℝ) : ℝ :=
+  rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y * rrUVpart r U V
+
+/-- The enlarged integrand is nonnegative. -/
+theorem rrEnlarged_nonneg (hr : 0 < r) (Xs0 : Set ℝ) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (X U Y V : ℝ) : 0 ≤ rrEnlarged Xs0 M Ca φ r X U Y V := by
+  apply mul_nonneg _ (Real.exp_pos _).le
+  exact mul_nonneg (mul_nonneg (mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+    (Set.indicator_nonneg (fun _ _ => zero_le_one) _))
+    (mul_nonneg (mul_nonneg (Real.rpow_nonneg (by positivity) _)
+      (Real.rpow_nonneg (show (0:ℝ) ≤ 4*Real.pi*r by positivity) _))
+      (mul_nonneg hCa (hφnn _)))) (Real.exp_pos _).le
+
+/-- **The pointwise enlargement**: dropping the `|U|`,
+`|V|` half-space restrictions of the RR region only increases the
+(nonnegative) integrand. -/
+theorem rrDomT_le_enlarged (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (Xs0 : Set ℝ) (X U Y V : ℝ) :
+    (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X) * rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)
+      ≤ rrEnlarged Xs0 M Ca φ r X U Y V := by
+  by_cases hX : X ∈ Xs0
+  swap
+  · rw [Set.indicator_of_notMem hX, zero_mul]
+    exact rrEnlarged_nonneg hr Xs0 M Ca hCa φ hφnn X U Y V
+  rw [Set.indicator_of_mem hX, one_mul, rrDomT_eq hr M Ca φ X U Y V]
+  have hexp : Real.exp (-((X+Y-2*M)^2/2 + (U+V)^2/2 + V^2/r + 2*(2+r)*X + (2/3)*(2+r)^3))
+      = Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))
+        * Real.exp (-(U+V)^2/2 - V^2/r) := by
+    rw [← Real.exp_add]
+    congr 1
+    ring
+  rw [hexp]
+  have hXs : (Xs0 ∩ Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) X
+      = (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) X := by
+    by_cases hXM : X ≤ M
+    · rw [Set.indicator_of_mem (Set.mem_inter hX (Set.mem_Iic.mpr hXM)) _,
+        Set.indicator_of_mem (Set.mem_Iic.mpr hXM) _]
+    · rw [Set.indicator_of_notMem (fun h : X ∈ Xs0 ∩ Set.Iic M => hXM h.2) _,
+        Set.indicator_of_notMem (fun h => hXM (Set.mem_Iic.mp h)) _]
+  have h4 : (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X+U)
+      * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X-U)
+      * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y+V)
+        * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y-V))
+      ≤ (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) X
+        * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) Y := by
+    calc (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X+U)
+        * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X-U)
+        * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y+V)
+          * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y-V))
+        = ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X+U)
+          * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X-U))
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y+V)
+            * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y-V)) := by ring
+      _ ≤ (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) X
+          * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) Y :=
+          mul_le_mul (indicator_Iic_add_le M X U) (indicator_Iic_add_le M Y V)
+            (mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+              (Set.indicator_nonneg (fun _ _ => zero_le_one) _))
+            (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+  set rest : ℝ := (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+    * Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))
+    * Real.exp (-(U+V)^2/2 - V^2/r) with hrestdef
+  have hrestnn : 0 ≤ rest := by
+    rw [hrestdef]
+    exact mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg (Real.rpow_nonneg (show (0:ℝ) ≤ 4 * Real.pi by positivity) _)
+      (Real.rpow_nonneg (show (0:ℝ) ≤ 4*Real.pi*r by positivity) _))
+      (mul_nonneg hCa (hφnn _))) (Real.exp_pos _).le) (Real.exp_pos _).le
+  calc (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X+U)
+      * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X-U)
+      * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y+V)
+        * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y-V))
+      * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+      * (Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))
+        * Real.exp (-(U+V)^2/2 - V^2/r))
+      = ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X+U)
+        * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (X-U)
+        * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y+V)
+          * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) (Y-V))) * rest := by
+        rw [hrestdef]
+        ring
+    _ ≤ ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) X
+        * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) Y) * rest :=
+        mul_le_mul_of_nonneg_right h4 hrestnn
+    _ = rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y * rrUVpart r U V := by
+        unfold rrXYpart rrUVpart
+        rw [hXs, hrestdef]
+        ring
+
+/-- The `(U, V)`-Gaussian's `V`-integral at fixed `U` (the inner half of
+the `(U, V)` Gaussian integral): completing the square in `V`. -/
+theorem integral_rrUVpart_V (hr : 0 < r) (U : ℝ) :
+    ∫ V : ℝ, rrUVpart r U V = Real.sqrt (2*Real.pi*r/(r+2)) * Real.exp (-U^2/(r+2)) := by
+  unfold rrUVpart
+  have hr2 : (0:ℝ) < r + 2 := by linarith
+  have ha : (0:ℝ) < (r+2)/(2*r) := by positivity
+  have hsplit : ∀ V : ℝ, -(U+V)^2/2 - V^2/r
+      = -U^2/(r+2) + -((r+2)/(2*r)) * (V + r*U/(r+2))^2 := by
+    intro V
+    field_simp [hr.ne', hr2.ne']
+    ring
+  rw [show (fun V : ℝ => Real.exp (-(U+V)^2/2 - V^2/r))
+      = fun V => Real.exp (-U^2/(r+2))
+          * Real.exp (-((r+2)/(2*r)) * (V + r*U/(r+2))^2) from
+    funext fun V => by rw [hsplit V, Real.exp_add]]
+  rw [integral_const_mul]
+  have hshift : (∫ V : ℝ, Real.exp (-((r+2)/(2*r)) * (V + r*U/(r+2))^2))
+      = ∫ V : ℝ, Real.exp (-((r+2)/(2*r)) * V^2) := by
+    have h2 : (fun V : ℝ => Real.exp (-((r+2)/(2*r)) * (V + r*U/(r+2))^2))
+        = fun V => (fun V : ℝ => Real.exp (-((r+2)/(2*r)) * V^2)) (V - (-(r*U/(r+2)))) := by
+      funext V
+      congr 1
+      ring
+    rw [h2]
+    exact MeasureTheory.integral_sub_right_eq_self (μ := volume)
+      (fun V : ℝ => Real.exp (-((r+2)/(2*r)) * V^2)) (-(r*U/(r+2)))
+  rw [hshift, integral_gaussian]
+  have hA2 : Real.pi / ((r+2)/(2*r)) = 2*Real.pi*r/(r+2) := by
+    field_simp [hr.ne', hr2.ne']
+  rw [hA2]
+  ring
+
+/-- The inner-`Y` evaluation: reflection and shift give the
+unnormalized Gaussian tail. -/
+theorem integral_rrInnerY (M X : ℝ) :
+    ∫ Y in Set.Iic M, Real.exp (-(X+Y-2*M)^2/2) = gaussianTail (1/2) (M - X) := by
+  have heq : (fun Y : ℝ => Real.exp (-(X+Y-2*M)^2/2))
+      = fun Y : ℝ => (fun w : ℝ => Real.exp (-(w + (M - X))^2/2)) (M - Y) := by
+    funext Y
+    congr 1
+    ring
+  rw [heq, AiryConj.integral_Iic_comp_const_sub (fun w : ℝ => Real.exp (-(w + (M - X))^2/2)) M,
+    AiryConj.integral_Ioi_add_const (fun v : ℝ => Real.exp (-v^2/2)) 0 (M - X), zero_add]
+  unfold gaussianTail
+  apply setIntegral_congr_fun measurableSet_Ioi
+  intro v _
+  ring
+
+/-- The inner-`Y` evaluation with the full exponent (the `Y`-free factors
+pulled out). -/
+theorem integral_rrXY_innerY (M r X : ℝ) :
+    ∫ Y in Set.Iic M, Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))
+      = Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * gaussianTail (1/2) (M - X) := by
+  rw [show (fun Y : ℝ => Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)))
+      = fun Y : ℝ => Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * Real.exp (-(X+Y-2*M)^2/2) from
+    funext fun Y => by rw [← Real.exp_add]; congr 1; ring]
+  rw [integral_const_mul, integral_rrInnerY]
+
+/-- Indicators of the constant `1` are at most `1`. -/
+theorem indicator_one_le (s : Set ℝ) (x : ℝ) : s.indicator (fun _ : ℝ => (1:ℝ)) x ≤ 1 := by
+  by_cases hx : x ∈ s
+  · rw [Set.indicator_of_mem hx _]
+  · rw [Set.indicator_of_notMem hx _]
+    norm_num
+
+/-- The `(U, V)`-Gaussian is integrable in `V` at fixed `U` (dominated by
+`e^{−V²/r}`). -/
+theorem integrable_rrUVpart (hr : 0 < r) (U : ℝ) :
+    Integrable fun V : ℝ => rrUVpart r U V := by
+  unfold rrUVpart
+  apply ((integrable_exp_neg_mul_sq (show (0:ℝ) < 1/r by positivity))).mono' ?_ ?_
+  · exact (by fun_prop : Measurable fun V : ℝ => Real.exp (-(U+V)^2/2 - V^2/r)).aestronglyMeasurable
+  · filter_upwards with V
+    rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le,
+      show -(U+V)^2/2 - V^2/r = -(U+V)^2/2 + -(1/r) * V^2 from by field_simp [hr.ne']; ring,
+      Real.exp_add]
+    calc Real.exp (-(U+V)^2/2) * Real.exp (-(1/r) * V^2)
+        ≤ 1 * Real.exp (-(1/r) * V^2) :=
+          mul_le_mul_of_nonneg_right (Real.exp_le_one_iff.mpr (by
+            have h : (0:ℝ) ≤ (U+V)^2/2 := by positivity
+            linarith)) (Real.exp_pos _).le
+      _ = Real.exp (-(1/r) * V^2) := one_mul _
+
+/-- The `V`-slice of the enlarged integrand is integrable. -/
+theorem integrable_rrEnlarged_V (hr : 0 < r) (M Ca : ℝ) (φ : ℝ → ℝ) (Xs0 : Set ℝ) (X U Y : ℝ) :
+    Integrable fun V : ℝ => rrEnlarged Xs0 M Ca φ r X U Y V :=
+  (integrable_rrUVpart hr U).const_mul _
+
+/-- The `(X, Y)`-factor is dominated by its Gaussian part (the indicators and
+the `X`-only exponential factor pulled out's nonnegativity
+bookkeeping). -/
+theorem rrXYpart_le (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (Xs : Set ℝ) (X Y : ℝ) :
+    rrXYpart Xs M Ca φ r X Y
+      ≤ (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+        * Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * Real.exp (-(X+Y-2*M)^2/2) := by
+  unfold rrXYpart
+  have hexp : Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))
+      = Real.exp (-(X+Y-2*M)^2/2) * Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) := by
+    rw [← Real.exp_add]
+    congr 1
+    ring
+  rw [hexp]
+  have hnnE : (0:ℝ) ≤ Real.exp (-(X+Y-2*M)^2/2) * Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) :=
+    mul_nonneg (Real.exp_pos _).le (Real.exp_pos _).le
+  have hnnC : (0:ℝ) ≤ ((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)) :=
+    mul_nonneg (mul_nonneg (Real.rpow_nonneg (by positivity) _)
+      (Real.rpow_nonneg (show (0:ℝ) ≤ 4*Real.pi*r by positivity) _)) (mul_nonneg hCa (hφnn _))
+  calc (Xs.indicator (fun _ : ℝ => (1:ℝ)) X) * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) Y)
+      * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+      * (Real.exp (-(X+Y-2*M)^2/2) * Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)))
+      ≤ (Xs.indicator (fun _ : ℝ => (1:ℝ)) X)
+        * (1 : ℝ) * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+        * (Real.exp (-(X+Y-2*M)^2/2) * Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))) :=
+        mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
+          (mul_le_mul_of_nonneg_left (indicator_one_le _ _)
+            (Set.indicator_nonneg (fun _ _ => zero_le_one) _)) hnnC) hnnE
+    _ ≤ (1 : ℝ) * (1 : ℝ) * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+        * (Real.exp (-(X+Y-2*M)^2/2) * Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))) :=
+        mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
+          (mul_le_mul_of_nonneg_right (indicator_one_le _ _) zero_le_one) hnnC) hnnE
+    _ = (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+        * Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * Real.exp (-(X+Y-2*M)^2/2) := by ring
+
+/-- The `(X, Y)`-factor is `Y`-integrable at fixed `X` (the Gaussian tail). -/
+theorem integrable_rrXYpart_Y (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (Xs : Set ℝ) (X : ℝ) :
+    Integrable fun Y : ℝ => rrXYpart Xs M Ca φ r X Y := by
+  have hG : Integrable fun Y : ℝ => Real.exp (-(X+Y-2*M)^2/2) := by
+    have h1 : Integrable fun Y : ℝ => Real.exp (-(1/2) * Y^2) :=
+      integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1/2)
+    have h2 := h1.comp_sub_right (2*M - X)
+    apply h2.congr
+    filter_upwards with Y
+    congr 1
+    ring
+  apply (hG.const_mul ((((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+    * Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)))).mono' ?_ ?_
+  · -- measurability of `fun Y => rrXYpart Xs M Ca φ r X Y`
+    unfold rrXYpart
+    exact (((measurable_const.mul (measurable_const.indicator measurableSet_Iic)).mul
+      measurable_const).mul
+      (Real.continuous_exp.comp (by fun_prop :
+        Continuous fun Y : ℝ => -((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))).measurable).aestronglyMeasurable
+  · filter_upwards with Y
+    have hnn : (0:ℝ) ≤ rrXYpart Xs M Ca φ r X Y := by
+      unfold rrXYpart
+      exact mul_nonneg (mul_nonneg (mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+        (Set.indicator_nonneg (fun _ _ => zero_le_one) _))
+        (mul_nonneg (mul_nonneg (Real.rpow_nonneg (by positivity) _)
+          (Real.rpow_nonneg (show (0:ℝ) ≤ 4*Real.pi*r by positivity) _))
+          (mul_nonneg hCa (hφnn _)))) (Real.exp_pos _).le
+    rw [Real.norm_eq_abs, abs_of_nonneg hnn]
+    exact rrXYpart_le hr M Ca hCa φ hφnn Xs X Y
+
+/-- The enlarged integrand, `(Y, V)`-integrable at fixed `(X, U)`. -/
+theorem integrable_rrEnlarged_YV (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (Xs0 : Set ℝ) (X U : ℝ) :
+    Integrable fun Y : ℝ => ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V := by
+  have h1 : (fun Y : ℝ => ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V)
+      = fun Y : ℝ => rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y * (∫ V : ℝ, rrUVpart r U V) := by
+    funext Y
+    exact integral_const_mul _ _
+  rw [h1]
+  exact (integrable_rrXYpart_Y hr M Ca hCa φ hφnn (Xs0 ∩ Set.Iic M) X).mul_const _
+
+/-- The enlarged integrand, `U`-slice integrable at fixed `X` (the exact
+`V`-evaluation `integral_rrUVpart_V` supplies the Gaussian in `U`). -/
+theorem integrable_rrEnlarged_UYV (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (Xs0 : Set ℝ) (X : ℝ) :
+    Integrable fun U : ℝ => ∫ Y : ℝ, ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V := by
+  have h1 : (fun U : ℝ => ∫ Y : ℝ, ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V)
+      = fun U : ℝ => (∫ Y : ℝ, rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y)
+          * (∫ V : ℝ, rrUVpart r U V) := by
+    funext U
+    unfold rrEnlarged
+    rw [integral_congr_ae (Eventually.of_forall fun Y => integral_const_mul _ _)]
+    exact integral_mul_const _ _
+  rw [h1]
+  apply Integrable.const_mul
+  rw [show (fun U : ℝ => ∫ V : ℝ, rrUVpart r U V)
+      = fun U : ℝ => Real.sqrt (2*Real.pi*r/(r+2)) * Real.exp (-U^2/(r+2)) from
+    funext fun U => integral_rrUVpart_V hr U]
+  apply Integrable.const_mul
+  have h2 : Integrable fun U : ℝ => Real.exp (-(1/(r+2)) * U^2) :=
+    integrable_exp_neg_mul_sq (by positivity)
+  apply h2.congr
+  filter_upwards with U
+  congr 1
+  rw [div_eq_mul_inv]
+  ring
+
+/-- The `(U, V)`-Gaussian is jointly measurable. -/
+theorem measurable_rrUVpart (r : ℝ) : Measurable (Function.uncurry (rrUVpart r)) := by
+  show Measurable fun q : ℝ × ℝ => Real.exp (-(q.1+q.2)^2/2 - q.2^2/r)
+  exact (Real.continuous_exp.comp (by fun_prop :
+    Continuous fun q : ℝ × ℝ => -(q.1+q.2)^2/2 - q.2^2/r)).measurable
+
+/-- The `(X, Y)`-factor is jointly measurable. -/
+theorem measurable_rrXYpart (Xs : Set ℝ) (hXs : MeasurableSet Xs) (M Ca : ℝ) (φ : ℝ → ℝ)
+    (hφmeas : Measurable φ) (r : ℝ) :
+    Measurable (Function.uncurry (rrXYpart Xs M Ca φ r)) := by
+  have h1 : Measurable fun q : ℝ × ℝ => (Xs.indicator (fun _ : ℝ => (1:ℝ))) q.1 :=
+    ((measurable_const.indicator hXs).comp measurable_fst)
+  have h2 : Measurable fun q : ℝ × ℝ => (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) q.2 :=
+    ((measurable_const.indicator measurableSet_Iic).comp measurable_snd)
+  have h3 : Measurable fun q : ℝ × ℝ =>
+      ((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2 * q.1)) :=
+    measurable_const.mul (measurable_const.mul
+      (hφmeas.comp (continuous_const.mul continuous_fst).measurable))
+  have h4 : Measurable fun q : ℝ × ℝ =>
+      Real.exp (-((q.1+q.2-2*M)^2/2 + 2*(2+r)*q.1 + (2/3)*(2+r)^3)) :=
+    (Real.continuous_exp.comp (by fun_prop :
+      Continuous fun q : ℝ × ℝ => -((q.1+q.2-2*M)^2/2 + 2*(2+r)*q.1 + (2/3)*(2+r)^3))).measurable
+  have htot : Measurable fun q : ℝ × ℝ =>
+      (Xs.indicator (fun _ : ℝ => (1:ℝ))) q.1
+        * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ))) q.2
+        * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2 * q.1)))
+        * Real.exp (-((q.1+q.2-2*M)^2/2 + 2*(2+r)*q.1 + (2/3)*(2+r)^3)) :=
+    ((h1.mul h2).mul h3).mul h4
+  show Measurable fun q : ℝ × ℝ => rrXYpart Xs M Ca φ r q.1 q.2
+  unfold rrXYpart
+  exact htot
+
+/-- The enlarged integrand is measurable as a function of `((X, U), Y, V)`. -/
+theorem measurable_rrEnlarged4 (Xs0 : Set ℝ) (hXs0 : MeasurableSet Xs0) (M Ca : ℝ) (φ : ℝ → ℝ)
+    (hφmeas : Measurable φ) (r : ℝ) :
+    Measurable fun q : ((ℝ × ℝ) × ℝ) × ℝ => rrEnlarged Xs0 M Ca φ r q.1.1.1 q.1.1.2 q.1.2 q.2 := by
+  unfold rrEnlarged
+  exact ((measurable_rrXYpart _ (hXs0.inter measurableSet_Iic) M Ca φ hφmeas r).comp
+    (by fun_prop : Continuous fun q : ((ℝ × ℝ) × ℝ) × ℝ => (q.1.1.1, q.1.2)).measurable).mul
+    ((measurable_rrUVpart r).comp
+      (by fun_prop : Continuous fun q : ((ℝ × ℝ) × ℝ) × ℝ => (q.1.1.2, q.2)).measurable)
+
+/-- The enlarged integrand, `X`-level integrable (the Chernoff tail bound on the
+inner `Y`-integral, valid on `Xs ⊆ Iic M`, then the completed-square Gaussian in
+`X`). -/
+theorem integrable_rrEnlarged_XUYV (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (hφ1 : ∀ t : ℝ, φ t ≤ 1) (hφmeas : Measurable φ)
+    (Xs0 : Set ℝ) (hXs0 : MeasurableSet Xs0) :
+    Integrable fun X : ℝ => ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V := by
+  have h1 : (fun X : ℝ => ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V)
+      = fun X : ℝ => (∫ Y : ℝ, rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y)
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r)) := by
+    funext X
+    rw [integral_congr_ae (Eventually.of_forall fun U => by
+      unfold rrEnlarged
+      rw [integral_congr_ae (Eventually.of_forall fun Y => integral_const_mul _ _),
+        integral_mul_const])]
+    rw [integral_const_mul]
+    simp only [rrUVpart]
+    rw [AiryConj.gaussian_uv_integral r hr]
+  rw [h1]
+  apply Integrable.mul_const
+  -- the value form of the inner `Y`-integral
+  have hval : (fun X : ℝ => ∫ Y : ℝ, rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y)
+      = fun X : ℝ => ((Xs0 ∩ Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) X)
+        * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+        * (Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * gaussianTail (1/2) (M - X)) := by
+    funext X
+    unfold rrXYpart
+    rw [show (fun Y : ℝ => (Xs0 ∩ Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) X
+          * (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) Y
+          * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+          * Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)))
+        = fun Y : ℝ => (((Xs0 ∩ Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) X)
+          * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X))))
+          * ((Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) Y
+            * Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))) from
+      funext fun Y => by ring]
+    rw [integral_const_mul]
+    congr 1
+    rw [show (fun Y : ℝ => (Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) Y
+          * Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)))
+        = (Set.Iic M).indicator
+          (fun Y : ℝ => Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))) from
+      funext fun Y => by
+        by_cases hY : Y ≤ M
+        · rw [Set.indicator_of_mem (Set.mem_Iic.mpr hY) _,
+            Set.indicator_of_mem (Set.mem_Iic.mpr hY) _, one_mul]
+        · rw [Set.indicator_of_notMem (fun h => hY (Set.mem_Iic.mp h)) _,
+            Set.indicator_of_notMem (fun h => hY (Set.mem_Iic.mp h)) _, zero_mul]]
+    rw [MeasureTheory.integral_indicator measurableSet_Iic, integral_rrXY_innerY]
+  -- the dominator constant and its nonnegativity
+  set C₀ : ℝ := (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * Ca)
+    * (Real.exp (-(2/3)*(2+r)^3)) * Real.sqrt (Real.pi/2) with hC₀def
+  have hC₀nn : 0 ≤ C₀ := by
+    rw [hC₀def]
+    exact mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg
+      (Real.rpow_nonneg (by positivity) _)
+      (Real.rpow_nonneg (mul_nonneg (by positivity : (0:ℝ) ≤ 4*Real.pi) hr.le) _))
+      hCa) (Real.exp_pos _).le) (Real.sqrt_nonneg _)
+  -- the dominator: the completed-square Gaussian in `X`
+  have hDomInt : Integrable fun X : ℝ =>
+      Real.exp (-(2*(2+r)*X)) * Real.exp (-(M-X)^2/2) := by
+    have heq : (fun X : ℝ => Real.exp (-(2*(2+r)*X)) * Real.exp (-(M-X)^2/2))
+        = fun X => Real.exp (2*(2+r)^2 - 2*(2+r)*M) * Real.exp (-(X-(M-2*(2+r)))^2/2) := by
+      funext X
+      rw [← Real.exp_add, ← Real.exp_add]
+      congr 1
+      ring
+    rw [heq]
+    apply Integrable.const_mul
+    have h2 : Integrable fun X : ℝ => Real.exp (-(1/2) * X^2) :=
+      integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1/2)
+    have h3 := h2.comp_sub_right (M - 2*(2+r))
+    apply h3.congr
+    filter_upwards with X
+    congr 1
+    ring
+  apply (hDomInt.const_mul C₀).mono' ?_ ?_
+  · exact (((measurable_rrXYpart _ (hXs0.inter measurableSet_Iic) M Ca φ hφmeas r).stronglyMeasurable
+      |>.integral_prod_right' (ν := volume))).measurable.aestronglyMeasurable
+  · filter_upwards with X
+    have hnnXY : ∀ Y : ℝ, (0:ℝ) ≤ rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y := by
+      intro Y
+      unfold rrXYpart
+      exact mul_nonneg (mul_nonneg (mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+        (Set.indicator_nonneg (fun _ _ => zero_le_one) _))
+        (mul_nonneg (mul_nonneg (Real.rpow_nonneg (by positivity) _)
+          (Real.rpow_nonneg (mul_nonneg (by positivity : (0:ℝ) ≤ 4*Real.pi) hr.le) _))
+          (mul_nonneg hCa (hφnn _)))) (Real.exp_pos _).le
+    rw [Real.norm_eq_abs,
+      abs_of_nonneg (integral_nonneg fun Y => hnnXY Y)]
+    -- the pointwise bound on the value form
+    rw [congrFun hval X]
+    by_cases hX : X ∈ Xs0 ∩ Set.Iic M
+    · have hXM : X ≤ M := hX.2
+      have htail := AiryConj.gaussianTail_chernoff (M - X) (sub_nonneg.mpr hXM)
+      have hnnφ : (0:ℝ) ≤ φ (2*X) := hφnn _
+      have hnnpre : (0:ℝ) ≤ ((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)) :=
+        mul_nonneg (mul_nonneg (Real.rpow_nonneg (by positivity) _)
+          (Real.rpow_nonneg (mul_nonneg (by positivity : (0:ℝ) ≤ 4*Real.pi) hr.le) _))
+          (mul_nonneg hCa hnnφ)
+      have hnne1 : (0:ℝ) ≤ Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) := (Real.exp_pos _).le
+      have hnntail : (0:ℝ) ≤ Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2) :=
+        mul_nonneg (Real.sqrt_nonneg _) (Real.exp_pos _).le
+      rw [Set.indicator_of_mem hX _]
+      calc (1:ℝ) * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+          * (Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * gaussianTail (1/2) (M - X))
+          ≤ (1:ℝ) * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+            * (Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+              * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2))) := by
+            apply mul_le_mul_of_nonneg_left _ (mul_nonneg zero_le_one hnnpre)
+            exact mul_le_mul_of_nonneg_left htail hnne1
+        _ ≤ ((((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * Ca) * Real.exp (-(2/3)*(2+r)^3)
+            * Real.sqrt (Real.pi/2))
+            * (Real.exp (-(2*(2+r)*X)) * Real.exp (-(M-X)^2/2)) := by
+            have hφ1x : φ (2*X) ≤ 1 := hφ1 _
+            have h2 : (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+                ≤ ((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * 1) :=
+              mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hφ1x hCa)
+                (mul_nonneg (Real.rpow_nonneg (by positivity) _)
+                  (Real.rpow_nonneg (mul_nonneg (by positivity : (0:ℝ) ≤ 4*Real.pi) hr.le) _))
+            calc (1:ℝ) * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+                * (Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+                  * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)))
+                = ((((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * φ (2*X)))
+                    * Real.exp (-(2/3)*(2+r)^3) * Real.sqrt (Real.pi/2))
+                  * (Real.exp (-(2*(2+r)*X)) * Real.exp (-(M-X)^2/2)) := by
+                  rw [show Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+                      = Real.exp (-(2*(2+r)*X)) * Real.exp (-(2/3)*(2+r)^3) from by
+                    rw [← Real.exp_add]
+                    congr 1
+                    ring]
+                  ring
+              _ ≤ ((((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * (Ca * 1))
+                    * Real.exp (-(2/3)*(2+r)^3) * Real.sqrt (Real.pi/2))
+                  * (Real.exp (-(2*(2+r)*X)) * Real.exp (-(M-X)^2/2)) :=
+                  mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
+                    (mul_le_mul_of_nonneg_right h2 (Real.exp_pos _).le)
+                    (Real.sqrt_nonneg _)) (mul_nonneg (Real.exp_pos _).le (Real.exp_pos _).le)
+              _ = ((((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * Ca)
+                    * Real.exp (-(2/3)*(2+r)^3) * Real.sqrt (Real.pi/2))
+                  * (Real.exp (-(2*(2+r)*X)) * Real.exp (-(M-X)^2/2)) := by
+                  rw [mul_one]
+        _ = C₀ * (Real.exp (-(2*(2+r)*X)) * Real.exp (-(M-X)^2/2)) := by
+            rw [hC₀def]
+    · rw [Set.indicator_of_notMem hX _, zero_mul, zero_mul]
+      exact mul_nonneg hC₀nn (mul_nonneg (Real.exp_pos _).le (Real.exp_pos _).le)
+
+/-! ## The shared CoV bound -/
+
+/-- The transformed RR dominator is measurable as a function of
+`((X, U), Y, V)`. -/
+theorem measurable_rrDomT4 (M Ca : ℝ) (φ : ℝ → ℝ) (hφmeas : Measurable φ) (r : ℝ) :
+    Measurable fun q : ((ℝ × ℝ) × ℝ) × ℝ =>
+      rrDom Ca φ M r (q.1.1.1 + q.1.1.2) (q.1.2 + q.2) (q.1.2 - q.2) (q.1.1.1 - q.1.1.2) := by
+  exact (measurable_rrDomG M Ca φ hφmeas r).comp
+    (by fun_prop : Continuous fun q : ((ℝ × ℝ) × ℝ) × ℝ =>
+      (((q.1.1.1 + q.1.1.2), (q.1.1.1 - q.1.1.2)), ((q.1.2 + q.2), (q.1.2 - q.2)))).measurable
+
+/-- Junk-safe constant pull through a triple integral. -/
+theorem integral_const_mul_3 (c : ℝ) (g : ℝ → ℝ → ℝ → ℝ) :
+    ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, c * g U Y V = c * ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, g U Y V := by
+  rw [integral_congr_ae (Eventually.of_forall fun U => by
+    rw [integral_congr_ae (Eventually.of_forall fun Y =>
+      integral_const_mul c (fun V => g U Y V)),
+      integral_const_mul c (fun Y => ∫ V : ℝ, g U Y V)])]
+  exact integral_const_mul c (fun U => ∫ Y : ℝ, ∫ V : ℝ, g U Y V)
+
+/-- **The change of variables, evaluated**: the four-fold
+dominator integral over the `±` region equals `4` times the `(X, U, Y, V)`
+integral of the transformed dominator (Jacobian `2` per pair). -/
+theorem rrDom_cov_eq (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (hφ1 : ∀ t : ℝ, φ t ≤ 1) (hφmeas : Measurable φ)
+    (Xs0 : Set ℝ) (hXs0 : MeasurableSet Xs0) :
+    ∫ x : ℝ, ∫ w in {w : ℝ | (x + w)/2 ∈ Xs0}, ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w
+      = 4 * ∫ X in Xs0, ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U) := by
+  -- inner pair `(y, z)` at fixed `(x, w)`
+  have hD1 : ∀ x w : ℝ, (∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w)
+      = 2 * ∫ Y : ℝ, ∫ V : ℝ, rrDom Ca φ M r x (Y+V) (Y-V) w := fun x w =>
+    integral_pair_sym_antisym
+      ((measurable_rrDomG M Ca φ hφmeas r).comp
+        (((continuous_const.prodMk continuous_const).prodMk
+          (continuous_fst.prodMk continuous_snd)).measurable))
+      (fun y z => rrDom_nonneg hr Ca hCa φ hφnn M x y z w)
+      (integrable_rrDom_yz hr M Ca hCa φ hφnn hφmeas x w)
+  -- the outer pair `(x, w)` with the region indicator
+  have hD2 : (∫ x : ℝ, ∫ w : ℝ, ({w : ℝ | (x + w)/2 ∈ Xs0}).indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) w)
+      = 2 * ∫ X : ℝ, ∫ U : ℝ, ({w : ℝ | ((X+U) + w)/2 ∈ Xs0}).indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r (X+U) y z w) (X-U) := by
+    have hF2meas : Measurable (Function.uncurry fun x w : ℝ =>
+        ({w : ℝ | (x + w)/2 ∈ Xs0}).indicator (fun w => ∫ y : ℝ, ∫ z : ℝ,
+          rrDom Ca φ M r x y z w) w) := by
+      have heq : (Function.uncurry fun x w : ℝ =>
+          ({w : ℝ | (x + w)/2 ∈ Xs0}).indicator (fun w => ∫ y : ℝ, ∫ z : ℝ,
+            rrDom Ca φ M r x y z w) w)
+          = {p : ℝ × ℝ | (p.1 + p.2)/2 ∈ Xs0}.indicator
+            (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) := by
+        funext p
+        obtain ⟨x, w⟩ := p
+        show ({w : ℝ | (x + w)/2 ∈ Xs0}).indicator (fun w => ∫ y : ℝ, ∫ z : ℝ,
+            rrDom Ca φ M r x y z w) w
+          = {p : ℝ × ℝ | (p.1 + p.2)/2 ∈ Xs0}.indicator
+            (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) (x, w)
+        by_cases hw : (x + w)/2 ∈ Xs0
+        · rw [Set.indicator_of_mem (show w ∈ {w : ℝ | (x + w)/2 ∈ Xs0} from hw) _,
+            Set.indicator_of_mem (show (x,w) ∈ {p : ℝ × ℝ | (p.1+p.2)/2 ∈ Xs0} from hw) _]
+          rfl
+        · rw [Set.indicator_of_notMem (show w ∉ {w : ℝ | (x + w)/2 ∈ Xs0} from hw) _,
+            Set.indicator_of_notMem (show (x,w) ∉ {p : ℝ × ℝ | (p.1+p.2)/2 ∈ Xs0} from hw) _]
+      rw [heq]
+      exact (measurable_uncurry_rrDomInner hr M Ca φ hφmeas hCa hφnn).indicator
+        (hXs0.preimage ((continuous_fst.add continuous_snd).div_const 2).measurable)
+    exact integral_pair_sym_antisym hF2meas
+      (fun x w => Set.indicator_nonneg (fun a _ =>
+        integral_nonneg fun y => integral_nonneg fun z =>
+          rrDom_nonneg hr Ca hCa φ hφnn M x y z a) w)
+      (integrable_rrDomW_plane hr M Ca hCa φ hφnn hφ1 hφmeas Xs0 hXs0)
+  -- the pointwise conversion of `F2 (X+U) (X-U)`
+  have hconv : ∀ X U : ℝ, ({w : ℝ | ((X+U) + w)/2 ∈ Xs0}).indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r (X+U) y z w) (X-U)
+      = (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X)
+        * (2 * ∫ Y : ℝ, ∫ V : ℝ, rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)) := by
+    intro X U
+    by_cases hX : X ∈ Xs0
+    · have hmem : (X-U) ∈ {w : ℝ | ((X+U) + w)/2 ∈ Xs0} := by
+        show ((X+U) + (X-U))/2 ∈ Xs0
+        rw [show ((X+U) + (X-U))/2 = X from by ring]
+        exact hX
+      rw [Set.indicator_of_mem hmem _, Set.indicator_of_mem hX _, one_mul, hD1 (X+U) (X-U)]
+    · have hnmem : (X-U) ∉ {w : ℝ | ((X+U) + w)/2 ∈ Xs0} := by
+        show ¬ ((X+U) + (X-U))/2 ∈ Xs0
+        rw [show ((X+U) + (X-U))/2 = X from by ring]
+        exact hX
+      rw [Set.indicator_of_notMem hnmem _, Set.indicator_of_notMem hX _, zero_mul]
+  -- assemble
+  have hWmeas : ∀ x : ℝ, MeasurableSet {w : ℝ | (x + w)/2 ∈ Xs0} :=
+    fun x => hXs0.preimage ((continuous_const.add continuous_id).div_const 2).measurable
+  have hLHS : (∫ x : ℝ, ∫ w in {w : ℝ | (x + w)/2 ∈ Xs0}, ∫ y : ℝ, ∫ z : ℝ,
+        rrDom Ca φ M r x y z w)
+      = ∫ x : ℝ, ∫ w : ℝ, ({w : ℝ | (x + w)/2 ∈ Xs0}).indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w) w := by
+    apply integral_congr_ae
+    filter_upwards with x
+    exact (MeasureTheory.integral_indicator (hWmeas x)).symm
+  rw [hLHS, hD2]
+  calc 2 * ∫ X : ℝ, ∫ U : ℝ, ({w : ℝ | ((X+U) + w)/2 ∈ Xs0}).indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r (X+U) y z w) (X-U)
+      = 2 * ∫ X : ℝ, ∫ U : ℝ, (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X)
+          * (2 * ∫ Y : ℝ, ∫ V : ℝ, rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)) := by
+        congr 1
+        apply integral_congr_ae
+        filter_upwards with X
+        apply integral_congr_ae
+        filter_upwards with U
+        exact hconv X U
+    _ = 2 * ∫ X : ℝ, (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X)
+          * (2 * ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)) := by
+        congr 1
+        apply integral_congr_ae
+        filter_upwards with X
+        rw [integral_const_mul, integral_const_mul]
+    _ = 4 * ∫ X : ℝ, (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X)
+          * (∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)) := by
+        have hstep : (∫ X : ℝ, (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X)
+              * (2 * ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ,
+                  rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)))
+            = 2 * ∫ X : ℝ, (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X)
+              * (∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ,
+                  rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)) := by
+          rw [← integral_const_mul (2:ℝ) (fun X : ℝ =>
+            (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X)
+              * (∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ,
+                  rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)))]
+          apply integral_congr_ae
+          filter_upwards with X
+          ring
+        rw [hstep]
+        ring
+    _ = 4 * ∫ X in Xs0, ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ,
+          rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U) := by
+        congr 1
+        rw [← MeasureTheory.integral_indicator hXs0]
+        apply integral_congr_ae
+        filter_upwards with X
+        -- the indicator-of-1 times the inner integral is the indicator of it
+        by_cases hX : X ∈ Xs0
+        · rw [Set.indicator_of_mem hX _, Set.indicator_of_mem hX _, one_mul]
+        · rw [Set.indicator_of_notMem hX _, Set.indicator_of_notMem hX _, zero_mul]
+
+/-- **The enlargement, integrated**: the four-fold integral
+of the transformed dominator over the `±` `X`-range is bounded by the enlarged
+integrand's integral. -/
+theorem rrDomT_integral_le_enlarged (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (hφ1 : ∀ t : ℝ, φ t ≤ 1) (hφmeas : Measurable φ)
+    (Xs0 : Set ℝ) (hXs0 : MeasurableSet Xs0) :
+    ∫ X in Xs0, ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)
+      ≤ ∫ X : ℝ, ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V := by
+  have hLHS : (∫ X in Xs0, ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ,
+        rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U))
+      = ∫ X : ℝ, ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ,
+        (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X) * rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U) := by
+    rw [← MeasureTheory.integral_indicator hXs0]
+    apply integral_congr_ae
+    filter_upwards with X
+    by_cases hX : X ∈ Xs0
+    · simp only [Set.indicator_of_mem hX, one_mul]
+    · simp only [Set.indicator_of_notMem hX, zero_mul, integral_zero]
+  rw [hLHS]
+  -- level V
+  have hV : ∀ X U Y : ℝ, (∫ V : ℝ, (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X)
+        * rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U))
+      ≤ ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V := by
+    intro X U Y
+    apply integral_mono _ (integrable_rrEnlarged_V hr M Ca φ Xs0 X U Y)
+    · intro V
+      exact rrDomT_le_enlarged hr M Ca hCa φ hφnn Xs0 X U Y V
+    · apply (integrable_rrEnlarged_V hr M Ca φ Xs0 X U Y).mono' ?_ ?_
+      · exact ((measurable_const.mul ((measurable_rrDomT4 M Ca φ hφmeas r).comp
+          (by fun_prop : Continuous fun V : ℝ => (((X, U), Y), V)).measurable))).aestronglyMeasurable
+      · filter_upwards with V
+        rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg
+          (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+          (rrDom_nonneg hr Ca hCa φ hφnn M (X+U) (Y+V) (Y-V) (X-U)))]
+        exact rrDomT_le_enlarged hr M Ca hCa φ hφnn Xs0 X U Y V
+  -- level Y
+  have hY : ∀ X U : ℝ, (∫ Y : ℝ, ∫ V : ℝ, (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X)
+        * rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U))
+      ≤ ∫ Y : ℝ, ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V := by
+    intro X U
+    apply integral_mono _ (integrable_rrEnlarged_YV hr M Ca hCa φ hφnn Xs0 X U)
+    · intro Y
+      exact hV X U Y
+    · apply (integrable_rrEnlarged_YV hr M Ca hCa φ hφnn Xs0 X U).mono' ?_ ?_
+      · exact (((measurable_const.mul ((measurable_rrDomT4 M Ca φ hφmeas r).comp
+          (by fun_prop : Continuous fun q : ℝ × ℝ => (((X, U), q.1), q.2)).measurable)).stronglyMeasurable
+          |>.integral_prod_right' (ν := volume))).measurable.aestronglyMeasurable
+      · filter_upwards with Y
+        rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg fun V =>
+          mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+            (rrDom_nonneg hr Ca hCa φ hφnn M (X+U) (Y+V) (Y-V) (X-U)))]
+        exact hV X U Y
+  -- level U
+  have hU : ∀ X : ℝ, (∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, (Xs0.indicator (fun _ : ℝ => (1:ℝ)) X)
+        * rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U))
+      ≤ ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V := by
+    intro X
+    apply integral_mono _ (integrable_rrEnlarged_UYV hr M Ca hCa φ hφnn Xs0 X)
+    · intro U
+      exact hY X U
+    · apply (integrable_rrEnlarged_UYV hr M Ca hCa φ hφnn Xs0 X).mono' ?_ ?_
+      · exact ((((measurable_const.mul ((measurable_rrDomT4 M Ca φ hφmeas r).comp
+          (by fun_prop : Continuous fun q : (ℝ × ℝ) × ℝ => (((X, q.1.1), q.1.2), q.2)).measurable)).stronglyMeasurable
+          |>.integral_prod_right' (ν := volume)).integral_prod_right' (ν := volume))).measurable.aestronglyMeasurable
+      · filter_upwards with U
+        rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg fun Y => integral_nonneg fun V =>
+          mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+            (rrDom_nonneg hr Ca hCa φ hφnn M (X+U) (Y+V) (Y-V) (X-U)))]
+        exact hY X U
+  -- level X
+  apply integral_mono _ (integrable_rrEnlarged_XUYV hr M Ca hCa φ hφnn hφ1 hφmeas Xs0 hXs0)
+  · intro X
+    exact hU X
+  · apply (integrable_rrEnlarged_XUYV hr M Ca hCa φ hφnn hφ1 hφmeas Xs0 hXs0).mono' ?_ ?_
+    · have hmeas : Measurable fun q : ((ℝ × ℝ) × ℝ) × ℝ =>
+          (Xs0.indicator (fun _ : ℝ => (1:ℝ)) q.1.1.1)
+            * rrDom Ca φ M r (q.1.1.1 + q.1.1.2) (q.1.2 + q.2) (q.1.2 - q.2)
+              (q.1.1.1 - q.1.1.2) :=
+        ((measurable_const.indicator hXs0).comp
+          (continuous_fst.comp (continuous_fst.comp continuous_fst)).measurable).mul
+          (measurable_rrDomT4 M Ca φ hφmeas r)
+      exact (((hmeas.stronglyMeasurable.integral_prod_right' (ν := volume)).integral_prod_right'
+        (ν := volume)).integral_prod_right' (ν := volume)).measurable.aestronglyMeasurable
+    · filter_upwards with X
+      rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg fun U => integral_nonneg fun Y =>
+        integral_nonneg fun V => mul_nonneg (Set.indicator_nonneg (fun _ _ => zero_le_one) _)
+          (rrDom_nonneg hr Ca hCa φ hφnn M (X+U) (Y+V) (Y-V) (X-U)))]
+      exact hU X
+
+/-! ## The enlarged integral evaluated -/
+
+/-- The `(X, Y)`-factor's `Y`-integral in value form (junk-safe): the
+`Y`-constant factors pull out and the `Y ≤ M` indicator turns the plain
+integral into a set integral with `φ(2X)` inside (the pre-Chernoff form of
+the inner-`Y` tail). -/
+theorem integral_rrXYpart_Y_value (M Ca : ℝ) (φ : ℝ → ℝ) (r : ℝ) (Xs : Set ℝ) (X : ℝ) :
+    ∫ Y : ℝ, rrXYpart Xs M Ca φ r X Y
+      = ((((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * Ca)
+          * (Xs.indicator (fun _ : ℝ => (1:ℝ)) X))
+        * ∫ Y in Set.Iic M,
+          Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * φ (2*X) := by
+  have hY : ∀ Y : ℝ, rrXYpart Xs M Ca φ r X Y
+      = ((((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * Ca)
+          * (Xs.indicator (fun _ : ℝ => (1:ℝ)) X))
+        * ((Set.Iic M).indicator
+          (fun Y : ℝ => Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * φ (2*X)) Y) := by
+    intro Y
+    unfold rrXYpart
+    by_cases hYm : Y ≤ M
+    · simp only [Set.indicator_of_mem (Set.mem_Iic.mpr hYm)]
+      ring
+    · simp only [Set.indicator_of_notMem (fun h => hYm (Set.mem_Iic.mp h))]
+      ring
+  rw [integral_congr_ae (Eventually.of_forall hY)]
+  rw [integral_const_mul]
+  rw [MeasureTheory.integral_indicator measurableSet_Iic]
+
+/-- **The enlarged integral, evaluated** (before the Chernoff
+tail bound): the four-fold enlarged integral factors into the prefactor
+`(4π)⁻¹(4πr)⁻¹ᐟ²`, the Gaussian mass `√(2π)·√(πr)`, and the
+`(X, Y)` set integral. -/
+theorem rrEnlarged_integral_eval (hr : 0 < r) (M Ca : ℝ) (φ : ℝ → ℝ)
+    (Xs0 : Set ℝ) (hXs0 : MeasurableSet Xs0) :
+    ∫ X : ℝ, ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V
+      = ((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))
+          * (Ca * ∫ X in (Xs0 ∩ Set.Iic M), ∫ Y in Set.Iic M,
+              Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * φ (2*X)) := by
+  calc ∫ X : ℝ, ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ, rrEnlarged Xs0 M Ca φ r X U Y V
+      = ∫ X : ℝ, ∫ U : ℝ, (∫ Y : ℝ, rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y)
+          * (∫ V : ℝ, rrUVpart r U V) := by
+          apply integral_congr_ae
+          filter_upwards with X
+          apply integral_congr_ae
+          filter_upwards with U
+          unfold rrEnlarged
+          rw [integral_congr_ae (Eventually.of_forall fun Y => integral_const_mul _ _)]
+          exact integral_mul_const _ _
+    _ = ∫ X : ℝ, (∫ Y : ℝ, rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y)
+          * (∫ U : ℝ, ∫ V : ℝ, rrUVpart r U V) := by
+          apply integral_congr_ae
+          filter_upwards with X
+          exact integral_const_mul _ _
+    _ = ∫ X : ℝ, (∫ Y : ℝ, rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y)
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r)) := by
+          apply integral_congr_ae
+          filter_upwards with X
+          congr 1
+          unfold rrUVpart
+          exact AiryConj.gaussian_uv_integral r hr
+    _ = (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))
+          * ∫ X : ℝ, ∫ Y : ℝ, rrXYpart (Xs0 ∩ Set.Iic M) M Ca φ r X Y := by
+          rw [integral_mul_const]
+          ring
+    _ = (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))
+          * ((((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * Ca)
+            * ∫ X in (Xs0 ∩ Set.Iic M), ∫ Y in Set.Iic M,
+              Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * φ (2*X)) := by
+          congr 1
+          rw [integral_congr_ae (Eventually.of_forall fun X =>
+            integral_rrXYpart_Y_value M Ca φ r _ X)]
+          have hind : ∀ X : ℝ,
+              ((((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * Ca)
+                  * ((Xs0 ∩ Set.Iic M).indicator (fun _ : ℝ => (1:ℝ)) X))
+                * ∫ Y in Set.Iic M,
+                  Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * φ (2*X)
+              = (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ)) * Ca)
+                * ((Xs0 ∩ Set.Iic M).indicator
+                  (fun X : ℝ => ∫ Y in Set.Iic M,
+                    Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * φ (2*X)) X) := by
+            intro X
+            by_cases hX : X ∈ Xs0 ∩ Set.Iic M
+            · simp only [Set.indicator_of_mem hX]
+              ring
+            · simp only [Set.indicator_of_notMem hX]
+              ring
+          rw [integral_congr_ae (Eventually.of_forall hind)]
+          rw [integral_const_mul]
+          rw [MeasureTheory.integral_indicator (hXs0.inter measurableSet_Iic)]
+    _ = ((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))
+          * (Ca * ∫ X in (Xs0 ∩ Set.Iic M), ∫ Y in Set.Iic M,
+              Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * φ (2*X)) := by ring
+
+/-- **The shared covariance-form bound**: the four-fold
+dominator integral over the `±` `X`-region is bounded by the prefactor
+`4·(4π)⁻¹(4πr)⁻¹ᐟ²·√(2π)√(πr)` times the `(X, Y)` set integral with the merged
+Gaussian exponent. This is the common output of the change-of-variables chain used by
+both the RR+ and RR− covariance-form bounds. -/
+theorem rr_dom_cov_bound (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca) (φ : ℝ → ℝ)
+    (hφnn : ∀ t : ℝ, 0 ≤ φ t) (hφ1 : ∀ t : ℝ, φ t ≤ 1) (hφmeas : Measurable φ)
+    (Xs0 : Set ℝ) (hXs0 : MeasurableSet Xs0) :
+    ∫ x : ℝ, ∫ w in {w : ℝ | (x + w)/2 ∈ Xs0}, ∫ y : ℝ, ∫ z : ℝ, rrDom Ca φ M r x y z w
+      ≤ 4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r)))
+          * (Ca * ∫ X in (Xs0 ∩ Set.Iic M), ∫ Y in Set.Iic M,
+              Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * φ (2*X)) := by
+  rw [rrDom_cov_eq hr M Ca hCa φ hφnn hφ1 hφmeas Xs0 hXs0]
+  calc 4 * ∫ X in Xs0, ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ,
+        rrDom Ca φ M r (X+U) (Y+V) (Y-V) (X-U)
+      ≤ 4 * ∫ X : ℝ, ∫ U : ℝ, ∫ Y : ℝ, ∫ V : ℝ,
+          rrEnlarged Xs0 M Ca φ r X U Y V :=
+        mul_le_mul_of_nonneg_left
+          (rrDomT_integral_le_enlarged hr M Ca hCa φ hφnn hφ1 hφmeas Xs0 hXs0)
+          (by norm_num)
+    _ = 4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r)))
+          * (Ca * ∫ X in (Xs0 ∩ Set.Iic M), ∫ Y in Set.Iic M,
+              Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * φ (2*X)) := by
+        rw [rrEnlarged_integral_eval hr M Ca φ Xs0 hXs0]
+        ring
+
+/-! ## The RR+ covariance-form bound -/
+
+/-- **The RR+ inner norm bound**: on the RR+ region, the
+inner `(y, z)`-integral's norm is dominated by the `rrPlusDom` inner integral.
+Proved at the `(y, z)`-plane level (the Fubini input `integrable_sectorIntegrand_yz`
+is unconditional). -/
+theorem norm_sectorInner_le_rrPlusDom (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca)
+    (hCA : ∀ u : ℝ, 0 ≤ u → |airyAiReal u| ≤ Ca * Real.exp (-(2/3) * u^(3/2 : ℝ)))
+    (x w : ℝ) (hplus : 0 ≤ w + x + (2+r)^2) :
+    ‖∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w‖
+      ≤ ∫ y : ℝ, ∫ z : ℝ, rrPlusDom Ca M r x y z w := by
+  have hR : ∀ p : ℝ × ℝ, |qRKerTwo M p| ≤ qKerTwo M p := qRKerTwo_abs_le_qKerTwo M
+  have hsI : Integrable (Function.uncurry fun y z : ℝ =>
+      sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (volume.prod volume) :=
+    integrable_sectorIntegrand_yz hr M (measurable_qRKerTwo M) (measurable_qRKerTwo M) hR hR x w
+  have hdI : Integrable (Function.uncurry fun y z : ℝ =>
+      rrPlusDom Ca M r x y z w) (volume.prod volume) :=
+    integrable_rrDom_yz hr M Ca hCa (rrAiryPlusFactor r) (rrAiryPlusFactor_nonneg r)
+      (measurable_rrAiryPlusFactor r) x w
+  have hplane : (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+      = ∫ p : ℝ × ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x p.1 p.2 w :=
+    (MeasureTheory.integral_prod _ hsI).symm
+  rw [hplane]
+  calc ‖∫ p : ℝ × ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x p.1 p.2 w‖
+      ≤ ∫ p : ℝ × ℝ, ‖sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x p.1 p.2 w‖ :=
+        norm_integral_le_integral_norm _
+    _ ≤ ∫ p : ℝ × ℝ, rrPlusDom Ca M r x p.1 p.2 w := by
+        apply integral_mono hsI.norm hdI
+        intro p
+        exact abs_sectorIntegrand_RR_le_rrPlusDom hr Ca hCA M x p.1 p.2 w hplus
+    _ = ∫ y : ℝ, ∫ z : ℝ, rrPlusDom Ca M r x y z w :=
+        MeasureTheory.integral_prod _ hdI
+
+/-- **The RR+ covariance-form bound**: the RR+ piece's
+absolute value is bounded by `4·(4π)⁻¹(4πr)⁻¹ᐟ²·√(2π)√(πr)·Ca` times the
+`(X, Y)` set integral over `X ∈ [−S²/2, M]`, `Y ≤ M` of the fully merged
+Gaussian–Airy exponential (`S = 2 + r`).  The `(x, w)`-plane norm chain is
+unconditional: the dominator's plane integrability (`integrable_rrDomW_plane`)
+transfers to the sector integrand through the pointwise RR+ domination. -/
+theorem trSectorRRplus_abs_le_cov (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca)
+    (hCA : ∀ u : ℝ, 0 ≤ u → |airyAiReal u| ≤ Ca * Real.exp (-(2/3) * u^(3/2 : ℝ))) :
+    |trSectorRRplus M r|
+      ≤ 4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r)))
+        * (Ca * ∫ X in Set.Icc (-(2+r)^2/2) M, ∫ Y in Set.Iic M,
+            Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3
+              + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))) := by
+  have hφnn : ∀ t : ℝ, 0 ≤ rrAiryPlusFactor r t := rrAiryPlusFactor_nonneg r
+  have hφ1 : ∀ t : ℝ, rrAiryPlusFactor r t ≤ 1 := rrAiryPlusFactor_le_one r
+  have hφmeas : Measurable (rrAiryPlusFactor r) := measurable_rrAiryPlusFactor r
+  -- the indicated dominator inner integral is plane-integrable
+  have hdomPlane := integrable_rrDomW_plane hr M Ca hCa (rrAiryPlusFactor r)
+    hφnn hφ1 hφmeas (Set.Ici (-(2+r)^2/2)) measurableSet_Ici
+  have hdomPlane' : Integrable ({p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+      (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+        rrDom Ca (rrAiryPlusFactor r) M r x y z w)) (volume.prod volume) := by
+    apply hdomPlane.congr
+    filter_upwards with p
+    obtain ⟨x, w⟩ := p
+    show ({w : ℝ | (x + w)/2 ∈ Set.Ici (-(2+r)^2/2)}).indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca (rrAiryPlusFactor r) M r x y z w) w
+      = {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+        (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+          rrDom Ca (rrAiryPlusFactor r) M r x y z w) (x, w)
+    by_cases hw : (x, w) ∈ {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}
+    · have hmem : w ∈ {w : ℝ | (x + w)/2 ∈ Set.Ici (-(2+r)^2/2)} := by
+        have h0 : (0:ℝ) ≤ x + w + (2+r)^2 := hw
+        show (x + w)/2 ∈ Set.Ici (-(2+r)^2/2)
+        rw [Set.mem_Ici]
+        linarith
+      rw [Set.indicator_of_mem hmem _, Set.indicator_of_mem hw _]
+      rfl
+    · have hnmem : w ∉ {w : ℝ | (x + w)/2 ∈ Set.Ici (-(2+r)^2/2)} := by
+        have h0 : ¬ (0:ℝ) ≤ x + w + (2+r)^2 := hw
+        show ¬ (x + w)/2 ∈ Set.Ici (-(2+r)^2/2)
+        rw [Set.mem_Ici]
+        linarith
+      rw [Set.indicator_of_notMem hnmem _, Set.indicator_of_notMem hw _]
+  -- the sector inner integral, indicated on the RR+ half-plane, is
+  -- plane-integrable by domination
+  have hI : Integrable ({p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+      (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+        sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)) (volume.prod volume) := by
+    apply hdomPlane'.mono' ?_ ?_
+    · exact ((measurable_uncurry_sectorInnerW (measurable_qRKerTwo M) (measurable_qRKerTwo M)
+        hr M (qRKerTwo_abs_le_qKerTwo M) (qRKerTwo_abs_le_qKerTwo M)).indicator
+        (rrPlusRegion_meas r)).aestronglyMeasurable
+    · filter_upwards with p
+      obtain ⟨x, w⟩ := p
+      show ‖{p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+            sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w)‖
+        ≤ {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+            rrDom Ca (rrAiryPlusFactor r) M r x y z w) (x, w)
+      by_cases hp : (x, w) ∈ {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}
+      · rw [Set.indicator_of_mem hp _, Set.indicator_of_mem hp _]
+        have h0 : (0:ℝ) ≤ x + w + (2+r)^2 := hp
+        exact norm_sectorInner_le_rrPlusDom hr M Ca hCa hCA x w (by linarith)
+      · rw [Set.indicator_of_notMem hp _, Set.indicator_of_notMem hp _, norm_zero]
+  -- the set-builder and `Ici` forms of the RR+ `w`-range agree
+  have hseteq : ∀ x : ℝ, {w : ℝ | (x + w)/2 ∈ Set.Ici (-(2+r)^2/2)}
+      = Set.Ici (-x - (2+r)^2) := by
+    intro x
+    ext w
+    simp only [Set.mem_ofPred_eq, Set.mem_Ici]
+    constructor <;> intro h <;> linarith
+  -- the norm chain
+  unfold trSectorRRplus
+  rw [← Real.norm_eq_abs]
+  calc ‖∫ x : ℝ, ∫ w in Set.Ici (-x - (2+r)^2), ∫ y : ℝ, ∫ z : ℝ,
+        sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w‖
+      = ‖∫ x : ℝ, ∫ w : ℝ, {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+            sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w)‖ := by
+        congr 1
+        apply integral_congr_ae
+        filter_upwards with x
+        rw [← MeasureTheory.integral_indicator measurableSet_Ici]
+        apply integral_congr_ae
+        filter_upwards with w
+        exact rrPlusInner_eq_indicator M r x w
+    _ = ‖∫ p : ℝ × ℝ, {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+            sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) p ∂(volume.prod volume)‖ := by
+        rw [MeasureTheory.integral_prod _ hI]
+    _ ≤ ∫ p : ℝ × ℝ, ‖{p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+            sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) p‖ ∂(volume.prod volume) :=
+        norm_integral_le_integral_norm _
+    _ ≤ ∫ p : ℝ × ℝ, {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+            rrDom Ca (rrAiryPlusFactor r) M r x y z w) p ∂(volume.prod volume) := by
+        apply integral_mono hI.norm hdomPlane'
+        intro p
+        by_cases hp : p ∈ {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}
+        · simp only [Set.indicator_of_mem hp]
+          exact norm_sectorInner_le_rrPlusDom hr M Ca hCa hCA p.1 p.2 (by
+            have h0 : (0:ℝ) ≤ p.1 + p.2 + (2+r)^2 := hp
+            linarith)
+        · simp only [Set.indicator_of_notMem hp, norm_zero, le_refl]
+    _ = ∫ x : ℝ, ∫ w : ℝ, {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+            rrDom Ca (rrAiryPlusFactor r) M r x y z w) (x, w) := by
+        exact MeasureTheory.integral_prod _ hdomPlane'
+    _ = ∫ x : ℝ, ∫ w in Set.Ici (-x - (2+r)^2), ∫ y : ℝ, ∫ z : ℝ,
+          rrDom Ca (rrAiryPlusFactor r) M r x y z w := by
+        apply integral_congr_ae
+        filter_upwards with x
+        rw [← MeasureTheory.integral_indicator measurableSet_Ici]
+        apply integral_congr_ae
+        filter_upwards with w
+        by_cases hw : w ∈ Set.Ici (-x - (2+r)^2)
+        · rw [Set.indicator_of_mem hw _,
+            Set.indicator_of_mem (show (x, w) ∈ {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2} from by
+              have h1 : -x - (2+r)^2 ≤ w := Set.mem_Ici.mp hw
+              show 0 ≤ (x, w).1 + (x, w).2 + (2+r)^2
+              linarith) _]
+          rfl
+        · rw [Set.indicator_of_notMem hw _,
+            Set.indicator_of_notMem (show (x, w) ∉ {p : ℝ × ℝ | 0 ≤ p.1 + p.2 + (2+r)^2} from by
+              have h1 : ¬ -x - (2+r)^2 ≤ w := Set.mem_Ici.not.mp hw
+              show ¬ 0 ≤ (x, w).1 + (x, w).2 + (2+r)^2
+              linarith) _]
+    _ = ∫ x : ℝ, ∫ w in {w : ℝ | (x + w)/2 ∈ Set.Ici (-(2+r)^2/2)}, ∫ y : ℝ, ∫ z : ℝ,
+          rrDom Ca (rrAiryPlusFactor r) M r x y z w := by
+        apply integral_congr_ae
+        filter_upwards with x
+        rw [hseteq x]
+    _ ≤ 4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r)))
+          * (Ca * ∫ X in (Set.Ici (-(2+r)^2/2) ∩ Set.Iic M), ∫ Y in Set.Iic M,
+              Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))
+                * rrAiryPlusFactor r (2*X)) :=
+        rr_dom_cov_bound hr M Ca hCa (rrAiryPlusFactor r) hφnn hφ1 hφmeas _ measurableSet_Ici
+    _ = 4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r)))
+          * (Ca * ∫ X in Set.Icc (-(2+r)^2/2) M, ∫ Y in Set.Iic M,
+              Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3
+                + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))) := by
+        congr 1
+        congr 1
+        rw [show (Set.Ici (-(2+r)^2/2) ∩ Set.Iic M) = Set.Icc (-(2+r)^2/2) M from
+          Set.Ici_inter_Iic]
+        apply setIntegral_congr_fun measurableSet_Icc
+        intro X hX
+        apply setIntegral_congr_fun measurableSet_Iic
+        intro Y _
+        show Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3))
+            * rrAiryPlusFactor r (2*X)
+          = Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3
+            + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+        rw [rrAiryPlusFactor_apply_of_nonneg (by
+          have h1 := (Set.mem_Icc.mp hX).1
+          linarith), ← Real.exp_add]
+        congr 1
+        ring
+
+/-! ## The RR+ δ-reduction -/
+
+/-- `gaussianTail (1/2)` is antitone in the cutoff (the tail shrinks).  This
+gives measurability of the tail factor for free (`Antitone.measurable`),
+avoiding a joint-measurability argument for the moving `Ioi` domain. -/
+theorem antitone_gaussianTail_one_half : Antitone fun b : ℝ => gaussianTail (1/2) b := by
+  intro b₁ b₂ hb
+  unfold gaussianTail
+  apply setIntegral_mono_set
+    (integrableOn_exp_neg_sq_div_Ioi (by norm_num : (0:ℝ) < 1/2) b₁)
+    (Eventually.of_forall fun d => (Real.exp_pos _).le)
+    (Eventually.of_forall fun d (hd : d ∈ Set.Ioi b₂) => Set.Ioi_subset_Ioi hb hd)
+
+/-- The `X`-integrand after the inner-`Y` evaluation is measurable (needed for
+the Chernoff domination step). -/
+theorem measurable_expA_mul_gaussianTail (M r : ℝ) :
+    Measurable fun X : ℝ =>
+      Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+        * gaussianTail (1/2) (M - X) :=
+  ((Real.continuous_exp.comp (by fun_prop :
+      Continuous fun X : ℝ =>
+        -(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))).measurable).mul
+    (antitone_gaussianTail_one_half.measurable.comp
+      (measurable_const.sub measurable_id))
+
+/-- **The RR+ δ-reduction**: the covariance-form bound
+collapses to a constant times the one-dimensional saddle integral
+`∫ δ ∈ [0, (2M + S²)/2], e^{−F_M(r,δ)}`.  The inner-`Y` Gaussian tail is
+`gaussianTail (1/2) (M−X)`, bounded by Chernoff (`√(π/2)·e^{−(M−X)²/2}`);
+the reflection `X = M−δ` is the junk-safe
+`integral_Icc_comp_const_sub`. -/
+theorem trSectorRRplus_abs_le_saddleF (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca)
+    (hCA : ∀ u : ℝ, 0 ≤ u → |airyAiReal u| ≤ Ca * Real.exp (-(2/3) * u^(3/2 : ℝ))) :
+    |trSectorRRplus M r|
+      ≤ (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca * Real.sqrt (Real.pi/2))
+        * ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2), Real.exp (-AiryConj.saddleF M r δ) := by
+  -- the inner-`Y` evaluation
+  have hYval : ∀ X : ℝ, (∫ Y in Set.Iic M,
+        Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3
+          + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ))))
+      = Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+        * gaussianTail (1/2) (M - X) := by
+    intro X
+    rw [show (fun Y : ℝ => Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3
+          + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ))))
+        = fun Y : ℝ => Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3
+            + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ))) * Real.exp (-(X+Y-2*M)^2/2) from
+      funext fun Y => by rw [← Real.exp_add]; congr 1; ring]
+    rw [integral_const_mul, integral_rrInnerY]
+  -- the pointwise Chernoff bound on the `X`-integrand (valid for `X ≤ M`)
+  have hpt : ∀ X ∈ Set.Icc (-(2+r)^2/2) M,
+      Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+        * gaussianTail (1/2) (M - X)
+      ≤ Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+        * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)) := by
+    intro X hX
+    have hMX : 0 ≤ M - X := sub_nonneg.mpr (Set.mem_Icc.mp hX).2
+    exact mul_le_mul_of_nonneg_left (AiryConj.gaussianTail_chernoff (M - X) hMX)
+      (Real.exp_pos _).le
+  -- integrability of both `X`-integrands on the compact interval
+  have hGcont : Continuous fun X : ℝ =>
+      Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+        * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)) :=
+    (Real.continuous_exp.comp (by fun_prop :
+        Continuous fun X : ℝ =>
+          -(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))).mul
+      (continuous_const.mul (Real.continuous_exp.comp (by fun_prop :
+        Continuous fun X : ℝ => -(M-X)^2/2)))
+  have hGI : IntegrableOn (fun X : ℝ =>
+      Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+        * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)))
+      (Set.Icc (-(2+r)^2/2) M) volume := hGcont.integrableOn_Icc
+  have htailnn : ∀ t : ℝ, 0 ≤ gaussianTail (1/2) t :=
+    fun t => integral_nonneg fun d => (Real.exp_pos _).le
+  have hFI : IntegrableOn (fun X : ℝ =>
+      Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+        * gaussianTail (1/2) (M - X))
+      (Set.Icc (-(2+r)^2/2) M) volume := by
+    apply hGI.mono' ?_ ?_
+    · exact (measurable_expA_mul_gaussianTail M r).aestronglyMeasurable
+    · rw [ae_restrict_iff' measurableSet_Icc]
+      filter_upwards with X hX
+      rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (Real.exp_pos _).le (htailnn _))]
+      exact hpt X hX
+  -- the `X`-integral monotonicity (Chernoff)
+  have hmono : (∫ X in Set.Icc (-(2+r)^2/2) M,
+        Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+          * gaussianTail (1/2) (M - X))
+      ≤ ∫ X in Set.Icc (-(2+r)^2/2) M,
+        Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+          * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)) :=
+    setIntegral_mono_on hFI hGI measurableSet_Icc hpt
+  -- the exponent merge into `saddleF` and the reflection `X = M − δ`
+  have hmerge : ∀ X : ℝ,
+      Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+        * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2))
+      = Real.sqrt (Real.pi/2) * Real.exp (-AiryConj.saddleF M r (M - X)) := by
+    intro X
+    rw [show Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+          * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2))
+        = Real.sqrt (Real.pi/2) * (Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3
+            + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ))) * Real.exp (-(M-X)^2/2)) from by ring]
+    rw [← Real.exp_add]
+    congr 1
+    unfold AiryConj.saddleF
+    rw [show (2:ℝ) + r = r + 2 from by ring,
+      show 2*M - 2*(M-X) + (r+2)^2 = 2*X + (r+2)^2 from by ring]
+    ring
+  have hrefl : (∫ X in Set.Icc (-(2+r)^2/2) M,
+        Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+          * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)))
+      = Real.sqrt (Real.pi/2)
+        * ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2), Real.exp (-AiryConj.saddleF M r δ) := by
+    calc (∫ X in Set.Icc (-(2+r)^2/2) M,
+          Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+            * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)))
+        = ∫ X in Set.Icc (-(2+r)^2/2) M,
+            Real.sqrt (Real.pi/2) * Real.exp (-AiryConj.saddleF M r (M - X)) :=
+          integral_congr_ae (Eventually.of_forall hmerge)
+      _ = Real.sqrt (Real.pi/2)
+            * ∫ X in Set.Icc (-(2+r)^2/2) M, Real.exp (-AiryConj.saddleF M r (M - X)) :=
+          integral_const_mul _ _
+      _ = Real.sqrt (Real.pi/2)
+            * ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2), Real.exp (-AiryConj.saddleF M r δ) := by
+          congr 1
+          have h := integral_Icc_comp_const_sub (-(2+r)^2/2) M M
+            (fun δ => Real.exp (-AiryConj.saddleF M r δ))
+          rw [show M - M = (0:ℝ) from by ring,
+            show M - (-(2+r)^2/2) = (2*M + (2+r)^2)/2 from by ring] at h
+          exact h
+  -- assemble
+  have hPnn : (0:ℝ) ≤ ((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+      * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r)) :=
+    mul_nonneg (mul_nonneg (Real.rpow_nonneg (by positivity) _)
+      (Real.rpow_nonneg (mul_nonneg (by positivity) hr.le) _))
+      (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+  have hKnn : (0:ℝ) ≤ 4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+      * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca :=
+    mul_nonneg (mul_nonneg (by norm_num) hPnn) hCa
+  calc |trSectorRRplus M r|
+      ≤ 4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r)))
+        * (Ca * ∫ X in Set.Icc (-(2+r)^2/2) M, ∫ Y in Set.Iic M,
+            Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3
+              + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))) :=
+        trSectorRRplus_abs_le_cov hr M Ca hCa hCA
+    _ = (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca)
+          * ∫ X in Set.Icc (-(2+r)^2/2) M,
+            Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+              * gaussianTail (1/2) (M - X) := by
+        rw [show (∫ X in Set.Icc (-(2+r)^2/2) M, ∫ Y in Set.Iic M,
+              Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3
+                + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ))))
+            = ∫ X in Set.Icc (-(2+r)^2/2) M,
+              Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+                * gaussianTail (1/2) (M - X) from
+          setIntegral_congr_fun measurableSet_Icc fun X _ => hYval X]
+        ring
+    _ ≤ (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca)
+          * ∫ X in Set.Icc (-(2+r)^2/2) M,
+            Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3 + (2/3) * (2*X + (2+r)^2)^(3/2 : ℝ)))
+              * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)) :=
+        mul_le_mul_of_nonneg_left hmono hKnn
+    _ = (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca)
+          * (Real.sqrt (Real.pi/2)
+            * ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2), Real.exp (-AiryConj.saddleF M r δ)) := by
+        rw [hrefl]
+    _ = (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca * Real.sqrt (Real.pi/2))
+        * ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2), Real.exp (-AiryConj.saddleF M r δ) := by ring
+
+/-! ## The RR+ saddle close -/
+
+/-- The `√r` cancellation: the prefactor times the Gaussian
+mass is `r`-independent, `(4π)⁻¹(4πr)⁻¹ᐟ²·√(2π)√(πr) = (4π)⁻¹(4π)⁻¹ᐟ²·√(2π)√π`. -/
+theorem rr_pref_mass_eq (r : ℝ) (hr : 0 < r) :
+    ((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+      * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))
+      = ((4*Real.pi)^(-1:ℝ) * (4*Real.pi)^(-1/2:ℝ))
+        * (Real.sqrt (2*Real.pi) * Real.sqrt Real.pi) := by
+  have hr4π : (0:ℝ) ≤ 4*Real.pi := by positivity
+  rw [Real.sqrt_mul (by positivity : (0:ℝ) ≤ Real.pi) r,
+    Real.mul_rpow hr4π hr.le, Real.sqrt_eq_rpow r]
+  rw [show ((4*Real.pi)^(-1:ℝ) * ((4*Real.pi)^(-1/2:ℝ) * r^(-1/2:ℝ)))
+      * (Real.sqrt (2*Real.pi) * (Real.sqrt Real.pi * r^(1/2:ℝ)))
+      = (((4*Real.pi)^(-1:ℝ) * (4*Real.pi)^(-1/2:ℝ))
+        * (Real.sqrt (2*Real.pi) * Real.sqrt Real.pi)) * (r^(-1/2:ℝ) * r^(1/2:ℝ)) from by ring]
+  rw [← Real.rpow_add hr, show (-1/2 : ℝ) + 1/2 = 0 from by norm_num, Real.rpow_zero, mul_one]
+
+/-- **The RR+ close**: the RR+ piece is
+`O(e^{−J_M(r)})` with an absolute constant.  On the `δ`-interval
+`saddleF_ge` gives `F ≥ J + (δ−δ*)²/2`; extending the remaining Gaussian to
+the whole line costs exactly `√(2π)`. -/
+theorem trSectorRRplus_abs_le :
+    ∃ C : ℝ, ∀ M r : ℝ, 2 ≤ M → 1 ≤ r →
+      |trSectorRRplus M r| ≤ C * Real.exp (-AiryConj.saddleJ M r) := by
+  obtain ⟨Ca, hCa0, hCA⟩ := airyAiReal_abs_le_exp_two_thirds
+  set P₀ : ℝ := ((4*Real.pi)^(-1:ℝ) * (4*Real.pi)^(-1/2:ℝ))
+    * (Real.sqrt (2*Real.pi) * Real.sqrt Real.pi) with hP₀def
+  have hP₀nn : 0 ≤ P₀ := by
+    rw [hP₀def]
+    exact mul_nonneg (mul_nonneg (Real.rpow_nonneg (show (0:ℝ) ≤ 4*Real.pi by positivity) _)
+      (Real.rpow_nonneg (show (0:ℝ) ≤ 4*Real.pi by positivity) _))
+      (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+  refine ⟨4 * P₀ * Ca * Real.sqrt (Real.pi/2) * Real.sqrt (2*Real.pi), fun M r hM hr => ?_⟩
+  have hr0 : (0:ℝ) < r := one_pos.trans_le hr
+  have hM1 : 1 ≤ M := le_trans (by norm_num) hM
+  -- the saddle input `2 ≤ saddleR M r` (i.e. `4 ≤ 2M + r²`)
+  have hR : 2 ≤ AiryConj.saddleR M r := by
+    show (2:ℝ) ≤ Real.sqrt (2*M + r^2)
+    exact Real.le_sqrt_of_sq_le (by nlinarith [hM, hr, sq_nonneg r, sq_nonneg (M - 2)])
+  -- the Gaussian half-line bound for the residual `δ`-integral
+  have hInt : Integrable fun δ : ℝ =>
+      Real.exp (-(δ - 2*(r + AiryConj.saddleR M r))^2/2) := by
+    rw [show (fun δ : ℝ => Real.exp (-(δ - 2*(r + AiryConj.saddleR M r))^2/2))
+        = fun δ => Real.exp (-(1/2) * (δ - 2*(r + AiryConj.saddleR M r))^2) from
+      funext fun δ => by congr 1; ring]
+    exact (integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1/2)).comp_sub_right _
+  have hgauss : (∫ δ : ℝ, Real.exp (-(δ - 2*(r + AiryConj.saddleR M r))^2/2))
+      = Real.sqrt (2*Real.pi) := by
+    rw [show (fun δ : ℝ => Real.exp (-(δ - 2*(r + AiryConj.saddleR M r))^2/2))
+        = fun δ => (fun δ : ℝ => Real.exp (-(1/2) * δ^2)) (δ - 2*(r + AiryConj.saddleR M r)) from
+      funext fun δ => by congr 1; ring]
+    rw [MeasureTheory.integral_sub_right_eq_self (μ := volume)
+      (fun δ : ℝ => Real.exp (-(1/2) * δ^2)) (2*(r + AiryConj.saddleR M r))]
+    rw [integral_gaussian]
+    congr 1
+    field_simp
+  -- the pointwise saddle comparison `e^{−F} ≤ e^{−J} e^{−(δ−δ*)²/2}`
+  have hpt' : ∀ δ ∈ Set.Icc 0 ((2*M + (2+r)^2)/2),
+      Real.exp (-AiryConj.saddleF M r δ)
+        ≤ Real.exp (-AiryConj.saddleJ M r)
+          * Real.exp (-(δ - 2*(r + AiryConj.saddleR M r))^2/2) := by
+    intro δ hδmem
+    have hδmem' : δ ∈ Set.Icc 0 ((2*M + (r+2)^2)/2) := by
+      rw [show (r+2)^2 = (2+r)^2 from by ring]
+      exact hδmem
+    have hge := AiryConj.saddleF_ge hM1 hr hR δ hδmem'
+    rw [← Real.exp_add]
+    exact Real.exp_le_exp.mpr (by linarith [hge])
+  -- integrability of both `δ`-integrands on the compact interval
+  have hFcont : Continuous fun δ : ℝ => Real.exp (-AiryConj.saddleF M r δ) := by
+    have hpow : Continuous fun δ : ℝ => (2*M-2*δ+(r+2)^2)^(3/2 : ℝ) :=
+      (Real.continuous_rpow_const (by norm_num : (0:ℝ) ≤ 3/2)).comp (by fun_prop)
+    have hA : Continuous fun δ : ℝ => δ^2/2 + 2*(r+2)*(M-δ) + (2/3)*(r+2)^3 := by fun_prop
+    have hB : Continuous fun δ : ℝ => (2/3) * (2*M-2*δ+(r+2)^2)^(3/2 : ℝ) :=
+      continuous_const.mul hpow
+    unfold AiryConj.saddleF
+    exact Real.continuous_exp.comp ((hA.add hB).neg)
+  have hFI2 : IntegrableOn (fun δ : ℝ => Real.exp (-AiryConj.saddleF M r δ))
+      (Set.Icc 0 ((2*M + (2+r)^2)/2)) volume := hFcont.integrableOn_Icc
+  have hGI2 : IntegrableOn (fun δ : ℝ => Real.exp (-AiryConj.saddleJ M r)
+        * Real.exp (-(δ - 2*(r + AiryConj.saddleR M r))^2/2))
+      (Set.Icc 0 ((2*M + (2+r)^2)/2)) volume :=
+    (continuous_const.mul (Real.continuous_exp.comp (by fun_prop :
+      Continuous fun δ : ℝ => -(δ - 2*(r + AiryConj.saddleR M r))^2/2))).integrableOn_Icc
+  -- the `δ`-integral bound
+  have hδbound : ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2), Real.exp (-AiryConj.saddleF M r δ)
+      ≤ Real.sqrt (2*Real.pi) * Real.exp (-AiryConj.saddleJ M r) := by
+    calc ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2), Real.exp (-AiryConj.saddleF M r δ)
+        ≤ ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2),
+            Real.exp (-AiryConj.saddleJ M r)
+              * Real.exp (-(δ - 2*(r + AiryConj.saddleR M r))^2/2) :=
+          setIntegral_mono_on hFI2 hGI2 measurableSet_Icc hpt'
+      _ = Real.exp (-AiryConj.saddleJ M r)
+            * ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2),
+              Real.exp (-(δ - 2*(r + AiryConj.saddleR M r))^2/2) :=
+          integral_const_mul _ _
+      _ ≤ Real.exp (-AiryConj.saddleJ M r)
+            * ∫ δ : ℝ, Real.exp (-(δ - 2*(r + AiryConj.saddleR M r))^2/2) :=
+          mul_le_mul_of_nonneg_left (setIntegral_le_integral hInt
+            (Eventually.of_forall fun δ => (Real.exp_pos _).le)) (Real.exp_pos _).le
+      _ = Real.exp (-AiryConj.saddleJ M r) * Real.sqrt (2*Real.pi) := by
+          rw [hgauss]
+      _ = Real.sqrt (2*Real.pi) * Real.exp (-AiryConj.saddleJ M r) := by ring
+  -- assemble with the `√r` cancellation
+  calc |trSectorRRplus M r|
+      ≤ (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca * Real.sqrt (Real.pi/2))
+        * ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2), Real.exp (-AiryConj.saddleF M r δ) :=
+        trSectorRRplus_abs_le_saddleF hr0 M Ca hCa0.le hCA
+    _ = (4 * P₀ * Ca * Real.sqrt (Real.pi/2))
+        * ∫ δ in Set.Icc 0 ((2*M + (2+r)^2)/2), Real.exp (-AiryConj.saddleF M r δ) := by
+        rw [rr_pref_mass_eq r hr0, ← hP₀def]
+    _ ≤ (4 * P₀ * Ca * Real.sqrt (Real.pi/2))
+        * (Real.sqrt (2*Real.pi) * Real.exp (-AiryConj.saddleJ M r)) :=
+        mul_le_mul_of_nonneg_left hδbound
+          (mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hP₀nn) hCa0.le)
+            (Real.sqrt_nonneg _))
+    _ = (4 * P₀ * Ca * Real.sqrt (Real.pi/2) * Real.sqrt (2*Real.pi))
+        * Real.exp (-AiryConj.saddleJ M r) := by ring
+
+
+/-! ## The RR− boundary integral -/
+
+/-- The RR− boundary exponent `G(δ) = δ²/2 + 2S(M−δ) + (2/3)S³`.
+(Not to be confused with `AiryConj.saddleG`, a
+different function.) -/
+noncomputable def rrBoundaryG (M r δ : ℝ) : ℝ :=
+  δ^2/2 + 2*(2+r)*(M-δ) + (2/3)*(2+r)^3
+
+/-- **The RR− inner norm bound**: the inner
+`(y, z)`-integral's norm is dominated by the `rrMinusDom` inner integral
+everywhere (the global Airy bound is unconditional). -/
+theorem norm_sectorInner_le_rrMinusDom (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca)
+    (hCA : ∀ u : ℝ, |airyAiReal u| ≤ Ca) (x w : ℝ) :
+    ‖∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w‖
+      ≤ ∫ y : ℝ, ∫ z : ℝ, rrMinusDom Ca M r x y z w := by
+  have hR : ∀ p : ℝ × ℝ, |qRKerTwo M p| ≤ qKerTwo M p := qRKerTwo_abs_le_qKerTwo M
+  have hsI : Integrable (Function.uncurry fun y z : ℝ =>
+      sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (volume.prod volume) :=
+    integrable_sectorIntegrand_yz hr M (measurable_qRKerTwo M) (measurable_qRKerTwo M) hR hR x w
+  have hdI : Integrable (Function.uncurry fun y z : ℝ =>
+      rrMinusDom Ca M r x y z w) (volume.prod volume) :=
+    integrable_rrDom_yz hr M Ca hCa (fun _ => 1) (fun _ => zero_le_one)
+      measurable_const x w
+  have hplane : (∫ y : ℝ, ∫ z : ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)
+      = ∫ p : ℝ × ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x p.1 p.2 w :=
+    (MeasureTheory.integral_prod _ hsI).symm
+  rw [hplane]
+  calc ‖∫ p : ℝ × ℝ, sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x p.1 p.2 w‖
+      ≤ ∫ p : ℝ × ℝ, ‖sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x p.1 p.2 w‖ :=
+        norm_integral_le_integral_norm _
+    _ ≤ ∫ p : ℝ × ℝ, rrMinusDom Ca M r x p.1 p.2 w := by
+        apply integral_mono hsI.norm hdI
+        intro p
+        exact abs_sectorIntegrand_RR_le_rrMinusDom hr Ca hCA M x p.1 p.2 w
+    _ = ∫ y : ℝ, ∫ z : ℝ, rrMinusDom Ca M r x y z w :=
+        MeasureTheory.integral_prod _ hdI
+
+/-- **The RR− boundary integral**: the RR− piece's
+absolute value is bounded by an absolute constant times the boundary tail
+integral `∫_{δmax}^∞ e^{−G(δ)} dδ`, `δmax = (2M + S²)/2`.  The reflected
+`(Iio, Iic]` `X`-domain lands on `Ioi δmax ∩ Ici 0`; enlarging to `Ioi δmax`
+is junk-free monotonicity for the nonneg integrand. -/
+theorem trSectorRRminus_abs_le_boundary (hr : 0 < r) (M Ca : ℝ) (hCa : 0 ≤ Ca)
+    (hCA : ∀ u : ℝ, |airyAiReal u| ≤ Ca) :
+    |trSectorRRminus M r|
+      ≤ (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt Real.pi)) * Ca * Real.sqrt (Real.pi/2))
+        * ∫ δ in Set.Ioi ((2*M + (2+r)^2)/2), Real.exp (-rrBoundaryG M r δ) := by
+  -- the constant Airy factor
+  have hφnn : ∀ t : ℝ, 0 ≤ (fun _ : ℝ => (1:ℝ)) t := fun _ => zero_le_one
+  have hφ1 : ∀ t : ℝ, (fun _ : ℝ => (1:ℝ)) t ≤ 1 := fun _ => le_refl 1
+  have hφmeas : Measurable (fun _ : ℝ => (1:ℝ)) := measurable_const
+  -- the indicated dominator inner integral is plane-integrable
+  have hdomPlane := integrable_rrDomW_plane hr M Ca hCa (fun _ : ℝ => (1:ℝ))
+    hφnn hφ1 hφmeas (Set.Iio (-(2+r)^2/2)) measurableSet_Iio
+  have hdomPlane' : Integrable ({p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+      (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+        rrDom Ca (fun _ : ℝ => (1:ℝ)) M r x y z w)) (volume.prod volume) := by
+    apply hdomPlane.congr
+    filter_upwards with p
+    obtain ⟨x, w⟩ := p
+    show ({w : ℝ | (x + w)/2 ∈ Set.Iio (-(2+r)^2/2)}).indicator
+        (fun w => ∫ y : ℝ, ∫ z : ℝ, rrDom Ca (fun _ : ℝ => (1:ℝ)) M r x y z w) w
+      = {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+        (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+          rrDom Ca (fun _ : ℝ => (1:ℝ)) M r x y z w) (x, w)
+    by_cases hw : (x, w) ∈ {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}
+    · have hmem : w ∈ {w : ℝ | (x + w)/2 ∈ Set.Iio (-(2+r)^2/2)} := by
+        have h0 : x + w + (2+r)^2 < 0 := hw
+        show (x + w)/2 ∈ Set.Iio (-(2+r)^2/2)
+        rw [Set.mem_Iio]
+        linarith
+      rw [Set.indicator_of_mem hmem _, Set.indicator_of_mem hw _]
+      rfl
+    · have hnmem : w ∉ {w : ℝ | (x + w)/2 ∈ Set.Iio (-(2+r)^2/2)} := by
+        have h0 : ¬ x + w + (2+r)^2 < 0 := hw
+        show ¬ (x + w)/2 ∈ Set.Iio (-(2+r)^2/2)
+        rw [Set.mem_Iio]
+        linarith
+      rw [Set.indicator_of_notMem hnmem _, Set.indicator_of_notMem hw _]
+  -- the sector inner integral, indicated on the RR− half-plane, is
+  -- plane-integrable by domination
+  have hI : Integrable ({p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+      (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+        sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w)) (volume.prod volume) := by
+    apply hdomPlane'.mono' ?_ ?_
+    · exact ((measurable_uncurry_sectorInnerW (measurable_qRKerTwo M) (measurable_qRKerTwo M)
+        hr M (qRKerTwo_abs_le_qKerTwo M) (qRKerTwo_abs_le_qKerTwo M)).indicator
+        (rrMinusRegion_meas r)).aestronglyMeasurable
+    · filter_upwards with p
+      obtain ⟨x, w⟩ := p
+      show ‖{p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+            sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w)‖
+        ≤ {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+          (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+            rrDom Ca (fun _ : ℝ => (1:ℝ)) M r x y z w) (x, w)
+      by_cases hp : (x, w) ∈ {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}
+      · rw [Set.indicator_of_mem hp _, Set.indicator_of_mem hp _]
+        exact norm_sectorInner_le_rrMinusDom hr M Ca hCa hCA x w
+      · rw [Set.indicator_of_notMem hp _, Set.indicator_of_notMem hp _, norm_zero]
+  -- the set-builder and `Iio` forms of the RR− `w`-range agree
+  have hseteq : ∀ x : ℝ, {w : ℝ | (x + w)/2 ∈ Set.Iio (-(2+r)^2/2)}
+      = Set.Iio (-x - (2+r)^2) := by
+    intro x
+    ext w
+    simp only [Set.mem_ofPred_eq, Set.mem_Iio]
+    constructor <;> intro h <;> linarith
+  -- the norm chain (mirroring the RR+ case)
+  have hpre : ‖∫ x : ℝ, ∫ w in Set.Iio (-x - (2+r)^2), ∫ y : ℝ, ∫ z : ℝ,
+        sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w‖
+      ≤ ∫ x : ℝ, ∫ w in {w : ℝ | (x + w)/2 ∈ Set.Iio (-(2+r)^2/2)}, ∫ y : ℝ, ∫ z : ℝ,
+        rrDom Ca (fun _ : ℝ => (1:ℝ)) M r x y z w := by
+    calc ‖∫ x : ℝ, ∫ w in Set.Iio (-x - (2+r)^2), ∫ y : ℝ, ∫ z : ℝ,
+          sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w‖
+        = ‖∫ x : ℝ, ∫ w : ℝ, {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+            (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+              sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) (x, w)‖ := by
+          congr 1
+          apply integral_congr_ae
+          filter_upwards with x
+          rw [← MeasureTheory.integral_indicator measurableSet_Iio]
+          apply integral_congr_ae
+          filter_upwards with w
+          exact rrMinusInner_eq_indicator M r x w
+      _ = ‖∫ p : ℝ × ℝ, {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+            (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+              sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) p ∂(volume.prod volume)‖ := by
+          rw [MeasureTheory.integral_prod _ hI]
+      _ ≤ ∫ p : ℝ × ℝ, ‖{p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+            (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+              sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w) p‖ ∂(volume.prod volume) :=
+          norm_integral_le_integral_norm _
+      _ ≤ ∫ p : ℝ × ℝ, {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+            (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+              rrDom Ca (fun _ : ℝ => (1:ℝ)) M r x y z w) p ∂(volume.prod volume) := by
+          apply integral_mono hI.norm hdomPlane'
+          intro p
+          by_cases hp : p ∈ {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}
+          · simp only [Set.indicator_of_mem hp]
+            exact norm_sectorInner_le_rrMinusDom hr M Ca hCa hCA p.1 p.2
+          · simp only [Set.indicator_of_notMem hp, norm_zero, le_refl]
+      _ = ∫ x : ℝ, ∫ w : ℝ, {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0}.indicator
+            (Function.uncurry fun x w : ℝ => ∫ y : ℝ, ∫ z : ℝ,
+              rrDom Ca (fun _ : ℝ => (1:ℝ)) M r x y z w) (x, w) := by
+          exact MeasureTheory.integral_prod _ hdomPlane'
+      _ = ∫ x : ℝ, ∫ w in Set.Iio (-x - (2+r)^2), ∫ y : ℝ, ∫ z : ℝ,
+            rrDom Ca (fun _ : ℝ => (1:ℝ)) M r x y z w := by
+          apply integral_congr_ae
+          filter_upwards with x
+          rw [← MeasureTheory.integral_indicator measurableSet_Iio]
+          apply integral_congr_ae
+          filter_upwards with w
+          by_cases hw : w ∈ Set.Iio (-x - (2+r)^2)
+          · rw [Set.indicator_of_mem hw _,
+              Set.indicator_of_mem (show (x, w) ∈ {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0} from by
+                have h1 : w < -x - (2+r)^2 := Set.mem_Iio.mp hw
+                show (x, w).1 + (x, w).2 + (2+r)^2 < 0
+                linarith) _]
+            rfl
+          · rw [Set.indicator_of_notMem hw _,
+              Set.indicator_of_notMem (show (x, w) ∉ {p : ℝ × ℝ | p.1 + p.2 + (2+r)^2 < 0} from by
+                have h1 : ¬ w < -x - (2+r)^2 := Set.mem_Iio.not.mp hw
+                show ¬ (x, w).1 + (x, w).2 + (2+r)^2 < 0
+                linarith) _]
+      _ = ∫ x : ℝ, ∫ w in {w : ℝ | (x + w)/2 ∈ Set.Iio (-(2+r)^2/2)}, ∫ y : ℝ, ∫ z : ℝ,
+            rrDom Ca (fun _ : ℝ => (1:ℝ)) M r x y z w := by
+          apply integral_congr_ae
+          filter_upwards with x
+          rw [hseteq x]
+  -- the inner-`Y` evaluation (no Airy factor)
+  have hYval : ∀ X : ℝ, (∫ Y in Set.Iic M,
+        Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * 1)
+      = Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * gaussianTail (1/2) (M - X) := by
+    intro X
+    rw [show (fun Y : ℝ => Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * 1)
+        = fun Y : ℝ => Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) from
+      funext fun Y => by rw [mul_one]]
+    exact integral_rrXY_innerY M r X
+  -- the pointwise Chernoff bound on the `X`-integrand (valid for `X ≤ M`,
+  -- which the `Iic M` intersection factor supplies)
+  have hpt : ∀ X ∈ (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M),
+      Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * gaussianTail (1/2) (M - X)
+      ≤ Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+        * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)) := by
+    intro X hX
+    have hMX : 0 ≤ M - X := sub_nonneg.mpr (Set.mem_Iic.mp hX.2)
+    exact mul_le_mul_of_nonneg_left (AiryConj.gaussianTail_chernoff (M - X) hMX)
+      (Real.exp_pos _).le
+  -- measurability / integrability of the `X`-integrands
+  have hFmeas : Measurable fun X : ℝ =>
+      Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * gaussianTail (1/2) (M - X) :=
+    ((Real.continuous_exp.comp (by fun_prop :
+        Continuous fun X : ℝ => -(2*(2+r)*X + (2/3)*(2+r)^3))).measurable).mul
+      (antitone_gaussianTail_one_half.measurable.comp
+        (measurable_const.sub measurable_id))
+  have htailnn : ∀ t : ℝ, 0 ≤ gaussianTail (1/2) t :=
+    fun t => integral_nonneg fun d => (Real.exp_pos _).le
+  have hGI : IntegrableOn (fun X : ℝ =>
+        Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+          * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)))
+      (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M) volume := by
+    have hGform : (fun X : ℝ =>
+          Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+            * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)))
+        = fun X : ℝ => (Real.sqrt (Real.pi/2)
+            * Real.exp (-(2*(2+r)*M - 2*(2+r)^2 + (2/3)*(2+r)^3)))
+            * Real.exp (-(1/2) * (X - (M - 2*(2+r)))^2) := by
+      funext X
+      rw [show Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+            * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2))
+          = Real.sqrt (Real.pi/2) * (Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+            * Real.exp (-(M-X)^2/2)) from by ring]
+      rw [← Real.exp_add]
+      have hE : -(2*(2+r)*X + (2/3)*(2+r)^3) + -(M-X)^2/2
+          = -(2*(2+r)*M - 2*(2+r)^2 + (2/3)*(2+r)^3)
+            + -(1/2) * (X - (M - 2*(2+r)))^2 := by ring
+      rw [hE, Real.exp_add]
+      ring
+    rw [hGform]
+    exact (((integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1/2)).comp_sub_right
+      (M - 2*(2+r))).const_mul _).integrableOn
+  have hFI : IntegrableOn (fun X : ℝ =>
+        Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * gaussianTail (1/2) (M - X))
+      (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M) volume := by
+    apply hGI.mono' ?_ ?_
+    · exact hFmeas.aestronglyMeasurable
+    · rw [ae_restrict_iff' (measurableSet_Iio.inter measurableSet_Iic)]
+      filter_upwards with X hX
+      rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (Real.exp_pos _).le (htailnn _))]
+      exact hpt X hX
+  -- the `X`-integral monotonicity (Chernoff)
+  have hmono2 : (∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M),
+        Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * gaussianTail (1/2) (M - X))
+      ≤ ∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M),
+        Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+          * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)) :=
+    setIntegral_mono_on hFI hGI (measurableSet_Iio.inter measurableSet_Iic) hpt
+  -- the exponent merge into `rrBoundaryG` and the reflection `X = M − δ`
+  have hmerge2 : ∀ X : ℝ,
+      Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+        * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2))
+      = Real.sqrt (Real.pi/2) * Real.exp (-rrBoundaryG M r (M - X)) := by
+    intro X
+    rw [show Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+          * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2))
+        = Real.sqrt (Real.pi/2) * (Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+          * Real.exp (-(M-X)^2/2)) from by ring]
+    rw [← Real.exp_add]
+    congr 1
+    unfold rrBoundaryG
+    ring
+  have hrefl2 : (∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M),
+        Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+          * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)))
+      = Real.sqrt (Real.pi/2)
+        * ∫ δ in (Set.Ioi ((2*M + (2+r)^2)/2) ∩ Set.Ici 0),
+          Real.exp (-rrBoundaryG M r δ) := by
+    calc (∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M),
+          Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+            * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)))
+        = ∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M),
+            Real.sqrt (Real.pi/2) * Real.exp (-rrBoundaryG M r (M - X)) :=
+          integral_congr_ae (Eventually.of_forall hmerge2)
+      _ = Real.sqrt (Real.pi/2)
+            * ∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M),
+              Real.exp (-rrBoundaryG M r (M - X)) :=
+          integral_const_mul _ _
+      _ = Real.sqrt (Real.pi/2)
+            * ∫ δ in (Set.Ioi ((2*M + (2+r)^2)/2) ∩ Set.Ici 0),
+              Real.exp (-rrBoundaryG M r δ) := by
+          congr 1
+          have h := integral_Iio_Iic_comp_const_sub (-(2+r)^2/2) M M
+            (fun δ => Real.exp (-rrBoundaryG M r δ))
+          rw [show M - M = (0:ℝ) from by ring,
+            show M - (-(2+r)^2/2) = (2*M + (2+r)^2)/2 from by ring] at h
+          exact h
+  -- the whole-line integrability of the boundary exponential (for the
+  -- `Ici 0`-drop enlargement)
+  have hGint : Integrable fun δ : ℝ => Real.exp (-rrBoundaryG M r δ) := by
+    rw [show (fun δ : ℝ => Real.exp (-rrBoundaryG M r δ))
+        = fun δ => Real.exp (-(2*(2+r)*M - 2*(2+r)^2 + (2/3)*(2+r)^3))
+          * Real.exp (-(1/2) * (δ - 2*(2+r))^2) from
+      funext fun δ => by
+        rw [show Real.exp (-(2*(2+r)*M - 2*(2+r)^2 + (2/3)*(2+r)^3))
+            * Real.exp (-(1/2) * (δ - 2*(2+r))^2)
+          = Real.exp (-(2*(2+r)*M - 2*(2+r)^2 + (2/3)*(2+r)^3)
+            + -(1/2) * (δ - 2*(2+r))^2) from (Real.exp_add _ _).symm]
+        congr 1
+        unfold rrBoundaryG
+        ring]
+    exact ((integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1/2)).comp_sub_right
+      (2*(2+r))).const_mul _
+  have henlarge : (∫ δ in (Set.Ioi ((2*M + (2+r)^2)/2) ∩ Set.Ici 0),
+        Real.exp (-rrBoundaryG M r δ))
+      ≤ ∫ δ in Set.Ioi ((2*M + (2+r)^2)/2), Real.exp (-rrBoundaryG M r δ) :=
+    setIntegral_mono_set hGint.integrableOn
+      (Eventually.of_forall fun δ => (Real.exp_pos _).le)
+      (Eventually.of_forall fun δ hδ => Set.inter_subset_left hδ)
+  -- the folded constant is nonnegative
+  have hKnn' : (0:ℝ) ≤ 4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+      * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca :=
+    mul_nonneg (mul_nonneg (by norm_num)
+      (mul_nonneg (mul_nonneg (Real.rpow_nonneg (show (0:ℝ) ≤ 4*Real.pi by positivity) _)
+        (Real.rpow_nonneg (mul_nonneg (show (0:ℝ) ≤ 4*Real.pi by positivity) hr.le) _))
+        (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)))) hCa
+  -- assemble
+  unfold trSectorRRminus
+  rw [← Real.norm_eq_abs]
+  calc ‖∫ x : ℝ, ∫ w in Set.Iio (-x - (2+r)^2), ∫ y : ℝ, ∫ z : ℝ,
+        sectorIntegrand (qRKerTwo M) (qRKerTwo M) r x y z w‖
+      ≤ ∫ x : ℝ, ∫ w in {w : ℝ | (x + w)/2 ∈ Set.Iio (-(2+r)^2/2)}, ∫ y : ℝ, ∫ z : ℝ,
+          rrDom Ca (fun _ : ℝ => (1:ℝ)) M r x y z w := hpre
+    _ ≤ 4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r)))
+          * (Ca * ∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M), ∫ Y in Set.Iic M,
+              Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * 1) :=
+        rr_dom_cov_bound hr M Ca hCa (fun _ : ℝ => (1:ℝ)) hφnn hφ1 hφmeas
+          (Set.Iio (-(2+r)^2/2)) measurableSet_Iio
+    _ = (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca)
+          * ∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M),
+            Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * gaussianTail (1/2) (M - X) := by
+        rw [show (∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M), ∫ Y in Set.Iic M,
+              Real.exp (-((X+Y-2*M)^2/2 + 2*(2+r)*X + (2/3)*(2+r)^3)) * 1)
+            = ∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M),
+              Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3)) * gaussianTail (1/2) (M - X) from
+          setIntegral_congr_fun (measurableSet_Iio.inter measurableSet_Iic)
+            fun X _ => hYval X]
+        ring
+    _ ≤ (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca)
+          * ∫ X in (Set.Iio (-(2+r)^2/2) ∩ Set.Iic M),
+            Real.exp (-(2*(2+r)*X + (2/3)*(2+r)^3))
+              * (Real.sqrt (Real.pi/2) * Real.exp (-(M-X)^2/2)) :=
+        mul_le_mul_of_nonneg_left hmono2 hKnn'
+    _ = (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca)
+          * (Real.sqrt (Real.pi/2)
+            * ∫ δ in (Set.Ioi ((2*M + (2+r)^2)/2) ∩ Set.Ici 0),
+              Real.exp (-rrBoundaryG M r δ)) := by
+        rw [hrefl2]
+    _ ≤ (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi*r)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt (Real.pi*r))) * Ca)
+          * (Real.sqrt (Real.pi/2)
+            * ∫ δ in Set.Ioi ((2*M + (2+r)^2)/2), Real.exp (-rrBoundaryG M r δ)) :=
+        mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_left henlarge (Real.sqrt_nonneg _)) hKnn'
+    _ = (4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi)^(-1/2:ℝ))
+          * (Real.sqrt (2*Real.pi) * Real.sqrt Real.pi)) * Ca * Real.sqrt (Real.pi/2))
+        * ∫ δ in Set.Ioi ((2*M + (2+r)^2)/2), Real.exp (-rrBoundaryG M r δ) := by
+        rw [rr_pref_mass_eq r hr]
+        ring
+
+/-! ## The RR− boundary algebra -/
+
+/-- The boundary Taylor factor identity: with
+`G′(δ) = δ − 2S` and `G″ = 1`,
+`G(δ) = G(d) + G′(d)·(δ−d) + (δ−d)²/2`.  The `G″`-monotonicity
+argument is packaged here as the exact algebraic identity plus the square's
+nonnegativity (remark (ii) of the module docstring). -/
+theorem rrBoundaryG_sub_boundary (M r δ d : ℝ) :
+    rrBoundaryG M r δ
+      = rrBoundaryG M r d + (d - 2*(2+r)) * (δ - d) + (δ - d)^2/2 := by
+  unfold rrBoundaryG
+  ring
+
+/-- The linear lower bound off the boundary: for
+`4 ≤ M`, `1 ≤ r`, `δmax ≤ δ`, the slope satisfies
+`G′(δmax) = M + r²/2 − 2 ≥ M/2`, so `G(δ) ≥ G(δmax) + (M/2)(δ − δmax)`. -/
+theorem rrBoundaryG_ge_linear (M r : ℝ) (hM : 4 ≤ M) (hr : 1 ≤ r)
+    (δ : ℝ) (hδ : (2*M + (2+r)^2)/2 ≤ δ) :
+    rrBoundaryG M r ((2*M + (2+r)^2)/2) + (M/2) * (δ - (2*M + (2+r)^2)/2)
+      ≤ rrBoundaryG M r δ := by
+  rw [rrBoundaryG_sub_boundary M r δ ((2*M + (2+r)^2)/2)]
+  have hslope : M/2 ≤ (2*M + (2+r)^2)/2 - 2*(2+r) := by
+    nlinarith [hM, sq_nonneg r]
+  have hδd : 0 ≤ δ - (2*M + (2+r)^2)/2 := sub_nonneg.mpr hδ
+  have h1 := mul_le_mul_of_nonneg_right hslope hδd
+  nlinarith [sq_nonneg (δ - (2*M + (2+r)^2)/2), h1]
+
+/-- The boundary value: `G(δmax) = (2M+S²)²/8 − S³/3`. -/
+theorem rrBoundaryG_boundary_eq (M r : ℝ) :
+    rrBoundaryG M r ((2*M + (2+r)^2)/2) = (2*M + (2+r)^2)^2/8 - (2+r)^3/3 := by
+  unfold rrBoundaryG
+  ring
+
+/-- The boundary value is `≥ c·M²` eventually: with
+`a = √(2M)`, `(2M+S²)²/8 ≥ a⁴/8 = M²/2` and `S ≤ (2+χ)√(2M)`, so
+`S³/3 ≤ (2/3)(2+χ)³ M√(2M) ≤ M²/4` once `√(2M) ≥ (16/3)(2+χ)³`.
+A bound of the form `c_χa⁴` converts to `c_χM²` via `a⁴ = 4M²`, absorbing
+the factor `4` into `c_χ`; here the `M²`-form is
+proved directly with `c = 1/4` (remark (iii)). -/
+theorem rrBoundaryG_boundary_ge (hχ0 : 0 < χ) (_hχ : χ < 1) :
+    ∃ c : ℝ, 0 < c ∧ ∃ M₀ : ℝ, ∀ M ≥ M₀, ∀ r ∈ Set.Icc 1 (χ * Real.sqrt (2*M)),
+      (c * M^2) ≤ (2*M + (2+r)^2)^2/8 - (2+r)^3/3 := by
+  have hχ2 : (0:ℝ) < 2 + χ := by linarith
+  refine ⟨1/4, by norm_num, ((16/3) * (2+χ)^3)^2 + 1, fun M hM r hrmem => ?_⟩
+  have hr1 : 1 ≤ r := hrmem.1
+  have hrr : r ≤ χ * Real.sqrt (2*M) := hrmem.2
+  have hM1 : 1 ≤ M := by
+    have hA0 : (0:ℝ) ≤ ((16/3) * (2+χ)^3)^2 := by positivity
+    linarith [hM]
+  have hM0 : (0:ℝ) < M := by linarith
+  set T := Real.sqrt (2*M) with hTdef
+  have hTpos : 0 < T := by
+    rw [hTdef]
+    exact Real.sqrt_pos.mpr (by linarith)
+  have hT1 : 1 ≤ T := by
+    rw [hTdef]
+    exact (Real.one_le_sqrt).mpr (by linarith)
+  have hS0 : 0 < 2 + r := by linarith
+  -- `S ≤ (2+χ)√(2M)`
+  have hS_le : 2 + r ≤ (2 + χ) * T := by
+    calc 2 + r ≤ 2 + χ * T := by linarith [hrr]
+      _ ≤ 2 * T + χ * T := by nlinarith [hT1, hχ0.le]
+      _ = (2 + χ) * T := by ring
+  -- `S³/3 ≤ (2/3)(2+χ)³ · M · T`
+  set K := (2+χ)^3/3 * 2 with hKdef
+  have hK0 : 0 ≤ K := by rw [hKdef]; positivity
+  have hS3 : (2+r)^3 ≤ (2+χ)^3 * (2*M) * T := by
+    have h1 := pow_le_pow_left₀ hS0.le hS_le 3
+    have h2 : ((2 + χ) * T)^3 = (2+χ)^3 * (2*M) * T := by
+      rw [mul_pow, show T^3 = (2*M) * T from by
+        rw [hTdef, pow_succ, Real.sq_sqrt (by linarith : (0:ℝ) ≤ 2*M)]]
+      ring
+    exact h1.trans (le_of_eq h2)
+  have hsub : (2+r)^3/3 ≤ K * M * T := by
+    calc (2+r)^3/3 ≤ ((2+χ)^3 * (2*M) * T)/3 := by linarith [hS3]
+      _ = K * M * T := by rw [hKdef]; ring
+  -- the threshold: `T = √(2M) ≥ (16/3)(2+χ)³ = 8K`
+  have hTge : (16/3) * (2+χ)^3 ≤ T := by
+    have hA0 : (0:ℝ) ≤ (16/3) * (2+χ)^3 := by positivity
+    have h1 : ((16/3) * (2+χ)^3)^2 ≤ 2*M := by
+      have hsq : (0:ℝ) ≤ ((16/3) * (2+χ)^3)^2 := by positivity
+      nlinarith [hM, hsq]
+    rw [hTdef]
+    exact (Real.le_sqrt hA0 (by linarith : (0:ℝ) ≤ 2*M)).mpr h1
+  have h8K : 8 * K ≤ T := by
+    calc 8 * K = (16/3) * (2+χ)^3 := by rw [hKdef]; ring
+      _ ≤ T := hTge
+  -- hence `K·M·T ≤ M²/4`
+  have hKT : K * T ≤ M / 4 := by
+    have h1 := mul_le_mul_of_nonneg_right h8K hTpos.le
+    have hM_eq : M = T^2/2 := by
+      rw [hTdef, Real.sq_sqrt (by linarith : (0:ℝ) ≤ 2*M)]
+      ring
+    rw [hM_eq]
+    nlinarith [h1, hTpos.le, hK0]
+  have hquad : K * M * T ≤ M^2/4 := by
+    calc K * M * T = M * (K * T) := by ring
+      _ ≤ M * (M/4) := mul_le_mul_of_nonneg_left hKT hM0.le
+      _ = M^2/4 := by ring
+  -- the base square: `(2M+S²)²/8 ≥ M²/2`
+  have hbase : M^2/2 ≤ (2*M + (2+r)^2)^2/8 := by
+    have h1 : (2*M)^2 ≤ (2*M + (2+r)^2)^2 :=
+      pow_le_pow_left₀ (by linarith : (0:ℝ) ≤ 2*M) (by nlinarith [sq_nonneg (2+r)]) 2
+    nlinarith [h1]
+  calc (1/4) * M^2 = M^2/2 - M^2/4 := by ring
+    _ ≤ (2*M + (2+r)^2)^2/8 - K * M * T := by linarith [hbase, hquad]
+    _ ≤ (2*M + (2+r)^2)^2/8 - (2+r)^3/3 := sub_le_sub_left hsub _
+
+/-! ## The RR− close -/
+
+/-- The boundary exponential is integrable on the whole line (completed
+square: `G(δ) = (δ−2S)²/2 + (2SM − 2S² + (2/3)S³)`). -/
+theorem integrable_exp_neg_rrBoundaryG (M r : ℝ) :
+    Integrable fun δ : ℝ => Real.exp (-rrBoundaryG M r δ) := by
+  rw [show (fun δ : ℝ => Real.exp (-rrBoundaryG M r δ))
+      = fun δ => Real.exp (-(2*(2+r)*M - 2*(2+r)^2 + (2/3)*(2+r)^3))
+        * Real.exp (-(1/2) * (δ - 2*(2+r))^2) from
+    funext fun δ => by
+      rw [show Real.exp (-(2*(2+r)*M - 2*(2+r)^2 + (2/3)*(2+r)^3))
+          * Real.exp (-(1/2) * (δ - 2*(2+r))^2)
+        = Real.exp (-(2*(2+r)*M - 2*(2+r)^2 + (2/3)*(2+r)^3)
+          + -(1/2) * (δ - 2*(2+r))^2) from (Real.exp_add _ _).symm]
+      congr 1
+      unfold rrBoundaryG
+      ring]
+  exact ((integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1/2)).comp_sub_right
+    (2*(2+r))).const_mul _
+
+/-- **The RR− close**: the RR− piece is
+`O(e^{−cM²})` with absolute `C` and `c`.  The tail integral collapses by
+`G(δ) ≥ G(δmax) + (M/2)(δ−δmax)` and
+`∫_{δmax}^∞ e^{−(M/2)(δ−δmax)} dδ ≤ ∫_0^∞ e^{−u} du = 1` (for `M ≥ 2`),
+so no `2/M` absorption is needed. -/
+theorem trSectorRRminus_abs_le (hχ0 : 0 < χ) (_hχ : χ < 1) :
+    ∃ C c M₀ : ℝ, 0 < c ∧ ∀ M ≥ M₀, ∀ r ∈ Set.Icc 1 (χ * Real.sqrt (2*M)),
+      |trSectorRRminus M r| ≤ C * Real.exp (-c * M^2) := by
+  obtain ⟨Ca, hCa0, hCA⟩ := airyAiReal_abs_le'
+  obtain ⟨cχ, hcχ, M₀χ, hM₀χ⟩ := rrBoundaryG_boundary_ge hχ0 _hχ
+  set K₂ : ℝ := 4 * (((4*Real.pi)^(-1:ℝ) * (4*Real.pi)^(-1/2:ℝ))
+    * (Real.sqrt (2*Real.pi) * Real.sqrt Real.pi)) * Ca * Real.sqrt (Real.pi/2) with hK₂def
+  have hK₂nn : 0 ≤ K₂ := by
+    rw [hK₂def]
+    exact mul_nonneg (mul_nonneg (mul_nonneg (by norm_num)
+      (mul_nonneg (mul_nonneg (Real.rpow_nonneg (show (0:ℝ) ≤ 4*Real.pi by positivity) _)
+        (Real.rpow_nonneg (show (0:ℝ) ≤ 4*Real.pi by positivity) _))
+        (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)))) hCa0.le)
+      (Real.sqrt_nonneg _)
+  refine ⟨K₂, cχ, max 4 M₀χ, hcχ, fun M hM r hrmem => ?_⟩
+  have hr1 : 1 ≤ r := hrmem.1
+  have hr0 : 0 < r := one_pos.trans_le hr1
+  have hM4 : 4 ≤ M := le_trans (le_max_left _ _) hM
+  have hMM0 : M₀χ ≤ M := le_trans (le_max_right _ _) hM
+  -- the tail integral collapses to `e^{−G(δmax)}`
+  have hE1 : IntegrableOn (fun δ : ℝ => Real.exp (-(δ - (2*M + (2+r)^2)/2)))
+      (Set.Ioi ((2*M + (2+r)^2)/2)) volume := by
+    rw [show (fun δ : ℝ => Real.exp (-(δ - (2*M + (2+r)^2)/2)))
+        = fun δ => Real.exp ((2*M + (2+r)^2)/2) * Real.exp (-δ) from
+      funext fun δ => by rw [← Real.exp_add]; congr 1; ring]
+    exact (integrableOn_exp_neg_Ioi _).const_mul _
+  have hEM : IntegrableOn (fun δ : ℝ => Real.exp (-(M/2) * (δ - (2*M + (2+r)^2)/2)))
+      (Set.Ioi ((2*M + (2+r)^2)/2)) volume := by
+    apply hE1.mono' ?_ ?_
+    · exact (Real.continuous_exp.comp (by fun_prop :
+        Continuous fun δ : ℝ => -(M/2) * (δ - (2*M + (2+r)^2)/2))).aestronglyMeasurable
+    · rw [ae_restrict_iff' measurableSet_Ioi]
+      filter_upwards with δ hδ
+      rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_pos _).le]
+      have hδpos : (0:ℝ) ≤ δ - (2*M + (2+r)^2)/2 := sub_nonneg.mpr (Set.mem_Ioi.mp hδ).le
+      have h1 : (0:ℝ) ≤ M/2 - 1 := by linarith
+      have h2 : δ - (2*M + (2+r)^2)/2 ≤ (M/2) * (δ - (2*M + (2+r)^2)/2) := by
+        nlinarith [mul_nonneg h1 hδpos]
+      exact Real.exp_le_exp.mpr (by linarith [h2])
+  have hpt10 : ∀ δ ∈ Set.Ioi ((2*M + (2+r)^2)/2),
+      Real.exp (-rrBoundaryG M r δ)
+        ≤ Real.exp (-rrBoundaryG M r ((2*M + (2+r)^2)/2))
+          * Real.exp (-(M/2) * (δ - (2*M + (2+r)^2)/2)) := by
+    intro δ hδ
+    have hge := rrBoundaryG_ge_linear M r hM4 hr1 δ (Set.mem_Ioi.mp hδ).le
+    rw [← Real.exp_add]
+    exact Real.exp_le_exp.mpr (by linarith [hge])
+  have hshift : (∫ δ in Set.Ioi ((2*M + (2+r)^2)/2), Real.exp (-(δ - (2*M + (2+r)^2)/2)))
+      = ∫ v in Set.Ioi 0, Real.exp (-v) :=
+    AiryConj.integral_Ioi_comp_sub (fun u : ℝ => Real.exp (-u)) _
+  have hδint : (∫ δ in Set.Ioi ((2*M + (2+r)^2)/2), Real.exp (-rrBoundaryG M r δ))
+      ≤ Real.exp (-rrBoundaryG M r ((2*M + (2+r)^2)/2)) := by
+    calc (∫ δ in Set.Ioi ((2*M + (2+r)^2)/2), Real.exp (-rrBoundaryG M r δ))
+        ≤ ∫ δ in Set.Ioi ((2*M + (2+r)^2)/2),
+            Real.exp (-rrBoundaryG M r ((2*M + (2+r)^2)/2))
+              * Real.exp (-(M/2) * (δ - (2*M + (2+r)^2)/2)) :=
+          setIntegral_mono_on ((integrable_exp_neg_rrBoundaryG M r).integrableOn)
+            (hEM.const_mul _) measurableSet_Ioi hpt10
+      _ = Real.exp (-rrBoundaryG M r ((2*M + (2+r)^2)/2))
+            * ∫ δ in Set.Ioi ((2*M + (2+r)^2)/2),
+              Real.exp (-(M/2) * (δ - (2*M + (2+r)^2)/2)) :=
+          integral_const_mul _ _
+      _ ≤ Real.exp (-rrBoundaryG M r ((2*M + (2+r)^2)/2))
+            * ∫ δ in Set.Ioi ((2*M + (2+r)^2)/2), Real.exp (-(δ - (2*M + (2+r)^2)/2)) :=
+          mul_le_mul_of_nonneg_left
+            (setIntegral_mono_on hEM hE1 measurableSet_Ioi (fun δ hδ => by
+              have hδpos : (0:ℝ) ≤ δ - (2*M + (2+r)^2)/2 :=
+                sub_nonneg.mpr (Set.mem_Ioi.mp hδ).le
+              have h1 : (0:ℝ) ≤ M/2 - 1 := by linarith
+              have h2 : δ - (2*M + (2+r)^2)/2 ≤ (M/2) * (δ - (2*M + (2+r)^2)/2) := by
+                nlinarith [mul_nonneg h1 hδpos]
+              exact Real.exp_le_exp.mpr (by linarith [h2])))
+            (Real.exp_pos _).le
+      _ = Real.exp (-rrBoundaryG M r ((2*M + (2+r)^2)/2)) * 1 := by
+          congr 1
+          rw [hshift]
+          exact integral_exp_neg_Ioi_zero
+      _ = Real.exp (-rrBoundaryG M r ((2*M + (2+r)^2)/2)) := mul_one _
+  -- assemble
+  calc |trSectorRRminus M r|
+      ≤ K₂ * ∫ δ in Set.Ioi ((2*M + (2+r)^2)/2), Real.exp (-rrBoundaryG M r δ) := by
+        rw [hK₂def]
+        exact trSectorRRminus_abs_le_boundary hr0 M Ca hCa0.le hCA
+    _ ≤ K₂ * Real.exp (-rrBoundaryG M r ((2*M + (2+r)^2)/2)) :=
+        mul_le_mul_of_nonneg_left hδint hK₂nn
+    _ = K₂ * Real.exp (-((2*M + (2+r)^2)^2/8 - (2+r)^3/3)) := by
+        rw [rrBoundaryG_boundary_eq]
+    _ ≤ K₂ * Real.exp (-cχ * M^2) :=
+        mul_le_mul_of_nonneg_left
+          (Real.exp_le_exp.mpr (by rw [neg_mul]; linarith [hM₀χ M hMM0 r hrmem])) hK₂nn
+
+/-! ## The RR-sector assembly -/
+
+/-- **The RR-sector trace bound** (the main result of this module, used in the
+assembly of the separated-block trace bound): for `1 ≤ r ≤ χ·√(2M)` with `0 < χ < 1` and `M`
+large, the RR sector trace is bounded by `C₁e^{−J_M(r)} + C₂e^{−c₂M²}` with
+absolute constants.  Assembled from the `±` split, the RR+ saddle close,
+and the RR− close. -/
+theorem trSectorRR_abs_le (hχ0 : 0 < χ) (hχ : χ < 1) :
+    ∃ C₁ C₂ c₂ M₀ : ℝ, 0 < c₂ ∧ ∀ (a M r : ℝ), M₀ ≤ M →
+      r ∈ Set.Icc 1 (χ * Real.sqrt (2*M)) →
+      MemLp (aRKer a M r) 2 (volume.prod volume) →
+      MemLp (wSKer (2 + r) a) 2 (volume.prod volume) →
+      |trSectorRR M r|
+        ≤ C₁ * Real.exp (-AiryConj.saddleJ M r) + C₂ * Real.exp (-c₂ * M^2) := by
+  obtain ⟨C₇, hC₇⟩ := trSectorRRplus_abs_le
+  obtain ⟨C₁₀, cχ, M₀₁₀, hcχ, h₁₀⟩ := trSectorRRminus_abs_le hχ0 hχ
+  refine ⟨C₇, C₁₀, cχ, max 2 M₀₁₀, hcχ, fun a M r hM hrmem hA hW => ?_⟩
+  have hM2 : 2 ≤ M := le_trans (le_max_left _ _) hM
+  have hM10 : M₀₁₀ ≤ M := le_trans (le_max_right _ _) hM
+  have hr1 : 1 ≤ r := hrmem.1
+  rw [trSectorRR_eq_plus_add_minus (one_pos.trans_le hr1) a M hA hW]
+  calc |trSectorRRplus M r + trSectorRRminus M r|
+      ≤ |trSectorRRplus M r| + |trSectorRRminus M r| := abs_add_le _ _
+    _ ≤ C₇ * Real.exp (-AiryConj.saddleJ M r) + C₁₀ * Real.exp (-cχ * M^2) :=
+        add_le_add (hC₇ M r hM2 hr1) (h₁₀ M hM10 r hrmem)
+
+end AiryTwoInt

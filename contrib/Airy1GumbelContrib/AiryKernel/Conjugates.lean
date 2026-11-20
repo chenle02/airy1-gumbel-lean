@@ -1,0 +1,132 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.AiryKernel.BackwardAiry
+
+/-!
+# Conjugates — the weighted kernels of the paper's operator setup
+
+Correspondence with the paper:
+
+* `phiWeight` — `φ(x) = (1 + x²)^{1/2}`.
+* `qMT` — the piecewise kernel `Q_{M,T}`:
+  `p_T(2M - x - z)` on the reflected region `x ≤ M, z ≤ M`, else `p_T(x - z)`.
+* `backwardAiryPair` — the backward-Airy pair kernel `(P_{-T}B₀)(z, y) =
+  g_T(z + y)`, with `g_T` the contrib `backwardAiry`.
+* `vKernel` / `wKernel` — the weighted kernels `V_{T,a}`, `W_{T,a}`;
+  the paper's weight parameter
+  is written `a` (the paper's appendix lemmas use `λ`, with the same condition
+  `a ≥ T + 1`).
+
+Only definitions and fully-proved helper facts live here; the Hilbert–Schmidt
+and operator-norm bounds of the paper's appendix are proved in
+their own modules.
+-/
+
+namespace AiryConj
+
+open MeasureTheory Real Set Filter
+open scoped Topology BigOperators ENNReal NNReal
+
+/-- The weight `φ(x) = (1 + x²)^{1/2}`. -/
+noncomputable def phiWeight (x : ℝ) : ℝ := Real.sqrt (1 + x ^ 2)
+
+theorem phiWeight_pos (x : ℝ) : 0 < phiWeight x :=
+  Real.sqrt_pos.mpr (by positivity)
+
+theorem phiWeight_nonneg (x : ℝ) : 0 ≤ phiWeight x := (phiWeight_pos x).le
+
+theorem phiWeight_sq (x : ℝ) : (phiWeight x) ^ 2 = 1 + x ^ 2 :=
+  Real.sq_sqrt (by positivity)
+
+theorem phiWeight_inv_sq (x : ℝ) : (phiWeight x)⁻¹ ^ 2 = (1 + x ^ 2)⁻¹ := by
+  rw [inv_pow, phiWeight_sq]
+
+theorem continuous_phiWeight : Continuous phiWeight :=
+  Real.continuous_sqrt.comp (continuous_const.add (continuous_id.pow 2))
+
+/-- The piecewise kernel `Q_{M,T}`. -/
+noncomputable def qMT (M T x z : ℝ) : ℝ :=
+  if x ≤ M ∧ z ≤ M then heatKernel T (2 * M - x - z) else heatKernel T (x - z)
+
+/-- On the complementary region, `Q_{M,T}` is the free heat kernel. -/
+theorem qMT_eq_free {M T x z : ℝ} (h : ¬(x ≤ M ∧ z ≤ M)) :
+    qMT M T x z = heatKernel T (x - z) := ite_eq_right h
+
+/-- On the reflected region, `Q_{M,T}` is the reflected heat kernel. -/
+theorem qMT_eq_reflected {M T x z : ℝ} (hx : x ≤ M) (hz : z ≤ M) :
+    qMT M T x z = heatKernel T (2 * M - x - z) := ite_eq_left ⟨hx, hz⟩
+
+/-- The reflected-region identity: for `0 < T`,
+`p_T(2M - x - z) = p_T(x - z) · exp(-(M - x)(M - z)/T)`, since
+`(2M - x - z)² = (x - z)² + 4(M - x)(M - z)`. -/
+theorem heatKernel_reflected_eq {M T x z : ℝ} (hT : 0 < T) :
+    heatKernel T (2 * M - x - z) =
+      heatKernel T (x - z) * Real.exp (-(M - x) * (M - z) / T) := by
+  have hkey : -(2 * M - x - z) ^ 2 / (4 * T) =
+      -(x - z) ^ 2 / (4 * T) + -(M - x) * (M - z) / T := by
+    field_simp
+    ring
+  unfold heatKernel
+  rw [hkey, Real.exp_add]
+  exact (mul_assoc _ _ _).symm
+
+/-- The backward-Airy pair kernel `(P_{-T}B₀)(z, y) = g_T(z + y)`. -/
+noncomputable def backwardAiryPair (T : ℝ) (zy : ℝ × ℝ) : ℝ :=
+  backwardAiry T (zy.1 + zy.2)
+
+/-- The weighted kernel `V_{T,a}`. -/
+noncomputable def vKernel (T a M : ℝ) (xz : ℝ × ℝ) : ℝ :=
+  Real.exp (-a * xz.1) * qMT M T xz.1 xz.2 * Real.exp (-a * xz.2) * phiWeight xz.2
+
+/-- The weighted kernel `W_{T,a}`. -/
+noncomputable def wKernel (T a : ℝ) (zy : ℝ × ℝ) : ℝ :=
+  (phiWeight zy.1)⁻¹ * Real.exp (a * zy.1) * backwardAiry T (zy.1 + zy.2) *
+    Real.exp (a * zy.2)
+
+/-- The reflected region `{p | p.1 ≤ M ∧ p.2 ≤ M}` is measurable. -/
+theorem measurableSet_reflectedRegion (M : ℝ) :
+    MeasurableSet {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M} := by
+  have : {p : ℝ × ℝ | p.1 ≤ M ∧ p.2 ≤ M} = Set.Iic M ×ˢ Set.Iic M := by
+    ext ⟨x, z⟩; simp [Set.mem_Iic]
+  rw [this]
+  exact measurableSet_Iic.prod measurableSet_Iic
+
+/-- `Q_{M,T}` is jointly measurable (it is continuous on each of the two
+measurable regions). -/
+theorem measurable_qMT (M T : ℝ) : Measurable (fun p : ℝ × ℝ => qMT M T p.1 p.2) := by
+  unfold qMT
+  have h1 : Continuous fun p : ℝ × ℝ => heatKernel T (2 * M - p.1 - p.2) :=
+    (continuous_heatKernel T).comp ((continuous_const.sub continuous_fst).sub continuous_snd)
+  have h2 : Continuous fun p : ℝ × ℝ => heatKernel T (p.1 - p.2) :=
+    (continuous_heatKernel T).comp (continuous_fst.sub continuous_snd)
+  exact Measurable.ite (measurableSet_reflectedRegion M) h1.measurable h2.measurable
+
+/-- `W_{T,a}` is continuous (no case split; `φ > 0`). -/
+theorem continuous_wKernel (T a : ℝ) : Continuous (wKernel T a) := by
+  unfold wKernel
+  have hφ : Continuous fun p : ℝ × ℝ => (phiWeight p.1)⁻¹ :=
+    (continuous_phiWeight.comp continuous_fst).inv₀ fun p => (phiWeight_pos p.1).ne'
+  have hE1 : Continuous fun p : ℝ × ℝ => Real.exp (a * p.1) :=
+    Real.continuous_exp.comp (continuous_const.mul continuous_fst)
+  have hB : Continuous fun p : ℝ × ℝ => backwardAiry T (p.1 + p.2) :=
+    continuous_backwardAiry.comp (continuous_const.prodMk (continuous_fst.add continuous_snd))
+  have hE2 : Continuous fun p : ℝ × ℝ => Real.exp (a * p.2) :=
+    Real.continuous_exp.comp (continuous_const.mul continuous_snd)
+  exact ((hφ.mul hE1).mul hB).mul hE2
+
+/-- `V_{T,a}` is jointly measurable. -/
+theorem measurable_vKernel (T a M : ℝ) :
+    Measurable (fun p : ℝ × ℝ => vKernel T a M p) := by
+  unfold vKernel
+  have hE1 : Measurable fun p : ℝ × ℝ => Real.exp (-a * p.1) :=
+    (Real.continuous_exp.comp (continuous_const.mul continuous_fst)).measurable
+  have hE2 : Measurable fun p : ℝ × ℝ => Real.exp (-a * p.2) :=
+    (Real.continuous_exp.comp (continuous_const.mul continuous_snd)).measurable
+  have hφ : Measurable fun p : ℝ × ℝ => phiWeight p.2 :=
+    (continuous_phiWeight.comp continuous_snd).measurable
+  exact ((hE1.mul (measurable_qMT M T)).mul hE2).mul hφ
+
+end AiryConj

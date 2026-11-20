@@ -1,0 +1,24 @@
+name = "airy1-gumbel-lean"
+version = "0.1.0"
+description = "Lean companion to Chen and Pu, Gumbel fluctuations of the maximum of the Airy_1 process (arXiv 2611.23658): the normalized Gumbel limit for a constructed Airy_1 process under three named inputs"
+license = "Apache-2.0"
+keywords = ["airy-process", "extreme-value-theory", "gumbel", "kpz", "fredholm-determinant", "probability"]
+homepage = "https://github.com/chenle02/airy1-gumbel-lean"
+defaultTargets = ["Airy1Gumbel"]
+
+[[require]]
+name = "BrownianMotion"
+git = "https://github.com/RemyDegenne/brownian-motion"
+rev = "61de83c93f54abdb28e31daf03535ddc594441a2"
+
+[[require]]
+name = "airy1-gumbel-lean-contrib"
+path = "contrib"
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "cfc55fc58714a59dc06e6e79edc6d1d95140d3c2"
+
+[[lean_lib]]
+name = "Airy1Gumbel"

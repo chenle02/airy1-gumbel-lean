@@ -1,0 +1,304 @@
+/-
+Copyright (c) 2026 Le Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Le Chen
+-/
+import Airy1GumbelContrib.AiryKernel.TailAsymptotic
+import Airy1GumbelContrib.TwoInterval.TwoIntervalMembership
+
+/-! # Weight independence of the traces `tr(Ã_a^m)`
+
+The paper conjugates the (non-trace-class) one-block kernel
+`K = Q_{M,T} P_{-T} B₀` by the exponential weight `e^{-a x}` and works with the
+trace-class operator `Ã_{M,T} = V_{T,a} W_{T,a}` (the paper's factors `V`, `W`);
+the paper fixes `a = √(2M)`.
+Quastel–Remenik (QR2012, in their trace-class proposition) instead conjugate by
+`U f(x) = e^{-2(r-ℓ)x} f(x)`, i.e. at weight `a = 2T` (contrib `airyTildeOp M T (2T)`).
+
+This module proves that the choice of admissible weight is invisible to every trace
+`tr(Ã_a^m)`, `m ≥ 1`, and hence to the exp-trace determinant `fredholmDetOne`.
+
+* **Iterated kernels.**  `airyKerOne M T (x, y) = ∫ z, Q_{M,T}(x,z) g_T(z+y)` is the
+  unweighted kernel of `Q_{M,T} P_{-T} B₀`, and
+  `airyKerIter M T m` its `(m+1)`-fold composite.  `expConjKernel a K (x, y) =
+  e^{-a x} K(x, y) e^{a y}` is the conjugation by the weight.  The identities are
+  *pointwise* (the inner weights `e^{±a z}` and `φ(z)^{±1}` cancel inside each
+  integrand, and pulling the outer factors out of `∫ dz` needs no integrability).
+* `airyTildeOp_pow_eq`: `Ã_a^(m+1) = kernelOperator (e^{-ax} K_{m+1}(x,y) e^{ay})`
+  (kernel identity for every power, by induction via `kernelOperator_compKernel` and
+  `memLp_compKernel`; the `MemLp` and measurability side conditions are carried along).
+* `trace_pow_airyTildeOp_indep`: `tr(Ã_a^m) = tr(Ã_b^m)` for all admissible `a, b`
+  (`0 < T`, `0 < M`, `T + 1 ≤ a, b`) and all `m ≥ 1`; `m = 1` is `trace_airyTilde_eq`.
+* `fredholmDetOne_airyTildeOp_indep`: the exp-trace determinants agree at every `z`
+  (termwise equal series; no disk hypothesis needed).
+* `detOneAiryTilde_one_eq_weight_two`: for `T = 1` and `M ≥ 2`, the paper's
+  `detOneAiryTilde M 1` (weight `√(2M)`) equals the determinant at QR's weight `a = 2`.
+  At `T = 1`, `a = 2` is admissible for every `M > 0` (`T + 1 ≤ a` holds with equality);
+  `M ≥ 2` is only needed to make `detOneAiryTilde M 1` non-junk (`2 ≤ √(2M)`).
+
+**Fidelity note.**  `fredholmDetOne` is the exp-trace (Plemelj) formula
+`exp(-Σ zᵐ tr(Aᵐ)/m)`; its agreement with the trace-class Fredholm determinant on the
+disk `‖z‖·‖A‖₂ < 1` is standard but not formalized here.  This module only shows that
+the formula takes the same value at both weights.
+
+## References
+
+J. Quastel and D. Remenik, *Local behavior and hitting probabilities of the Airy1
+process*, PTRF (2013), the trace-class proposition (conjugation by `e^{-2(r-ℓ)x}`).
+-/
+
+namespace AiryConj
+
+open MeasureTheory Real Set Filter
+open scoped Topology BigOperators ENNReal NNReal
+open HilbertSchmidt
+
+section TraceWeight
+
+variable {M T a b : ℝ}
+
+/-! ## Exponential conjugation of kernels -/
+
+/-- Conjugation of a kernel by the weight `e^{-a x}`:
+`(x, y) ↦ e^{-a x} K(x, y) e^{a y}` (the kernel of `U K U⁻¹` with `U f = e^{-a·} f`). -/
+noncomputable def expConjKernel (a : ℝ) (K : ℝ × ℝ → ℝ) (p : ℝ × ℝ) : ℝ :=
+  Real.exp (-a * p.1) * K p * Real.exp (a * p.2)
+
+theorem measurable_expConjKernel (a : ℝ) {K : ℝ × ℝ → ℝ} (hK : Measurable K) :
+    Measurable (expConjKernel a K) := by
+  have h1 : Measurable fun p : ℝ × ℝ => Real.exp (-a * p.1) :=
+    (Real.continuous_exp.comp (continuous_const.mul continuous_fst)).measurable
+  have h2 : Measurable fun p : ℝ × ℝ => Real.exp (a * p.2) :=
+    (Real.continuous_exp.comp (continuous_const.mul continuous_snd)).measurable
+  exact (h1.mul hK).mul h2
+
+/-- Conjugation commutes with kernel composition, pointwise: the inner weights
+`e^{a z} e^{-a z}` cancel inside the `z`-integrand. -/
+theorem compKernel_expConjKernel (a : ℝ) (K K' : ℝ × ℝ → ℝ) :
+    compKernel (expConjKernel a K) (expConjKernel a K') = expConjKernel a (compKernel K K') := by
+  funext p
+  obtain ⟨x, y⟩ := p
+  show ∫ z : ℝ, expConjKernel a K (x, z) * expConjKernel a K' (z, y)
+    = Real.exp (-a * x) * (∫ z : ℝ, K (x, z) * K' (z, y)) * Real.exp (a * y)
+  have h : ∀ z : ℝ, expConjKernel a K (x, z) * expConjKernel a K' (z, y)
+      = Real.exp (-a * x) * (K (x, z) * K' (z, y)) * Real.exp (a * y) := by
+    intro z
+    have e : Real.exp (a * z) * Real.exp (-a * z) = 1 := by
+      rw [← Real.exp_add, show a * z + -a * z = 0 by ring, Real.exp_zero]
+    simp only [expConjKernel]
+    calc Real.exp (-a * x) * K (x, z) * Real.exp (a * z)
+          * (Real.exp (-a * z) * K' (z, y) * Real.exp (a * y))
+        = Real.exp (-a * x) * (K (x, z) * K' (z, y)) * Real.exp (a * y)
+          * (Real.exp (a * z) * Real.exp (-a * z)) := by ring
+      _ = _ := by rw [e, mul_one]
+  simp_rw [h]
+  rw [integral_mul_const, integral_const_mul]
+
+/-- The trace integrand of a product of conjugated kernels is weight-free, pointwise. -/
+theorem expConjKernel_mul_swap (a : ℝ) (K K' : ℝ × ℝ → ℝ) (x z : ℝ) :
+    expConjKernel a K (x, z) * expConjKernel a K' (z, x) = K (x, z) * K' (z, x) := by
+  have e1 : Real.exp (-a * x) * Real.exp (a * x) = 1 := by
+    rw [← Real.exp_add, show -a * x + a * x = 0 by ring, Real.exp_zero]
+  have e2 : Real.exp (a * z) * Real.exp (-a * z) = 1 := by
+    rw [← Real.exp_add, show a * z + -a * z = 0 by ring, Real.exp_zero]
+  simp only [expConjKernel]
+  calc Real.exp (-a * x) * K (x, z) * Real.exp (a * z)
+        * (Real.exp (-a * z) * K' (z, x) * Real.exp (a * x))
+      = K (x, z) * K' (z, x) * (Real.exp (-a * x) * Real.exp (a * x))
+        * (Real.exp (a * z) * Real.exp (-a * z)) := by ring
+    _ = K (x, z) * K' (z, x) := by rw [e1, e2, mul_one, mul_one]
+
+/-! ## The unweighted iterated kernels -/
+
+/-- The unweighted one-block kernel `(x, y) ↦ ∫ z, Q_{M,T}(x, z) g_T(z + y)`, i.e. the
+kernel of `Q_{M,T} P_{-T} B₀`.  It is not claimed to be `L²`; only its
+exponential conjugates are. -/
+noncomputable def airyKerOne (M T : ℝ) : ℝ × ℝ → ℝ :=
+  compKernel (fun p : ℝ × ℝ => qMT M T p.1 p.2) (backwardAiryPair T)
+
+/-- The unweighted iterated kernels: `airyKerIter M T m` is the `(m+1)`-fold composite
+of `airyKerOne M T` (the kernel of `(Q_{M,T} P_{-T} B₀)^{m+1}`). -/
+noncomputable def airyKerIter (M T : ℝ) : ℕ → ℝ × ℝ → ℝ
+  | 0 => airyKerOne M T
+  | m + 1 => compKernel (airyKerIter M T m) (airyKerOne M T)
+
+theorem airyKerIter_zero (M T : ℝ) : airyKerIter M T 0 = airyKerOne M T := rfl
+
+theorem airyKerIter_succ (M T : ℝ) (m : ℕ) :
+    airyKerIter M T (m + 1) = compKernel (airyKerIter M T m) (airyKerOne M T) := rfl
+
+theorem measurable_backwardAiryPair (T : ℝ) : Measurable (backwardAiryPair T) := by
+  have h : Continuous fun p : ℝ × ℝ => backwardAiry T (p.1 + p.2) :=
+    continuous_backwardAiry.comp (continuous_const.prodMk (continuous_fst.add continuous_snd))
+  exact h.measurable
+
+theorem measurable_airyKerOne (M T : ℝ) : Measurable (airyKerOne M T) :=
+  AiryTwoInt.measurable_compKernel (measurable_qMT M T) (measurable_backwardAiryPair T)
+
+theorem measurable_airyKerIter (M T : ℝ) (m : ℕ) : Measurable (airyKerIter M T m) := by
+  induction m with
+  | zero => exact measurable_airyKerOne M T
+  | succ m ih => exact AiryTwoInt.measurable_compKernel ih (measurable_airyKerOne M T)
+
+/-- **The `V W` composite is the conjugated one-block kernel**, pointwise:
+`∫ z, V_{T,a}(x,z) W_{T,a}(z,y) = e^{-a x} K(x,y) e^{a y}`; the
+`e^{∓a z}` and `φ(z)^{±1}` factors cancel inside the integrand. -/
+theorem compKernel_vKernel_wKernel (T a M : ℝ) :
+    compKernel (vKernel T a M) (wKernel T a) = expConjKernel a (airyKerOne M T) := by
+  funext p
+  obtain ⟨x, y⟩ := p
+  show ∫ z : ℝ, vKernel T a M (x, z) * wKernel T a (z, y)
+    = Real.exp (-a * x)
+      * (∫ z : ℝ, qMT M T x z * backwardAiry T (z + y)) * Real.exp (a * y)
+  have h : ∀ z : ℝ, vKernel T a M (x, z) * wKernel T a (z, y)
+      = Real.exp (-a * x) * (qMT M T x z * backwardAiry T (z + y)) * Real.exp (a * y) := by
+    intro z
+    have hφ : phiWeight z ≠ 0 := (phiWeight_pos z).ne'
+    have e : Real.exp (-a * z) * Real.exp (a * z) = 1 := by
+      rw [← Real.exp_add, show -a * z + a * z = 0 by ring, Real.exp_zero]
+    simp only [vKernel, wKernel]
+    calc Real.exp (-a * x) * qMT M T x z * Real.exp (-a * z) * phiWeight z
+          * ((phiWeight z)⁻¹ * Real.exp (a * z) * backwardAiry T (z + y) * Real.exp (a * y))
+        = Real.exp (-a * x) * (qMT M T x z * backwardAiry T (z + y)) * Real.exp (a * y)
+          * (Real.exp (-a * z) * Real.exp (a * z)) * (phiWeight z * (phiWeight z)⁻¹) := by
+          ring
+      _ = _ := by rw [e, mul_inv_cancel₀ hφ, mul_one, mul_one]
+  simp_rw [h]
+  rw [integral_mul_const, integral_const_mul]
+
+/-! ## The kernels of the powers `Ã_a^(m+1)` -/
+
+/-- The conjugated iterated kernels are `L²` on the plane, for every admissible weight
+(Hilbert–Schmidt ∘ Hilbert–Schmidt, at each stage of the induction). -/
+theorem memLp_expConjKernel_airyKerIter (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a)
+    (m : ℕ) : MemLp (expConjKernel a (airyKerIter M T m)) 2 (volume.prod volume) := by
+  have h0 : MemLp (expConjKernel a (airyKerOne M T)) 2 (volume.prod volume) := by
+    rw [← compKernel_vKernel_wKernel T a M]
+    exact AiryTwoInt.memLp_compKernel (measurable_vKernel T a M)
+      (continuous_wKernel T a).measurable (vKernel_memLp hT hM ha) (memLp_wKernel hT ha)
+  induction m with
+  | zero => exact h0
+  | succ m ih =>
+    rw [airyKerIter_succ, ← compKernel_expConjKernel]
+    exact AiryTwoInt.memLp_compKernel
+      (measurable_expConjKernel a (measurable_airyKerIter M T m))
+      (measurable_expConjKernel a (measurable_airyKerOne M T)) ih h0
+
+/-- `Ã_a` is the kernel operator of the conjugated one-block kernel
+`e^{-a x} K(x, y) e^{a y}`. -/
+theorem airyTildeOp_eq_kernelOperator (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a) :
+    airyTildeOp M T a hT hM ha = kernelOperator (memLp_expConjKernel_airyKerIter hT hM ha 0) := by
+  have hcomp : MemLp (compKernel (vKernel T a M) (wKernel T a)) 2 (volume.prod volume) :=
+    AiryTwoInt.memLp_compKernel (measurable_vKernel T a M)
+      (continuous_wKernel T a).measurable (vKernel_memLp hT hM ha) (memLp_wKernel hT ha)
+  unfold airyTildeOp
+  rw [← AiryTwoInt.kernelOperator_compKernel (vKernel_memLp hT hM ha) (memLp_wKernel hT ha)
+    hcomp]
+  exact AiryTwoInt.kernelOperator_congr (compKernel_vKernel_wKernel T a M) hcomp _
+
+/-- **The kernel of `Ã_a^(m+1)`** (induction step): for every admissible weight `a`,
+`Ã_a^(m+1)` is the kernel operator of `e^{-a x} K_{m+1}(x, y) e^{a y}`, where
+`K_{m+1} = airyKerIter M T m` is the `a`-free iterated kernel.  The identity is at the
+level of operators (hence of kernels, pointwise), proved by induction on `m`. -/
+theorem airyTildeOp_pow_eq (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a) (m : ℕ) :
+    (airyTildeOp M T a hT hM ha) ^ (m + 1)
+      = kernelOperator (memLp_expConjKernel_airyKerIter hT hM ha m) := by
+  induction m with
+  | zero => rw [zero_add, pow_one]; exact airyTildeOp_eq_kernelOperator hT hM ha
+  | succ m ih =>
+    have hcomp : MemLp (compKernel (expConjKernel a (airyKerIter M T m))
+        (expConjKernel a (airyKerIter M T 0))) 2 (volume.prod volume) := by
+      rw [compKernel_expConjKernel]
+      exact memLp_expConjKernel_airyKerIter hT hM ha (m + 1)
+    rw [pow_succ, ih, ContinuousLinearMap.mul_def, airyTildeOp_eq_kernelOperator hT hM ha,
+      ← AiryTwoInt.kernelOperator_compKernel (memLp_expConjKernel_airyKerIter hT hM ha m)
+        (memLp_expConjKernel_airyKerIter hT hM ha 0) hcomp]
+    exact AiryTwoInt.kernelOperator_congr (compKernel_expConjKernel a _ _) hcomp _
+
+/-- The a.e. pointwise form of `airyTildeOp_pow_eq`: for `f ∈ L²`,
+`(Ã_a^(m+1) f)(x) = ∫ y, e^{-a x} K_{m+1}(x, y) e^{a y} f(y)` for a.e. `x`. -/
+theorem airyTildeOp_pow_apply_ae (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a) (m : ℕ)
+    (f : Lp ℝ 2 (volume : Measure ℝ)) :
+    ∀ᵐ x : ℝ ∂volume, (((airyTildeOp M T a hT hM ha) ^ (m + 1)) f) x
+      = ∫ y : ℝ, Real.exp (-a * x) * airyKerIter M T m (x, y) * Real.exp (a * y) * f y := by
+  rw [airyTildeOp_pow_eq hT hM ha m]
+  exact kernelOperator_apply_ae _ f
+
+/-! ## Weight independence of the traces and of `det₁` -/
+
+/-- For `m ≥ 2` the trace of `Ã_a^m` is the weight-free cross integral
+`∫ x, ∫ z, K_{m-1}(x, z) K_1(z, x)` (via `trace_kernelOperator_comp`). -/
+theorem trace_pow_add_two_airyTildeOp (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a) (m : ℕ) :
+    trace ((airyTildeOp M T a hT hM ha) ^ (m + 1 + 1))
+      = ∫ x : ℝ, ∫ z : ℝ, airyKerIter M T m (x, z) * airyKerOne M T (z, x) := by
+  rw [pow_succ, airyTildeOp_pow_eq hT hM ha m, ContinuousLinearMap.mul_def,
+    airyTildeOp_eq_kernelOperator hT hM ha, trace_kernelOperator_comp]
+  apply integral_congr_ae
+  filter_upwards with x
+  apply integral_congr_ae
+  filter_upwards with z
+  exact expConjKernel_mul_swap a _ _ x z
+
+/-- **Weight independence, shifted form**: `tr(Ã_a^(m+1)) = tr(Ã_b^(m+1))` for all
+admissible weights `a, b` and all `m`. -/
+theorem trace_pow_succ_airyTildeOp_indep (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a)
+    (hb : T + 1 ≤ b) (m : ℕ) :
+    trace ((airyTildeOp M T a hT hM ha) ^ (m + 1))
+      = trace ((airyTildeOp M T b hT hM hb) ^ (m + 1)) := by
+  cases m with
+  | zero => rw [zero_add, pow_one, pow_one, trace_airyTilde_eq, trace_airyTilde_eq]
+  | succ m => rw [trace_pow_add_two_airyTildeOp, trace_pow_add_two_airyTildeOp]
+
+/-- **Weight independence of the traces** (QR2012, trace-class proposition, weight
+`e^{-2(r-ℓ)x}`): the traces `tr(Ã_a^m)`, `m ≥ 1`, do not depend on the admissible
+weight `a` (`0 < T`, `0 < M`, `T + 1 ≤ a`).  The case `m = 1` is `trace_airyTilde_eq`. -/
+theorem trace_pow_airyTildeOp_indep (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a)
+    (hb : T + 1 ≤ b) {m : ℕ} (hm : 1 ≤ m) :
+    trace ((airyTildeOp M T a hT hM ha) ^ m) = trace ((airyTildeOp M T b hT hM hb) ^ m) := by
+  obtain ⟨k, rfl⟩ : ∃ k, m = k + 1 := ⟨m - 1, by omega⟩
+  exact trace_pow_succ_airyTildeOp_indep hT hM ha hb k
+
+/-- **`det₁` is weight independent**: the exp-trace determinants
+`fredholmDetOne (Ã_a) z` and `fredholmDetOne (Ã_b) z` agree at every `z`, for all
+admissible weights (the defining series agree termwise; no disk hypothesis). -/
+theorem fredholmDetOne_airyTildeOp_indep (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a)
+    (hb : T + 1 ≤ b) (z : ℝ) :
+    fredholmDetOne (airyTildeOp M T a hT hM ha) (isTraceClass_airyTildeOp hT hM ha) z
+      = fredholmDetOne (airyTildeOp M T b hT hM hb) (isTraceClass_airyTildeOp hT hM hb) z := by
+  simp only [fredholmDetOne, trace_pow_succ_airyTildeOp_indep hT hM ha hb]
+
+/-- The paper's `detOneAiryTilde M T` (weight `√(2M)`) equals the exp-trace
+determinant at any other admissible weight `b`, on its valid region. -/
+theorem detOneAiryTilde_eq_fredholmDetOne (hT : 0 < T) (hM : 0 < M)
+    (hsq : T + 1 ≤ Real.sqrt (2 * M)) (hb : T + 1 ≤ b) :
+    detOneAiryTilde M T
+      = fredholmDetOne (airyTildeOp M T b hT hM hb) (isTraceClass_airyTildeOp hT hM hb) 1 := by
+  unfold detOneAiryTilde
+  rw [dite_eq_left ⟨hT, hM, hsq⟩]
+  exact fredholmDetOne_airyTildeOp_indep hT hM hsq hb 1
+
+/-- **QR's weight at `T = 1`** (QR2012, trace-class proposition: `U = e^{-2(r-ℓ)x}`, here
+`a = 2T = 2`): for `M ≥ 2`, the paper's `det₁(I − Ã_{M,1})` at `a = √(2M)` equals
+the exp-trace determinant of `airyTildeOp M 1 2`.  The weight `a = 2` is admissible at
+`T = 1` for every `M > 0` (`T + 1 = 2 ≤ 2`); `M ≥ 2` gives `2 ≤ √(2M)`, the validity
+condition of `detOneAiryTilde M 1`. -/
+theorem detOneAiryTilde_one_eq_weight_two {M : ℝ} (hM2 : 2 ≤ M) (hM : 0 < M) :
+    detOneAiryTilde M 1
+      = fredholmDetOne (airyTildeOp M 1 2 one_pos hM (le_of_eq one_add_one_eq_two))
+          (isTraceClass_airyTildeOp one_pos hM (le_of_eq one_add_one_eq_two)) 1 := by
+  have hsq : (1 : ℝ) + 1 ≤ Real.sqrt (2 * M) :=
+    Real.le_sqrt_of_sq_le (by nlinarith)
+  exact detOneAiryTilde_eq_fredholmDetOne one_pos hM hsq (le_of_eq one_add_one_eq_two)
+
+/-- Eventual form of `detOneAiryTilde_one_eq_weight_two`, for the `atTop` records. -/
+theorem eventually_detOneAiryTilde_one_eq_weight_two :
+    ∀ᶠ M : ℝ in atTop, ∀ hM : 0 < M,
+      detOneAiryTilde M 1
+        = fredholmDetOne (airyTildeOp M 1 2 one_pos hM (le_of_eq one_add_one_eq_two))
+            (isTraceClass_airyTildeOp one_pos hM (le_of_eq one_add_one_eq_two)) 1 := by
+  filter_upwards [eventually_ge_atTop (2 : ℝ)] with M hM2 hM
+  exact detOneAiryTilde_one_eq_weight_two hM2 hM
+
+end TraceWeight
+
+end AiryConj
