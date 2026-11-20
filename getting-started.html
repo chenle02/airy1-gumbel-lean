@@ -101,11 +101,26 @@ headline under the three inputs, not the inputs.
 theorem has exactly its Challenge type and uses only the three standard axioms):</p>
 <pre><code class="language-sh">lake build ChallengeDefs Challenge Solution
 </code></pre>
+<h3 id="comparator-check-of-the-contrib-package">Comparator check of the contrib package</h3>
+<p>Since v0.3.1 the contrib package has its own comparator configuration,
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/comparator.json"><code>contrib/comparator.json</code></a>: all 103 theorem claims of
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/claims.yaml"><code>contrib/claims.yaml</code></a>, one Challenge theorem
+<code>Airy1GumbelLeanContribAudit.&lt;decl&gt;</code> each. <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/Comparator/Challenge.lean"><code>contrib/Comparator/Challenge.lean</code></a>
+states them (76 as the elaborated types Lean prints, 27 as the declarations' own source
+statements) over <a href="https://github.com/chenle02/airy1-gumbel-lean/tree/main/contrib/Comparator/Defs"><code>contrib/Comparator/Defs</code></a>, a verbatim copy of the
+library that imports Mathlib modules only; <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/Comparator/Solution.lean"><code>contrib/Comparator/Solution.lean</code></a>
+proves each by the copied library theorem, and neither file imports the library.
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/scripts/comparator/CheckFidelity.lean"><code>contrib/scripts/comparator/CheckFidelity.lean</code></a>
+checks with <code>Expr</code> equality that every copied constant equals the library's and every Challenge
+statement equals the claimed declaration's type. From <code>contrib/</code>:</p>
+<pre><code class="language-sh">lake build Airy1GumbelContrib Comparator.Challenge Comparator.Solution
+lake env lean --run scripts/comparator/CheckFidelity.lean
+</code></pre>
 <p>To use the library from another Lake project:</p>
 <pre><code class="language-toml">[[require]]
 name = &quot;airy1-gumbel-lean&quot;
 git = &quot;https://github.com/chenle02/airy1-gumbel-lean&quot;
-rev = &quot;v0.3.0&quot;
+rev = &quot;v0.3.1&quot;
 </code></pre>
     </main>
   </div>
