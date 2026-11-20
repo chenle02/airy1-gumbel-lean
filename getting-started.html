@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Lean 4 companion to Le Chen and Fei Pu, Gumbel Fluctuations of the Maximum of the Airy_1 Process (arXiv:2611.23658v1): Theorem 1.1 verified (build and statement comparison) under three named inputs, Airy1FddPositive, GOELeftTail and CubicStrongMixing; the mesoscopic step is proved by a two-time Fredholm determinant bound instead of the paper&#x27;s association route. It does not certify the whole manuscript. Apache-2.0.">
+  <title>Build and verify · Airy₁ Gumbel: Lean Companion</title>
+  <link rel="stylesheet" href="assets/site.css">
+  <link rel="stylesheet" href="assets/code.css">
+  <link rel="canonical" href="https://chenle02.github.io/airy1-gumbel-lean/getting-started.html">
+  <script defer src="assets/code.js"></script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <header>
+    <a class="brand" href="./"><span>Airy₁ Gumbel: Lean Companion</span></a>
+    <span class="tagline">Lean 4 paper companion · Theorem 1.1 under three named inputs · Apache-2.0</span>
+  </header>
+  <div class="shell">
+    <nav class="side" aria-label="Site"><p class="group">Start</p>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="getting-started.html" aria-current="page">Build and verify</a></li>
+</ul>
+<p class="group">Results</p>
+<ul>
+<li><a href="verification.html">Verification page (lean-pkg)</a></li>
+<li><a href="coverage.html">Coverage by result (lean-pkg)</a></li>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Challenge.lean">Challenge.lean (GitHub)</a></li>
+</ul>
+<p class="group">About</p>
+<ul>
+<li><a href="trust.html">Trust and axioms</a></li>
+<li><a href="paper.html">Paper, authors and citation</a></li>
+<li><a href="notice.html">Notice</a></li>
+</ul>
+<p class="group">Elsewhere</p>
+<ul>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean">Source on GitHub</a></li>
+<li><a href="https://arxiv.org/abs/2611.23658v1">The paper (arXiv:2611.23658v1)</a></li>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a></li>
+<li><a href="llms.txt">llms.txt</a></li>
+</ul></nav>
+    <details class="side-mobile"><summary>Menu</summary><nav aria-label="Site (compact)"><p class="group">Start</p>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="getting-started.html" aria-current="page">Build and verify</a></li>
+</ul>
+<p class="group">Results</p>
+<ul>
+<li><a href="verification.html">Verification page (lean-pkg)</a></li>
+<li><a href="coverage.html">Coverage by result (lean-pkg)</a></li>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Challenge.lean">Challenge.lean (GitHub)</a></li>
+</ul>
+<p class="group">About</p>
+<ul>
+<li><a href="trust.html">Trust and axioms</a></li>
+<li><a href="paper.html">Paper, authors and citation</a></li>
+<li><a href="notice.html">Notice</a></li>
+</ul>
+<p class="group">Elsewhere</p>
+<ul>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean">Source on GitHub</a></li>
+<li><a href="https://arxiv.org/abs/2611.23658v1">The paper (arXiv:2611.23658v1)</a></li>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a></li>
+<li><a href="llms.txt">llms.txt</a></li>
+</ul></nav></details>
+    <main id="content">
+<h1>Build and verify</h1>
+<h2 id="build-and-verify">Build and verify</h2>
+<p>Pinned toolchain <code>leanprover/lean4:v4.35.0</code> (<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/lean-toolchain"><code>lean-toolchain</code></a>),
+Mathlib at <code>cfc55fc</code>, <a href="https://github.com/RemyDegenne/brownian-motion">brownian-motion</a> at
+<code>61de83c</code>; the nested package <code>contrib/</code> is a Lake path dependency.</p>
+<pre><code class="language-sh">git clone https://github.com/chenle02/airy1-gumbel-lean
+cd airy1-gumbel-lean
+lake exe cache get          # Mathlib build cache
+lake build Airy1Gumbel Airy1GumbelContrib
+lake env lean AxiomCheck.lean &gt; transcript.txt
+python3 scripts/audit.py transcript.txt
+</code></pre>
+<p><code>scripts/audit.py</code> checks that <code>AxiomCheck.lean</code> prints axioms for exactly the theorems
+declared in <code>Airy1Gumbel/</code>, that no proof escape (<code>sorry</code>, <code>admit</code>, <code>axiom</code>, …) occurs,
+and that every theorem depends only on <code>propext</code>, <code>Classical.choice</code> and <code>Quot.sound</code>.
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/verify.sh"><code>verify.sh</code></a> (and <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/verify.sh"><code>contrib/verify.sh</code></a>) run the same
+check from a fresh build, with two negative controls, and write the log that a
+<a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> receipt binds to one commit.</p>
+<h3 id="comparator-check-of-the-headline">Comparator check of the headline</h3>
+<p><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Challenge.lean"><code>Challenge.lean</code></a> restates Theorem 1.1 in Mathlib vocabulary, in two forms
+(mixing assumed on the continuous version, or on the coordinate process); its objects are
+defined, without proofs and from Mathlib only, in
+<a href="https://github.com/chenle02/airy1-gumbel-lean/tree/main/ChallengeDefs/Airy1Gumbel"><code>ChallengeDefs/Airy1Gumbel/</code></a>: the Airy function, the kernels of
+the Quastel-Remenik path integral, the entire Fredholm determinant, the distribution functions
+<code>airy1FinCdf</code>, the three named inputs and the normalization. The law and the continuous version
+are not constructed there: each statement asserts that an Airy₁ law and a version continuous on
+<code>[0, ∞)</code> exist, and that the Gumbel limit holds for every such law and version.
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Solution.lean"><code>Solution.lean</code></a> proves both statements from the package headlines, and
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/comparator.json"><code>comparator.json</code></a> is the configuration the comparator checks (each Solution
+theorem has exactly its Challenge type and uses only the three standard axioms):</p>
+<pre><code class="language-sh">lake build ChallengeDefs Challenge Solution
+</code></pre>
+<p>To use the library from another Lake project:</p>
+<pre><code class="language-toml">[[require]]
+name = &quot;airy1-gumbel-lean&quot;
+git = &quot;https://github.com/chenle02/airy1-gumbel-lean&quot;
+rev = &quot;v0.1.0&quot;
+</code></pre>
+    </main>
+  </div>
+  <footer>
+    airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
+  </footer>
+</body>
+</html>

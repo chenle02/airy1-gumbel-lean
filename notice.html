@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Lean 4 companion to Le Chen and Fei Pu, Gumbel Fluctuations of the Maximum of the Airy_1 Process (arXiv:2611.23658v1): Theorem 1.1 verified (build and statement comparison) under three named inputs, Airy1FddPositive, GOELeftTail and CubicStrongMixing; the mesoscopic step is proved by a two-time Fredholm determinant bound instead of the paper&#x27;s association route. It does not certify the whole manuscript. Apache-2.0.">
+  <title>Notice · Airy₁ Gumbel: Lean Companion</title>
+  <link rel="stylesheet" href="assets/site.css">
+  <link rel="stylesheet" href="assets/code.css">
+  <link rel="canonical" href="https://chenle02.github.io/airy1-gumbel-lean/notice.html">
+  <script defer src="assets/code.js"></script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <header>
+    <a class="brand" href="./"><span>Airy₁ Gumbel: Lean Companion</span></a>
+    <span class="tagline">Lean 4 paper companion · Theorem 1.1 under three named inputs · Apache-2.0</span>
+  </header>
+  <div class="shell">
+    <nav class="side" aria-label="Site"><p class="group">Start</p>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="getting-started.html">Build and verify</a></li>
+</ul>
+<p class="group">Results</p>
+<ul>
+<li><a href="verification.html">Verification page (lean-pkg)</a></li>
+<li><a href="coverage.html">Coverage by result (lean-pkg)</a></li>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Challenge.lean">Challenge.lean (GitHub)</a></li>
+</ul>
+<p class="group">About</p>
+<ul>
+<li><a href="trust.html">Trust and axioms</a></li>
+<li><a href="paper.html">Paper, authors and citation</a></li>
+<li><a href="notice.html" aria-current="page">Notice</a></li>
+</ul>
+<p class="group">Elsewhere</p>
+<ul>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean">Source on GitHub</a></li>
+<li><a href="https://arxiv.org/abs/2611.23658v1">The paper (arXiv:2611.23658v1)</a></li>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a></li>
+<li><a href="llms.txt">llms.txt</a></li>
+</ul></nav>
+    <details class="side-mobile"><summary>Menu</summary><nav aria-label="Site (compact)"><p class="group">Start</p>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="getting-started.html">Build and verify</a></li>
+</ul>
+<p class="group">Results</p>
+<ul>
+<li><a href="verification.html">Verification page (lean-pkg)</a></li>
+<li><a href="coverage.html">Coverage by result (lean-pkg)</a></li>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Challenge.lean">Challenge.lean (GitHub)</a></li>
+</ul>
+<p class="group">About</p>
+<ul>
+<li><a href="trust.html">Trust and axioms</a></li>
+<li><a href="paper.html">Paper, authors and citation</a></li>
+<li><a href="notice.html" aria-current="page">Notice</a></li>
+</ul>
+<p class="group">Elsewhere</p>
+<ul>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean">Source on GitHub</a></li>
+<li><a href="https://arxiv.org/abs/2611.23658v1">The paper (arXiv:2611.23658v1)</a></li>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a></li>
+<li><a href="llms.txt">llms.txt</a></li>
+</ul></nav></details>
+    <main id="content">
+<h1>Notice</h1>
+<p>Copyright 2026 Le Chen. Licensed under the Apache License, Version 2.0
+(see <code>LICENSE</code>).</p>
+<ul>
+<li><strong>Source.</strong> The Lean files were written for this project. Parts of
+  <code>contrib/Airy1GumbelContrib/FredholmDet/Hadamard.lean</code> and
+  <code>contrib/Airy1GumbelContrib/FredholmDet/EntireDet.lean</code> closely paraphrase
+  <a href="https://github.com/chenle02/rmt-foundations-lean">rmt-foundations-lean</a>
+  (Apache-2.0, by the same author) at revision
+  <code>af3b6edb57330747982dba2e2565d102a56613cb</code>, as credited in those files;
+  nothing is imported from it.</li>
+<li><strong>Research authorship.</strong> The mathematics is from the paper by Le Chen and
+  Fei Pu cited in <code>README.md</code>. Results of other authors used by the paper
+  and by the Lean proof are credited there and in the Lean docstrings.</li>
+<li><strong>Dependencies.</strong> Lean 4 and Mathlib (Apache-2.0), and
+  <a href="https://github.com/RemyDegenne/brownian-motion">brownian-motion</a>
+  (Apache-2.0), with their transitive dependencies as pinned in
+  <code>lake-manifest.json</code>, each under its own license.</li>
+<li><strong>Tools.</strong> AI coding assistants helped write the code and documentation.
+  Lean's kernel checked the proofs. Le Chen is responsible for the
+  statements and their correspondence to the paper.</li>
+</ul>
+    </main>
+  </div>
+  <footer>
+    airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
+  </footer>
+</body>
+</html>
