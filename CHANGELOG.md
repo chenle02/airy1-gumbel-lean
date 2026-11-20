@@ -2,6 +2,25 @@
 
 Result numbers are those of arXiv:2611.23658v1.
 
+## 0.3.1
+
+- Comparator tier for the contrib package `airy1-gumbel-lean-contrib`: every one of the 103
+  theorem claims of `contrib/claims.yaml` is now compared (`contrib/comparator.json`, 103
+  theorem names `Airy1GumbelLeanContribAudit.<decl>`, no definition holes, permitted axioms
+  `propext`, `Quot.sound`, `Classical.choice`). The Challenge (`contrib/Comparator/Challenge.lean`)
+  states each claimed theorem with proof `sorry`: 76 statements are the elaborated types as Lean
+  prints them (exact under lean-pkg's round-trip check) and 27 are the declarations' own source
+  statements in the scope context of their files. The definitions the statements use come from
+  `contrib/Comparator/Defs`, a verbatim copy of the library (only its imports are redirected to
+  the copies); the Solution proves each statement by the copied library theorem, and neither
+  imports the library. `contrib/scripts/comparator/CheckFidelity.lean` checks with `Expr`
+  equality that the 4238 copied constants equal the library's and that each of the 103
+  Challenge statements equals the claimed declaration's type; a planted mutation (a copied
+  definition body wrapped in `id`, a Challenge numeral `2` changed to `3`) is reported.
+- No statement and no proof changed. The headline theorem, its three inputs, the main
+  package's comparator statements and the claims of both packages are the same; the 103
+  contrib theorem claims keep the status `internal` (now judged by the comparator).
+
 ## 0.3.0
 
 Zenodo: version DOI [10.5281/zenodo.24405700](https://doi.org/10.5281/zenodo.24405700); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
