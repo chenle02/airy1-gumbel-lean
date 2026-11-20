@@ -4,6 +4,8 @@ Result numbers are those of arXiv:2611.23658v1.
 
 ## 0.3.1
 
+Zenodo: version DOI [10.5281/zenodo.24408134](https://doi.org/10.5281/zenodo.24408134); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+
 - Comparator tier for the contrib package `airy1-gumbel-lean-contrib`: every one of the 103
   theorem claims of `contrib/claims.yaml` is now compared (`contrib/comparator.json`, 103
   theorem names `Airy1GumbelLeanContribAudit.<decl>`, no definition holes, permitted axioms
