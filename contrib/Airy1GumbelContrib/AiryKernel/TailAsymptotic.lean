@@ -7,8 +7,8 @@ import Airy1GumbelContrib.AiryKernel.TraceExpansion
 
 /-! # Sharp-tail asymptotic assembly
 
-This module assembles the **two-term sharp-tail expansion** of the paper's sharp
-one-block tail,
+This module assembles the **two-term sharp-tail expansion** of Proposition 1.2 of
+arXiv:2611.23658v1, in its determinant form,
 
   `π_T(M) = T·ρ(M) + ρ(M)/(4M) + o(ρ(M)/M)`,
 
@@ -82,14 +82,14 @@ open HilbertSchmidt
 
 section Constants
 
-/-- The Airy-decay constant `κ = 4√2/3`. -/
+/-- The Airy-decay constant `κ = 4√2/3` (Section 1.1 of arXiv:2611.23658v1). -/
 noncomputable def kappaC : ℝ := 4 * Real.sqrt 2 / 3
 
-/-- The prefactor constant `C_* = 2^{1/4}/√π`. -/
+/-- The prefactor constant `C_* = 2^{1/4}/√π` (Section 1.2 of arXiv:2611.23658v1). -/
 noncomputable def Cstar : ℝ := 2 ^ (1/4 : ℝ) / Real.sqrt Real.pi
 
 /-- The sharp-tail rate function `ρ(M) = C_* M^{1/4} e^{-κ M^{3/2}}`
-(as in the paper). -/
+(Section 1.2 of arXiv:2611.23658v1). -/
 noncomputable def rhoM (M : ℝ) : ℝ :=
   Cstar * M ^ (1/4 : ℝ) * Real.exp (-kappaC * M ^ (3/2 : ℝ))
 
@@ -97,7 +97,8 @@ noncomputable def rhoM (M : ℝ) : ℝ :=
 noncomputable def leadAiDeriv (A : ℝ) : ℝ :=
   (1 / (2 * Real.sqrt Real.pi)) * A ^ (1/4 : ℝ) * Real.exp (-(2/3) * A ^ (3/2 : ℝ))
 
-/-- The two-term trace lead `traceLead M T = T·ρ(M) + ρ(M)/(4M)`. -/
+/-- The two-term trace lead `traceLead M T = T·ρ(M) + ρ(M)/(4M)`, the leading terms of
+Proposition 1.2 of arXiv:2611.23658v1. -/
 noncomputable def traceLead (M T : ℝ) : ℝ := T * rhoM M + rhoM M / (4 * M)
 
 theorem kappaC_pos : 0 < kappaC :=
@@ -1637,9 +1638,10 @@ end DetRemainder
 
 /-! ## The sharp-tail expansion -/
 
-/-- **Sharp-tail expansion** (the paper's sharp one-block tail, with the
-Quastel–Remenik/conjugation identity kept as the hypothesis record
-field `hpi`; that identity is discharged in the main package):
+/-- **Sharp-tail expansion** (the two-term expansion of Proposition 1.2 of
+arXiv:2611.23658v1 in determinant form, with the
+Quastel–Remenik/conjugation identity kept as the hypothesis
+`hpi`; that identity is discharged in the main package):
 `π_T(M) = Tρ(M) + ρ(M)/(4M) + o(ρ(M)/M)`. -/
 theorem piT_sub_traceLead_isLittleO (T : ℝ) (hT : 0 < T) (piT : ℝ → ℝ)
     (hpi : ∀ M, piT M = 1 - detOneAiryTilde M T) :

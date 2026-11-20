@@ -6,6 +6,7 @@ Claim boundary (read first):
 - Headline: `Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂` in Airy1Gumbel/FinalHeadlineTP.lean.
 - Its hypotheses: `Airy1FddPositive` (finite-dimensional Airy_1 laws), `GOELeftTail` (cubic one-point left tail), `CubicStrongMixing` (cubic strong mixing). These are assumptions, not theorems.
 - The mesoscopic step uses a two-time Fredholm determinant bound, not the paper's association and covariance argument; the paper's Lemmas 4.1-4.2 and Remark 5.3 are not formalized, and Proposition 4.3 only in the specialisation used in Section 5.2 (along the two-point route).
+- Proposition 1.2 (two-term tail expansion over a fixed interval) is proved for the constructed process for every T > 0, under `Airy1FddPositive` and `GOELeftTail`: `Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO` in Airy1Gumbel/BlockLawUnconditional.lean (since v0.2.0).
 - Axioms: `propext`, `Classical.choice`, `Quot.sound` only; no `sorry`.
 
 ## Required context

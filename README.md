@@ -64,12 +64,23 @@ headline uses it.
 >   different route for that step (a two-time Fredholm determinant bound), so it does not
 >   check the paper's Proposition 4.3 or Lemmas 4.1–4.2 as stated (arbitrary level `M`
 >   and cutoff `R(M)`); only the specialisation used in Section 5.2 is proved.
-> - Proposition 1.2 is proved for the determinant for every `T > 0`, but at the level of
->   the process only for `T ≥ 1`. Lemma 3.1 is proved for two unit intervals, not for
->   general equal lengths. Remark 5.3 (the Ferrari–Liu derivation) is not covered.
+> - Proposition 1.2 is proved for the constructed process for every `T > 0` (since
+>   v0.2.0), under `Airy1FddPositive` and `GOELeftTail`; like the headline, it is
+>   conditional on those inputs.
+> - Lemma 3.1 is proved for two unit intervals, not for general equal lengths.
+>   Remark 5.3 (the Ferrari–Liu derivation) is not covered.
 > - This repository does not certify the whole manuscript: it checks the main theorem
 >   along the route described above and the component results listed in
 >   [`claims.yaml`](claims.yaml) and [`contrib/claims.yaml`](contrib/claims.yaml).
+
+Since v0.2.0, Proposition 1.2 (the two-term expansion of the tail of the maximum over a
+fixed interval) is proved for the constructed process for every length `T > 0`, under
+`Airy1FddPositive` and `GOELeftTail`:
+[`Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO`](Airy1Gumbel/BlockLawUnconditional.lean)
+states that `ℙ{∃ t ∈ [0, T], Ã(t) > M} − (T·ρ(M) + ρ(M)/(4M)) = o(ρ(M)/M)` as `M → ∞`,
+where `Ã` is the continuous version `airy1ContR h`. Version 0.1.0 had this expansion for
+the Fredholm determinant for every `T > 0`, and for the process only for `T ≥ 1`. See
+[`CHANGELOG.md`](CHANGELOG.md).
 
 An earlier headline,
 `gumbel_limit_continuum_real_normalized_airy1_final`
@@ -122,8 +133,11 @@ defined, without proofs and from Mathlib only, in
 [`ChallengeDefs/Airy1Gumbel/`](ChallengeDefs/Airy1Gumbel): the Airy function, the kernels of
 the Quastel-Remenik path integral, the entire Fredholm determinant, the distribution functions
 `airy1FinCdf`, the three named inputs and the normalization. The law and the continuous version
-are not constructed there: each statement asserts that an Airy₁ law and a version continuous on
-`[0, ∞)` exist, and that the Gumbel limit holds for every such law and version.
+are not constructed there: each statement asserts that an Airy₁ law exists, and that for such
+laws a version continuous on `[0, ∞)` exists and the Gumbel limit holds for every such version
+(in the first form for every law and every continuous version satisfying the mixing input; in
+the second for every law whose coordinate process satisfies it). The check verifies the
+headline under the three inputs, not the inputs.
 [`Solution.lean`](Solution.lean) proves both statements from the package headlines, and
 [`comparator.json`](comparator.json) is the configuration the comparator checks (each Solution
 theorem has exactly its Challenge type and uses only the three standard axioms):
@@ -138,7 +152,7 @@ To use the library from another Lake project:
 [[require]]
 name = "airy1-gumbel-lean"
 git = "https://github.com/chenle02/airy1-gumbel-lean"
-rev = "v0.1.0"
+rev = "v0.2.0"
 ```
 
 ## Trust and axioms

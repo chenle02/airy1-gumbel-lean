@@ -623,6 +623,7 @@ import Airy1Gumbel
 #print axioms Airy1Gumbel.antitone_meshEvent
 #print axioms Airy1Gumbel.setOf_forall_Icc_le_eq_iInter
 #print axioms Airy1Gumbel.airy1Law_meshEvent
+#print axioms Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_at_weight
 #print axioms Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet
 #print axioms Airy1Gumbel.airyTildeOp_congr_weight
 #print axioms Airy1Gumbel.airy1BlockMax_zero_le_iff
@@ -632,7 +633,9 @@ import Airy1Gumbel
 #print axioms Airy1Gumbel.meshHittingLimit
 #print axioms Airy1Gumbel.forall_meshHittingLimit
 #print axioms Airy1Gumbel.tendsto_airy1FinCdf_meshSet_of_pos
+#print axioms Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_at_weight'
 #print axioms Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet'
+#print axioms Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO
 #print axioms Airy1Gumbel.qrUnitBlockLaw_airy1'
 #print axioms Airy1Gumbel.qrTwoBlockLaw_airy1'
 #print axioms Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₈

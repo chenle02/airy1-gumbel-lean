@@ -20,14 +20,15 @@ rows:
     note: "The process is the version of the Kolmogorov-extension law with continuous paths on [0, infinity); centering and scaling are those of (1.1)-(1.2) for real T. The mesoscopic step is proved by the two-time Fredholm determinant bound and a high-level upcrossing bound, not by association and the covariance asymptotic."
   - paper: {number: "Proposition 1.2", title: "Two-term expansion of the one-block tail"}
     class: inputs-supplied
-    conclusion: weaker
-    conclusion_scope: "The determinant expansion is proved for every T > 0 (contrib); the identification with the block-maximum law of the constructed process is proved for T >= 1 only."
     claims:
+      - airy1-gumbel-lean/fixed-interval-tail-expansion
+      - airy1-gumbel-lean/interval-hitting-law-positive-length
       - airy1-gumbel-lean/block-law-core
       - airy1-gumbel-lean/block-law-unconditional
       - airy1-gumbel-lean/sharp-tail-discharge
     inputs:
-      - "Airy1FddPositive and GOELeftTail, for the process-level block law"
+      - "Airy1FddPositive and GOELeftTail, for the process-level interval hitting law"
+    note: "Proved for the continuous version of the constructed process on [0, T], for every fixed T > 0 (fixed-interval-tail-expansion). The interval hitting law is proved at any weight a >= T + 1 by the dyadic mesh limit and combined with the determinant expansion of contrib. Version 0.1.0 had the process-level statement for T >= 1 only."
   - paper: {number: "Corollary 1.3", title: "Touching blocks"}
     class: inputs-supplied
     claims:

@@ -6,7 +6,7 @@ Authors: Le Chen
 import Airy1Gumbel.BlockLaw
 import Airy1Gumbel.MeshHitting
 
-open Filter MeasureTheory ProbabilityTheory Set
+open Asymptotics Filter MeasureTheory ProbabilityTheory Set
 open scoped Topology
 
 /-!
@@ -27,6 +27,13 @@ only on `Airy1FddPositive` and `GOELeftTail`.
 
 namespace Airy1Gumbel
 
+/-- The interval hitting law for any positive length and any fixed admissible weight. -/
+theorem airy1Law_sup_le_eq_fredholmDet_at_weight' (h : Airy1FddPositive) (hLeft : GOELeftTail)
+    {x M T a : ℝ} (hx : 0 ≤ x) (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a) :
+    (airy1Law h).real {f | ∀ t ∈ Icc x (x + T), airy1ContR h t f ≤ M}
+      = HilbertSchmidt.fredholmDet (AiryConj.airyTildeOp M T a hT hM ha) 1 :=
+  airy1Law_sup_le_eq_fredholmDet_at_weight h hLeft hx hT hM ha (meshHittingLimit M hT)
+
 /-- **Core law, unconditional in K.** Under `Airy1FddPositive` and `GOELeftTail` only, for
 `T ≥ 1`, `M > 0` and `x ≥ 0`: `ℙ(Ã(t) ≤ M ∀ t ∈ [x, x+T]) = det(I − Ã_{M,T})` with
 `Ã_{M,T} = airyTildeOp M T (2T)` (QR 2012 Theorem 4 at block length `T`). -/
@@ -35,7 +42,34 @@ theorem airy1Law_sup_le_eq_fredholmDet' (h : Airy1FddPositive) (hT : GOELeftTail
     (airy1Law h).real {f | ∀ t ∈ Icc x (x + T), airy1ContR h t f ≤ M}
       = HilbertSchmidt.fredholmDet
           (AiryConj.airyTildeOp M T (2 * T) (by linarith) hM (by linarith)) 1 :=
-  airy1Law_sup_le_eq_fredholmDet h hT hx hT1 hM (meshHittingLimit M (by linarith))
+  airy1Law_sup_le_eq_fredholmDet_at_weight' h hT hx (by linarith) hM (by linarith)
+
+/-- Proposition 1.2 of arXiv:2611.23658v1. For each fixed positive interval length, the
+exceedance probability has the two-term expansion with remainder `o(ρ(M) / M)`. -/
+theorem airy1Law_interval_tail_sub_traceLead_isLittleO
+    (h : Airy1FddPositive) (hLeft : GOELeftTail) (T : ℝ) (hT : 0 < T) :
+    (fun M : ℝ => (airy1Law h).real {f | ∃ t ∈ Icc (0 : ℝ) T, M < airy1ContR h t f}
+      - AiryConj.traceLead M T) =o[atTop] (fun M => AiryConj.rhoM M / M) := by
+  have htail := AiryConj.piT_sub_traceLead_isLittleO T hT
+    (fun M => 1 - AiryConj.detOneAiryTilde M T) (fun _ => rfl)
+  refine htail.congr' ?_ (EventuallyEq.refl _ _)
+  filter_upwards [eventually_fredholmDet_airyTildeOp_eq hT (le_refl (T + 1)),
+    eventually_gt_atTop (0 : ℝ), eventually_ge_atTop ((T + 1) ^ 2 / 2)] with M hdet hM hlarge
+  have hsqrt : T + 1 ≤ Real.sqrt (2 * M) := Real.le_sqrt_of_sq_le (by linarith)
+  have hbelow := airy1Law_sup_le_eq_fredholmDet_at_weight' h hLeft
+    (le_refl (0 : ℝ)) hT hM (le_refl (T + 1))
+  simp only [zero_add] at hbelow
+  have hmeas : MeasurableSet {f | ∀ t ∈ Icc (0 : ℝ) T, airy1ContR h t f ≤ M} := by
+    have hmesh := setOf_forall_Icc_le_eq_iInter h (M := M) (le_refl (0 : ℝ)) hT
+    rw [zero_add] at hmesh
+    rw [hmesh]
+    exact MeasurableSet.iInter (fun n => measurableSet_meshEvent h 0 T M n)
+  have hcompl : {f | ∃ t ∈ Icc (0 : ℝ) T, M < airy1ContR h t f}
+      = {f | ∀ t ∈ Icc (0 : ℝ) T, airy1ContR h t f ≤ M}ᶜ := by
+    ext f
+    simp only [mem_ofPred_eq, mem_compl_iff, not_forall, not_le, exists_prop]
+  rw [hcompl, Airy1Gumbel.measureReal_compl hmeas, hbelow, hdet hM,
+    AiryConj.detOneAiryTilde_eq_fredholmDetOne hT hM hsqrt (le_refl (T + 1))]
 
 /-- **`QRUnitBlockLaw` on the concrete Airy₁ process is a theorem**, conditional only on
 `Airy1FddPositive` and `GOELeftTail` (the kernel fact K at `T = 1` is `forall_meshHittingLimit`). -/

@@ -173,16 +173,15 @@ theorem airy1Law_meshEvent (h : Airy1FddPositive) (hT : GOELeftTail) (x T M : �
 
 /-! ## The core law -/
 
-/-- **Core law.** Under `GOELeftTail` and contrib's dyadic hitting-kernel
-limit `MeshHittingLimit M T` (K), for `T ≥ 1`, `M > 0` and any base point `x ≥ 0`:
-`ℙ(Ã(t) ≤ M ∀ t ∈ [x, x+T]) = det(I − Ã_{M,T})` with `Ã_{M,T} = airyTildeOp M T (2T)`
-(QR 2012 Theorem 4 at block length `T`, QR's weight `a = 2T`). -/
-theorem airy1Law_sup_le_eq_fredholmDet (h : Airy1FddPositive) (hT : GOELeftTail) {x M T : ℝ}
-    (hx : 0 ≤ x) (hT1 : 1 ≤ T) (hM : 0 < M) (hK : AiryFdd.MeshHittingLimit M T) :
+/-- The interval hitting law for any positive length and any fixed admissible weight,
+conditional on the dyadic hitting-kernel limit. -/
+theorem airy1Law_sup_le_eq_fredholmDet_at_weight (h : Airy1FddPositive) (hT : GOELeftTail)
+    {x M T a : ℝ}
+    (hx : 0 ≤ x) (hT0 : 0 < T) (hM : 0 < M)
+    (ha : T + 1 ≤ a) (hK : AiryFdd.MeshHittingLimit M T) :
     (airy1Law h).real {f | ∀ t ∈ Icc x (x + T), airy1ContR h t f ≤ M}
       = HilbertSchmidt.fredholmDet
-          (AiryConj.airyTildeOp M T (2 * T) (by linarith) hM (by linarith)) 1 := by
-  have hT0 : 0 < T := by linarith
+          (AiryConj.airyTildeOp M T a hT0 hM ha) 1 := by
   rw [setOf_forall_Icc_le_eq_iInter h hx hT0]
   have hlim := tendsto_measure_iInter_atTop (μ := airy1Law h)
     (fun n => (measurableSet_meshEvent h x T M n).nullMeasurableSet)
@@ -191,7 +190,18 @@ theorem airy1Law_sup_le_eq_fredholmDet (h : Airy1FddPositive) (hT : GOELeftTail)
       (𝓝 ((airy1Law h).real (⋂ n, meshEvent h x T M n))) :=
     (ENNReal.tendsto_toReal (measure_ne_top _ _)).comp hlim
   simp_rw [airy1Law_meshEvent h hT] at hlimR
-  exact tendsto_nhds_unique hlimR (AiryFdd.tendsto_airy1FinCdf_meshSet x hT1 hM hK)
+  exact tendsto_nhds_unique hlimR (AiryFdd.tendsto_airy1FinCdf_meshSet_at_weight x hT0 hM ha hK)
+
+/-- **Core law.** Under `GOELeftTail` and contrib's dyadic hitting-kernel
+limit `MeshHittingLimit M T` (K), for `T ≥ 1`, `M > 0` and any base point `x ≥ 0`:
+`ℙ(Ã(t) ≤ M ∀ t ∈ [x, x+T]) = det(I − Ã_{M,T})` with `Ã_{M,T} = airyTildeOp M T (2T)`
+(QR 2012 Theorem 4 at block length `T`, QR's weight `a = 2T`). -/
+theorem airy1Law_sup_le_eq_fredholmDet (h : Airy1FddPositive) (hT : GOELeftTail) {x M T : ℝ}
+    (hx : 0 ≤ x) (hT1 : 1 ≤ T) (hM : 0 < M) (hK : AiryFdd.MeshHittingLimit M T) :
+    (airy1Law h).real {f | ∀ t ∈ Icc x (x + T), airy1ContR h t f ≤ M}
+      = HilbertSchmidt.fredholmDet
+          (AiryConj.airyTildeOp M T (2 * T) (by linarith) hM (by linarith)) 1 :=
+  airy1Law_sup_le_eq_fredholmDet_at_weight h hT hx (by linarith) hM (by linarith) hK
 
 /-- Weight-argument congruence for `airyTildeOp` (the proof arguments are irrelevant). -/
 theorem airyTildeOp_congr_weight {M T a b : ℝ} (hab : a = b) (hT : 0 < T) (hM : 0 < M)

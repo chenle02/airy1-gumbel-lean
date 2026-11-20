@@ -19,16 +19,12 @@ of refinement `n`; put `g = T / 2ⁿ`.
   `gapSum = 2ⁿ g = T` exactly (`gapSum_meshTail`).  The mesh hitting kernel is
   `meshHitKer M T n = hitKerN (M, g) (meshTail M T n)` (projections at the `2ⁿ` grid times,
   none at `T`; `= p_T − (P̄_M e^{gΔ})^{2ⁿ}`).
-* **Step D** (`airy1FinCdf_meshSet`): `F_{I_n}(M, …, M) = det(I − meshOp M T n)` where
-  `meshOp = fddOpAt (M, g) (meshTail M T n) … (2T)`; admissible because `T + 1 ≤ 2T` for
-  `T ≥ 1`.  The weight `2T` and the total time `T` are those of `airyTildeOp M T (2T)`, so the
-  two `W` factors are the same kernel `wKernel T (2T)` (`meshOp_eq`).
-* **Step O** (`tendsto_fredholmDet_meshOp`): under the kernel hypotheses
-  `MeshHittingLimit M T` — (K1) `H_n ≤ Q_{M,T}` a.e. for every `n` and (K2) `H_n → Q_{M,T}`
-  a.e. (the lower bound `0 ≤ H_n` is `hitKerN_nonneg`, a theorem) — the `V` kernels converge
-  in `L²` (dominated by `V²`), hence `det(I − meshOp M T n) → det(I − airyTildeOp M T (2T))`.
-* **Combined** (`tendsto_airy1FinCdf_meshSet`): under `MeshHittingLimit M T`, `T ≥ 1`,
-  `M > 0`: `F_{I_n}(M, …, M) → det(I − Ã_{M,T})`.
+* At any fixed weight `a ≥ T + 1` and `T > 0`, the finite-dimensional distribution
+  is the Fredholm determinant of the dyadic mesh operator. Its second factor is
+  the kernel operator of `wKernel T a`, also the second factor of `airyTildeOp M T a`.
+* Under `MeshHittingLimit M T` and `M > 0`, dominated convergence gives convergence
+  in `L²` of the first kernels, and hence convergence of the Fredholm determinants
+  (`tendsto_airy1FinCdf_meshSet_at_weight`). The weight `2T` is admissible when `T ≥ 1`.
 * Orientation checks: at `n = 0` (one time) (K1) holds (`meshHitKer_zero_le_qMT`), while the
   reversed inequality `Q_{M,T} ≤ H_0` fails (`not_qMT_le_meshHitKer_zero`).
 
@@ -151,11 +147,19 @@ theorem meshAdm {M T : ℝ} (hT : 1 ≤ T) (n : ℕ) :
     gapSum (M, meshGap T n) (meshTail M T n) + 1 ≤ 2 * T := by
   rw [gapSum_meshTail]; linarith
 
+private theorem meshAdmAt {M T a : ℝ} (ha : T + 1 ≤ a) (n : ℕ) :
+    gapSum (M, meshGap T n) (meshTail M T n) + 1 ≤ a := by
+  simpa only [gapSum_meshTail] using ha
+
+private noncomputable def meshOpAt (M T a : ℝ) (n : ℕ) (hT : 0 < T) (ha : T + 1 ≤ a) :
+    Lp ℝ 2 (volume : Measure ℝ) →L[ℝ] Lp ℝ 2 (volume : Measure ℝ) :=
+  fddOpAt (M, meshGap T n) (meshTail M T n) (meshGap_pos hT n)
+    (meshTail_pos hT n) a (meshAdmAt ha n)
+
 /-- **The mesh fdd operator** `T_{V_n} ∘ T_W` at weight `2T` (padding `g`, total time `T`). -/
 noncomputable def meshOp (M T : ℝ) (n : ℕ) (hT : 1 ≤ T) :
     Lp ℝ 2 (volume : Measure ℝ) →L[ℝ] Lp ℝ 2 (volume : Measure ℝ) :=
-  fddOpAt (M, meshGap T n) (meshTail M T n) (meshGap_pos (by linarith) n)
-    (meshTail_pos (by linarith) n) (2 * T) (meshAdm hT n)
+  meshOpAt M T (2 * T) n (by linarith) (by linarith)
 
 /-- The entries of a progression at constant level have the same levels and interior gaps as
 `(M, g)` repeated. -/
@@ -178,12 +182,8 @@ theorem fddEntries_meshTimes {g M : ℝ} (lev : ℝ → ℝ) : ∀ (k : ℕ) (x 
       refine ⟨?_, hsp⟩
       rw [h x List.mem_cons_self, add_sub_cancel_left]
 
-/-- **Step D (mesh fdd identity).** At constant level `M` on the dyadic mesh
-`I_n = {x + kT/2ⁿ : k < 2ⁿ}`, `T ≥ 1`: `F_{I_n}(M, …, M) = det(I − meshOp M T n)`
-(padding `T/2ⁿ`, so the total time is `T`; weight `2T`). -/
-theorem airy1FinCdf_meshSet (x M T : ℝ) (hT : 1 ≤ T) (n : ℕ) :
-    airy1FinCdf (meshSet x T n) (fun _ => M) = fredholmDet (meshOp M T n hT) 1 := by
-  have hT0 : 0 < T := by linarith
+private theorem airy1FinCdf_meshSet_at_weight (x M T a : ℝ) (hT : 0 < T) (ha : T + 1 ≤ a) (n : ℕ) :
+    airy1FinCdf (meshSet x T n) (fun _ => M) = fredholmDet (meshOpAt M T a n hT ha) 1 := by
   obtain ⟨k, hk⟩ : ∃ k, 2 ^ n = k + 1 := ⟨2 ^ n - 1, (Nat.sub_add_cancel Nat.one_le_two_pow).symm⟩
   have hlev : ∀ t ∈ meshTimes x (meshGap T n) (k + 1),
       levelFn (meshSet x T n) (fun _ => M) t = M := by
@@ -194,15 +194,32 @@ theorem airy1FinCdf_meshSet (x M T : ℝ) (hT : 1 ≤ T) (n : ℕ) :
   obtain ⟨e, L, hEL, hsp⟩ := fddEntries_meshTimes _ k x hlev
   have hfin : finEntries (meshSet x T n) (fun _ => M) = e :: L := by
     unfold finEntries
-    rw [sort_meshSet hT0, hk]
+    rw [sort_meshSet hT, hk]
     exact hEL
   have htail : meshTail M T n = List.replicate k (M, meshGap T n) := by
     unfold meshTail; rw [hk]; rfl
-  unfold meshOp
-  rw [airy1FinCdf_eq_fredholmDet_fddOpAt _ _ hfin (htail ▸ hsp) (meshGap_pos hT0 n)
-    (meshTail_pos hT0 n) (meshAdm hT n)]
+  unfold meshOpAt
+  rw [airy1FinCdf_eq_fredholmDet_fddOpAt _ _ hfin (htail ▸ hsp) (meshGap_pos hT n)
+    (meshTail_pos hT n) (meshAdmAt ha n)]
+
+/-- **Step D (mesh fdd identity).** At constant level `M` on the dyadic mesh
+`I_n = {x + kT/2ⁿ : k < 2ⁿ}`, `T ≥ 1`: `F_{I_n}(M, …, M) = det(I − meshOp M T n)`
+(padding `T/2ⁿ`, so the total time is `T`; weight `2T`). -/
+theorem airy1FinCdf_meshSet (x M T : ℝ) (hT : 1 ≤ T) (n : ℕ) :
+    airy1FinCdf (meshSet x T n) (fun _ => M) = fredholmDet (meshOp M T n hT) 1 :=
+  airy1FinCdf_meshSet_at_weight x M T (2 * T) (by linarith) (by linarith) n
 
 /-! ## The common `W` factor -/
+
+private theorem meshOpAt_eq (M T a : ℝ) (n : ℕ) (hT : 0 < T) (ha : T + 1 ≤ a) :
+    meshOpAt M T a n hT ha
+      = kernelOperator (memLp_fddVKer (M, meshGap T n) (meshTail M T n)
+          (meshGap_pos hT n) (meshTail_pos hT n)
+          (a := a) (by linarith)) ∘L
+        kernelOperator (AiryConj.memLp_wKernel (T := T) (a := a) hT ha) := by
+  unfold meshOpAt fddOpAt
+  congr 1
+  exact AiryTwoInt.kernelOperator_congr (by rw [gapSum_meshTail]) _ _
 
 /-- `meshOp` with the `W` factor written as `wKernel T (2T)` — the `W` factor of
 `airyTildeOp M T (2T)`. -/
@@ -212,10 +229,8 @@ theorem meshOp_eq (M T : ℝ) (n : ℕ) (hT : 1 ≤ T) :
           (meshGap_pos (by linarith) n) (meshTail_pos (by linarith) n)
           (a := 2 * T) (by linarith)) ∘L
         kernelOperator (AiryConj.memLp_wKernel (T := T) (a := 2 * T) (by linarith)
-          (by linarith)) := by
-  unfold meshOp fddOpAt
-  congr 1
-  exact AiryTwoInt.kernelOperator_congr (by rw [gapSum_meshTail]) _ _
+          (by linarith)) :=
+  meshOpAt_eq M T (2 * T) n (by linarith) (by linarith)
 
 /-! ## The kernel hypotheses and Step O -/
 
@@ -250,45 +265,67 @@ theorem sq_mul_sub_le_sq_mul (w h q : ℝ) (h0 : 0 ≤ h) (hq : h ≤ q) :
   exact mul_le_mul_of_nonneg_left
     (pow_le_pow_left₀ (sub_nonneg.2 hq) (sub_le_self _ h0) 2) (sq_nonneg w)
 
+private theorem tendsto_integral_sq_meshVKer_at_weight {M T a : ℝ} (hT : 0 < T) (hM : 0 < M)
+    (ha : T + 1 ≤ a)
+    (hK : MeshHittingLimit M T) :
+    Tendsto (fun n => ∫ p, (fddVKer (meshHitKer M T n) a p
+        - AiryConj.vKernel T a M p) ^ 2 ∂(volume.prod volume)) atTop (𝓝 0) := by
+  have hV := AiryConj.vKernel_memLp hT hM (a := a) ha
+  have hint : Integrable (fun p => AiryConj.vKernel T a M p ^ 2)
+      (volume.prod volume) := hV.integrable_sq
+  have hlim := tendsto_integral_filter_of_dominated_convergence (μ := volume.prod volume)
+    (l := atTop) (f := fun _ => (0 : ℝ)) (fun p => AiryConj.vKernel T a M p ^ 2)
+    (F := fun n p => (fddVKer (meshHitKer M T n) a p
+        - AiryConj.vKernel T a M p) ^ 2)
+    (Eventually.of_forall fun n =>
+      (((measurable_fddVKer (measurable_meshHitKer hT n) _).sub
+        (AiryConj.measurable_vKernel T _ M)).pow_const 2).aestronglyMeasurable)
+    (Eventually.of_forall fun n => by
+      filter_upwards [hK.le_qMT n] with p hp
+      rw [Real.norm_of_nonneg (sq_nonneg _), ← fddVKer_qMT, fddVKer_eq_mul, fddVKer_eq_mul]
+      exact sq_mul_sub_le_sq_mul _ _ _ (meshHitKer_nonneg hT n p) hp)
+    hint
+    (by
+      filter_upwards [hK.tendsto_qMT] with p hp
+      have h1 : Tendsto (fun n => fddVKer (meshHitKer M T n) a p) atTop
+          (𝓝 (AiryConj.vKernel T a M p)) := by
+        rw [← fddVKer_qMT, fddVKer_eq_mul]
+        simp_rw [fddVKer_eq_mul]
+        exact hp.const_mul _
+      simpa using (h1.sub_const (AiryConj.vKernel T a M p)).pow 2)
+  simpa using hlim
+
 /-- **Step O, kernel half.** Under (K1)/(K2), `∫∫ (V_n − V)² → 0` with
 `V_n = fddVKer H_n (2T)` and `V = vKernel T (2T) M`. -/
 theorem tendsto_integral_sq_meshVKer {M T : ℝ} (hT : 1 ≤ T) (hM : 0 < M)
     (hK : MeshHittingLimit M T) :
     Tendsto (fun n => ∫ p, (fddVKer (meshHitKer M T n) (2 * T) p
-        - AiryConj.vKernel T (2 * T) M p) ^ 2 ∂(volume.prod volume)) atTop (𝓝 0) := by
-  have hT0 : 0 < T := by linarith
-  have hV := AiryConj.vKernel_memLp hT0 hM (a := 2 * T) (by linarith)
-  have hint : Integrable (fun p => AiryConj.vKernel T (2 * T) M p ^ 2)
-      (volume.prod volume) := hV.integrable_sq
-  have hlim := tendsto_integral_filter_of_dominated_convergence (μ := volume.prod volume)
-    (l := atTop) (f := fun _ => (0 : ℝ)) (fun p => AiryConj.vKernel T (2 * T) M p ^ 2)
-    (F := fun n p => (fddVKer (meshHitKer M T n) (2 * T) p
-        - AiryConj.vKernel T (2 * T) M p) ^ 2)
-    (Eventually.of_forall fun n =>
-      (((measurable_fddVKer (measurable_meshHitKer hT0 n) _).sub
-        (AiryConj.measurable_vKernel T _ M)).pow_const 2).aestronglyMeasurable)
-    (Eventually.of_forall fun n => by
-      filter_upwards [hK.le_qMT n] with p hp
-      rw [Real.norm_of_nonneg (sq_nonneg _), ← fddVKer_qMT, fddVKer_eq_mul, fddVKer_eq_mul]
-      exact sq_mul_sub_le_sq_mul _ _ _ (meshHitKer_nonneg hT0 n p) hp)
-    hint
-    (by
-      filter_upwards [hK.tendsto_qMT] with p hp
-      have h1 : Tendsto (fun n => fddVKer (meshHitKer M T n) (2 * T) p) atTop
-          (𝓝 (AiryConj.vKernel T (2 * T) M p)) := by
-        rw [← fddVKer_qMT, fddVKer_eq_mul]
-        simp_rw [fddVKer_eq_mul]
-        exact hp.const_mul _
-      simpa using (h1.sub_const (AiryConj.vKernel T (2 * T) M p)).pow 2)
-  simpa using hlim
+        - AiryConj.vKernel T (2 * T) M p) ^ 2 ∂(volume.prod volume)) atTop (𝓝 0) :=
+  tendsto_integral_sq_meshVKer_at_weight (by linarith) hM (by linarith) hK
+
+private theorem tendsto_fredholmDet_meshOp_at_weight {M T a : ℝ} (hT : 0 < T) (hM : 0 < M)
+    (ha : T + 1 ≤ a)
+    (hK : MeshHittingLimit M T) :
+    Tendsto (fun n => fredholmDet (meshOpAt M T a n hT ha) 1) atTop
+      (𝓝 (fredholmDet (AiryConj.airyTildeOp M T a hT hM ha) 1)) := by
+  simp_rw [meshOpAt_eq M T a _ hT ha]
+  exact tendsto_fredholmDet_kernelOperator_comp _ _ _ (tendsto_integral_sq_meshVKer_at_weight hT hM ha hK) 1
 
 /-- **Step O.** Under (K1)/(K2), `det(I − meshOp M T n) → det(I − Ã_{M,T})` at weight `2T`. -/
 theorem tendsto_fredholmDet_meshOp {M T : ℝ} (hT : 1 ≤ T) (hM : 0 < M)
     (hK : MeshHittingLimit M T) :
     Tendsto (fun n => fredholmDet (meshOp M T n hT) 1) atTop
-      (𝓝 (fredholmDet (AiryConj.airyTildeOp M T (2 * T) (by linarith) hM (by linarith)) 1)) := by
-  simp_rw [meshOp_eq M T _ hT]
-  exact tendsto_fredholmDet_kernelOperator_comp _ _ _ (tendsto_integral_sq_meshVKer hT hM hK) 1
+      (𝓝 (fredholmDet (AiryConj.airyTildeOp M T (2 * T) (by linarith) hM (by linarith)) 1)) :=
+  tendsto_fredholmDet_meshOp_at_weight (by linarith) hM (by linarith) hK
+
+/-- The dyadic finite-dimensional distributions converge to the hitting determinant for
+each positive interval length and each fixed admissible weight. -/
+theorem tendsto_airy1FinCdf_meshSet_at_weight (x : ℝ) {M T a : ℝ}
+    (hT : 0 < T) (hM : 0 < M) (ha : T + 1 ≤ a) (hK : MeshHittingLimit M T) :
+    Tendsto (fun n => airy1FinCdf (meshSet x T n) (fun _ => M)) atTop
+      (𝓝 (fredholmDet (AiryConj.airyTildeOp M T a hT hM ha) 1)) := by
+  simp_rw [airy1FinCdf_meshSet_at_weight x M T a hT ha]
+  exact tendsto_fredholmDet_meshOp_at_weight hT hM ha hK
 
 /-- **Combined.** Under the dyadic hitting-kernel limit (K1)/(K2), `T ≥ 1`, `M > 0`,
 for every base point `x`: `F_{I_n}(M, …, M) → det(I − Ã_{M,T})` with `Ã_{M,T}` at weight `2T`,
@@ -296,9 +333,8 @@ where `I_n = {x + kT/2ⁿ : k < 2ⁿ}`. -/
 theorem tendsto_airy1FinCdf_meshSet (x : ℝ) {M T : ℝ} (hT : 1 ≤ T) (hM : 0 < M)
     (hK : MeshHittingLimit M T) :
     Tendsto (fun n => airy1FinCdf (meshSet x T n) (fun _ => M)) atTop
-      (𝓝 (fredholmDet (AiryConj.airyTildeOp M T (2 * T) (by linarith) hM (by linarith)) 1)) := by
-  simp_rw [airy1FinCdf_meshSet x M T hT]
-  exact tendsto_fredholmDet_meshOp hT hM hK
+      (𝓝 (fredholmDet (AiryConj.airyTildeOp M T (2 * T) (by linarith) hM (by linarith)) 1)) :=
+  tendsto_airy1FinCdf_meshSet_at_weight x (by linarith) hM (by linarith) hK
 
 /-! ## Orientation checks at `n = 0` -/
 

@@ -12,14 +12,25 @@ The trusted statements of the comparator check. They use Mathlib and the definit
 `ChallengeDefs.Airy1Gumbel.Analytic` and `ChallengeDefs.Airy1Gumbel.Process` only (both import
 Mathlib only and contain no proof); `Solution.lean` proves each statement from the package.
 
-Both theorems are Theorem 1.1 of Le Chen and Fei Pu, *Gumbel Fluctuations of the Maximum of the
-Airy₁ Process* (arXiv 2611.23658v1), in its normalized real-length form, under the three named
-inputs `Airy1FddPositive`, `GOELeftTail` and `CubicStrongMixing`. Each asserts that an Airy₁
-process law and a version with continuous paths on `[0, ∞)` exist, and that for every such law
-`μ`, every such version `Y` and every `z`,
-`μ{max_{x ∈ [0, T]} (Y x − a_T)/b_T ≤ z} → exp(−e^{−z})` as `T → ∞`.
-The two theorems differ only in the process on which the mixing input is assumed: the version
-`Y` itself, or the coordinate process of `μ`.
+Both theorems state the conclusion of Theorem 1.1 of Le Chen and Fei Pu, *Gumbel Fluctuations of
+the Maximum of the Airy₁ Process* (arXiv 2611.23658v1), in its normalized real-length form, under
+the three named inputs `Airy1FddPositive`, `GOELeftTail` and `CubicStrongMixing`. The three
+inputs are assumptions, so the comparator check verifies the headline under these inputs; it
+does not verify the inputs themselves.
+
+Both theorems assert, from `Airy1FddPositive` and `GOELeftTail` alone, that an Airy₁ process
+law exists. They differ in where the mixing input enters.
+
+* In `gumbel_limit_continuum_real_normalized_airy1_final₂`, the first two inputs also give, for
+  every Airy₁ law `μ`, a version with continuous paths on `[0, ∞)`. The mixing input is assumed
+  on a continuous version `Y`, and the limit
+  `μ{max_{x ∈ [0, T]} (Y x − a_T)/b_T ≤ z} → exp(−e^{−z})` as `T → ∞` is asserted for every
+  continuous version `Y` on which `CubicStrongMixing` holds and every real `z`.
+* In `gumbel_limit_continuum_real_normalized_airy1_final₂_coord`, the mixing input is a premise
+  on each law: it is assumed on the coordinate process of `μ`, and it comes before both the
+  existence of a continuous version and the limit. For every Airy₁ law `μ` whose coordinate
+  process satisfies `CubicStrongMixing`, a continuous version exists and the limit holds for
+  every continuous version `Y` and every real `z`.
 -/
 
 open Filter MeasureTheory Set

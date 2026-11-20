@@ -561,6 +561,13 @@ claims:
     file: Airy1GumbelContrib/Mesh/MeshLimit.lean
     status: internal
     keywords: [fredholm-determinant, airy1, fdd, dyadic-mesh, continuum-limit, dominated-convergence]
+  - id: airy1-gumbel-lean-contrib/mesh-limit-at-weight
+    decl: AiryFdd.tendsto_airy1FinCdf_meshSet_at_weight
+    kind: theorem
+    summary: "For T > 0, M > 0 and any fixed weight a >= T + 1, the constant-level Airy_1 finite-dimensional CDF on the dyadic mesh of [x, x+T] converges to the hitting determinant at weight a under MeshHittingLimit M T."
+    file: Airy1GumbelContrib/Mesh/MeshLimit.lean
+    status: internal
+    keywords: [fredholm-determinant, airy1, fdd, dyadic-mesh, continuum-limit]
   - id: airy1-gumbel-lean-contrib/brownian-skeleton-kernel
     decl: AiryFdd.measure_skelSet
     kind: theorem

@@ -204,6 +204,13 @@ claims:
     file: Airy1Gumbel/BlockLaw.lean
     status: internal
     keywords: [block-law, fredholm-determinant, dyadic-mesh, airy1]
+  - id: airy1-gumbel-lean/interval-hitting-law-at-weight
+    decl: Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_at_weight
+    kind: theorem
+    summary: "For T > 0, M > 0, x >= 0 and weight a >= T + 1, the Airy_1 hitting law on [x, x+T] equals the Fredholm determinant at weight a under Airy1FddPositive, GOELeftTail and MeshHittingLimit M T."
+    file: Airy1Gumbel/BlockLaw.lean
+    status: internal
+    keywords: [airy1, interval-hitting, fredholm-determinant, dyadic-mesh]
   - id: airy1-gumbel-lean/qr-block-laws-theorems
     decl: Airy1Gumbel.qrTwoBlockLaw_airy1
     kind: theorem
@@ -365,3 +372,17 @@ claims:
     file: Airy1Gumbel/BlockLawUnconditional.lean
     status: internal
     keywords: [block-law, fredholm-determinant, airy1]
+  - id: airy1-gumbel-lean/interval-hitting-law-positive-length
+    decl: Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_at_weight'
+    kind: theorem
+    summary: "For T > 0, M > 0, x >= 0 and weight a >= T + 1, the Airy_1 hitting law on [x, x+T] equals the Fredholm determinant at weight a under Airy1FddPositive and GOELeftTail."
+    file: Airy1Gumbel/BlockLawUnconditional.lean
+    status: internal
+    keywords: [airy1, interval-hitting, fredholm-determinant]
+  - id: airy1-gumbel-lean/fixed-interval-tail-expansion
+    decl: Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO
+    kind: theorem
+    summary: "Proposition 1.2 of arXiv:2611.23658v1. Under Airy1FddPositive and GOELeftTail, the Airy_1 exceedance probability over [0,T] has leading terms T*rho(M) + rho(M)/(4*M) and remainder o(rho(M)/M) for each fixed T > 0."
+    file: Airy1Gumbel/BlockLawUnconditional.lean
+    status: internal
+    keywords: [airy1, interval-maximum, sharp-tail, asymptotics]
