@@ -4,6 +4,8 @@ Result numbers are those of arXiv:2611.23658v1.
 
 ## 0.4.0
 
+Zenodo: version DOI [10.5281/zenodo.24410662](https://doi.org/10.5281/zenodo.24410662); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+
 - Lemma 4.1 (the block modulus, eq. (4.1)) is now proved for the constructed Airy₁
   process under `Airy1FddPositive`, `GOELeftTail` and a new, fourth named input:
   `Airy1Gumbel.block_modulus_airy1` in `Airy1Gumbel/BlockModulus.lean`. For some
