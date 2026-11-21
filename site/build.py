@@ -266,6 +266,35 @@ def menu_html(current):
     return "\n".join(out)
 
 
+def release_info():
+    """(version, date, version DOI or None) from CITATION.cff, the one place each release sets them.
+
+    The site is rebuilt at every release, so the version shown is the one CITATION.cff carries at
+    the built commit. The version DOI exists only after Zenodo mints it (the DOI docs commit); a
+    build before that shows the version without a DOI. A missing version refuses the build.
+    """
+    text = open(os.path.join(REPO, "CITATION.cff"), encoding="utf-8").read()
+    ver = re.search(r'^version:\s*"?([^"\n]+)"?\s*$', text, re.M)
+    date = re.search(r'^date-released:\s*"?([^"\n]+)"?\s*$', text, re.M)
+    if not ver:
+        raise SystemExit("CITATION.cff has no top-level version: field")
+    v = ver.group(1).strip()
+    doi = None
+    for m in re.finditer(r'value:\s*"([^"]+)"\s*\n\s*description:\s*"([^"]*)"', text):
+        if m.group(2).strip() == "Version DOI: v" + v:
+            doi = m.group(1)
+    return v, (date.group(1).strip() if date else None), doi
+
+
+VERSION, RELEASED, VERSION_DOI = release_info()
+VERSION_BADGE = '<a class="version" href="%s/releases/tag/v%s" title="Release v%s">v%s</a>' % (
+    GH, VERSION, VERSION, VERSION)
+VERSION_LINE = ("Version %s" % html.escape(VERSION)
+                + (" (released %s)" % html.escape(RELEASED) if RELEASED else "")
+                + (' · <a href="https://doi.org/%s">doi:%s</a>' % (VERSION_DOI, VERSION_DOI)
+                   if VERSION_DOI else "")
+                + " · ")
+
 FOOTER = ('airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu '
           '(<a href="%s">arXiv:2611.23658v1</a>) · developed with '
           '<a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · '
@@ -298,7 +327,8 @@ def main():
                          ("{site_title}", html.escape(SITE_TITLE)),
                          ("{tagline}", html.escape(TAGLINE)),
                          ("{menu}", menu_html(page)),
-                         ("{footer}", FOOTER)):
+                         ("{version}", VERSION_BADGE),
+                         ("{footer}", VERSION_LINE + FOOTER)):
             doc = doc.replace(key, val)
         doc = doc.replace("{content}", body)
         with open(os.path.join(out, page), "w", encoding="utf-8") as fh:

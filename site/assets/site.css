@@ -19,6 +19,8 @@ a:focus-visible, summary:focus-visible { outline: 3px solid var(--link); outline
 header, footer { max-width: 1240px; margin: auto; padding: 18px 24px; }
 header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px; border-bottom: 1px solid var(--rule); }
 .tagline { color: var(--muted); font-size: .95rem; }
+.version { font-size: .85rem; font-weight: 600; padding: 2px 9px; border: 1px solid var(--rule); border-radius: 999px; color: var(--head); text-decoration: none; white-space: nowrap; }
+.version:hover { border-color: currentColor; }
 .shell { max-width: 1240px; margin: auto; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 32px; padding: 0 24px; }
 main { min-width: 0; padding: 8px 0 32px; }
 .side { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 18px 0; font-size: .95rem; }
