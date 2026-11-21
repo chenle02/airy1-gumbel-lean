@@ -89,7 +89,7 @@ rows:
       - "ProcessAssociated, assumed, not proved: the association of the Airy_1 process (Pu 2025, Theorem 1.2); already the input of Lemma 4.2, through which it is used"
       - "CubicCovarianceDecay, assumed, not proved: the covariance asymptotic of the Airy_1 process (Basu-Busani-Ferrari 2023, Theorem 1.1), as the upper bound Cov(A(0), A(d)) <= exp(c d^2 - (4/3) d^3) for d > 1; used only through its proved corollary Cov(A(0), A(d)) <= exp(-theta d^3) for theta < 4/3 and large d. Until v0.6.0 used only by the earlier association-route headline and its intermediate forms"
       - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process"
-    note: "Proved as eq. (4.6) for the block maxima Y_j of the continuous version, for every chi in ((1/2)^(1/3), 1) and every cutoff R(M) = O(sqrt(M)), as M -> infinity through the reals (mesoscopic_sum_airy1), along the paper's route. No new named input. The headline (Theorem 1.1) does not use this result or its three named inputs: it proves the specialisation needed in Section 5.2 along the two-point route (mesoscopic-of-bounds-tp)."
+    note: "Proved as eq. (4.6) for the block maxima Y_j of the continuous version, every chi in ((1/2)^(1/3), 1) and every cutoff R(M) = O(sqrt(M)), M real (mesoscopic_sum_airy1), along the paper's route. No new named input. The headline does not use this result or these three inputs; it proves the Section 5.2 specialisation along the two-point route (mesoscopic-of-bounds-tp)."
   - paper: {number: "Lemmas 5.1-5.2", title: "Centering, normalization and the blocking assembly of Section 5.2"}
     class: inputs-supplied
     claims:
