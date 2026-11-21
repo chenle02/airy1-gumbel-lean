@@ -52,7 +52,8 @@ upcrossing bound used in the mesoscopic step. The nested package
 and their asymptotics, the Mills ratio, Hilbert–Schmidt and trace-class operators,
 Fredholm determinants, and the Airy₁ finite-dimensional and two-time estimates. Newman's
 covariance inequality (`newman_lemma3`) is also proved; the headline does not use it, and
-the earlier association-route headline and Lemma 4.2 (since v0.5.0) do.
+the earlier association-route headline, Lemma 4.2 (since v0.5.0) and Proposition 4.3
+(since v0.6.0) do.
 
 > [!IMPORTANT]
 > **Not proved here.**
@@ -61,9 +62,14 @@ the earlier association-route headline and Lemma 4.2 (since v0.5.0) do.
 >   existing continuous Airy₁ process.
 > - The paper proves its mesoscopic step through association (Pu 2025), Newman's
 >   inequality and the Basu–Busani–Ferrari covariance asymptotic. The headline's Lean
->   proof takes a different route for that step (a two-time Fredholm determinant bound),
->   so it does not check the paper's Proposition 4.3 as stated (arbitrary level `M` and
->   cutoff `R(M)`); only the specialisation used in Section 5.2 is proved.
+>   proof takes a different route for that step (a two-time Fredholm determinant bound)
+>   and uses only the specialisation of Proposition 4.3 needed in Section 5.2, which it
+>   proves along that route. Proposition 4.3 as stated (eq. (4.6), every
+>   `χ ∈ ((1/2)^{1/3}, 1)` and every cutoff `R(M) = O(√M)`) is proved separately (since
+>   v0.6.0), along the paper's route, under the standing inputs `Airy1FddPositive` and
+>   `GOELeftTail` and three named inputs, each assumed, not proved, here:
+>   `NonnegativeWindowModulusEstimate`, `ProcessAssociated` and `CubicCovarianceDecay`.
+>   The headline `_final₂` uses none of these three.
 > - Lemma 4.2 (the threshold-sensitive Newman bound, eq. (4.3)) is proved for the
 >   constructed process (since v0.5.0) under the standing inputs `Airy1FddPositive` and
 >   `GOELeftTail` and the association input `ProcessAssociated`: the association of the
@@ -88,6 +94,37 @@ the earlier association-route headline and Lemma 4.2 (since v0.5.0) do.
 > - This repository does not certify the whole manuscript: it checks the main theorem
 >   along the route described above and the component results listed in
 >   [`claims.yaml`](claims.yaml) and [`contrib/claims.yaml`](contrib/claims.yaml).
+
+Since v0.6.0, Proposition 4.3 (the mesoscopic sum, eq. (4.6)) is proved as a standalone
+result for the constructed continuous process, along the paper's route. Write `Y_j` for
+the maximum of `Ã` over `[j, j + 1]` (`airy1BlockMax h j`) and `ρ(M)` for the one-block
+tail scale of (1.3) (`AiryConj.rhoM`).
+[`Airy1Gumbel.mesoscopic_sum_airy1`](Airy1Gumbel/MesoscopicStandalone.lean) states that,
+for every `χ` with `(1/2)^{1/3} < χ < 1` and every cutoff `R : ℝ → ℝ` with
+`R(M) = O(√M)`, `Σ_{⌈χ√(2M)⌉ ≤ j ≤ ⌊R(M)⌋} ℙ{Y_0 > M, Y_j > M} = o(ρ(M))` as `M → ∞`
+through the reals (an empty range gives the sum `0`). Its five hypotheses are the
+standing inputs `Airy1FddPositive` and `GOELeftTail` and three named inputs, each
+assumed, not proved, here:
+
+- `NonnegativeWindowModulusEstimate`: the transferred local oscillation bound (4.2) on
+  windows inside `[0, ∞)` (Basu–Bhattacharjee 2024); already the input of Lemma 4.1.
+- `ProcessAssociated`: the association of the Airy₁ process (Pu 2025, Theorem 1.2);
+  already the input of Lemma 4.2.
+- [`CubicCovarianceDecay`](Airy1Gumbel/ExternalInputs.lean): the covariance asymptotic of
+  the Airy₁ process (Basu–Busani–Ferrari 2023, Theorem 1.1), in the form of its upper
+  bound `Cov(Ã(0), Ã(d)) ≤ e^{c d² − (4/3) d³}` for `d > 1`; until this release only the
+  earlier association-route headline `_final` (below) and its intermediate forms used it.
+
+The proof uses the first through Lemma 4.1 (the block modulus on `[0, 1]`, carried to
+every block `[j, j + 1]` by shift invariance of the law), the second through Lemma 4.2,
+and the third only through its proved corollary, the cubic covariance bound
+`Cov(Ã(0), Ã(d)) ≤ e^{−θd³}` for every `θ < 4/3` and large `d`
+(`CubicCovarianceDecay.theta_bound`). The block-to-grid cover (4.10) and the one-point
+bound (4.11) at level `M − 1` are proved (`block_pair_grid_cover_airy1`,
+`one_point_tail_minus_one_airy1`). This release adds no new named input. The headline
+`_final₂` still uses exactly its three inputs and none of these three, and no existing
+statement changed. The five new claims are `internal`: Lean's kernel checked their
+proofs, but the comparator does not compare their statements.
 
 Since v0.5.0, Lemma 4.2 (the threshold-sensitive Newman bound, eq. (4.3)) is proved for
 the constructed continuous process under the standing inputs `Airy1FddPositive` and
@@ -267,7 +304,7 @@ To use the library from another Lake project:
 [[require]]
 name = "airy1-gumbel-lean"
 git = "https://github.com/chenle02/airy1-gumbel-lean"
-rev = "v0.5.0"
+rev = "v0.6.0"
 ```
 
 ## Trust and axioms
@@ -279,7 +316,11 @@ rev = "v0.5.0"
   assumes, besides the first two, the fourth named input
   `NonnegativeWindowModulusEstimate`, which is not proved here. Lemma 4.2
   (`tail_sensitive_newman_airy1`) assumes, besides the first two, the association input
-  `ProcessAssociated` (Pu 2025, Theorem 1.2), which is not proved here.
+  `ProcessAssociated` (Pu 2025, Theorem 1.2), which is not proved here. Proposition 4.3
+  (`mesoscopic_sum_airy1`) assumes, besides the first two, these three:
+  `NonnegativeWindowModulusEstimate`, `ProcessAssociated` and the covariance input
+  `CubicCovarianceDecay` (Basu–Busani–Ferrari 2023, Theorem 1.1), none of which is
+  proved here.
 - The correspondence between the Lean statements and the paper was checked by AI-assisted
   review, not by an independent human referee.
 

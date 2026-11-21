@@ -2,6 +2,39 @@
 
 Result numbers are those of arXiv:2611.23658v1.
 
+## 0.6.0
+
+- Proposition 4.3 (the mesoscopic sum, eq. (4.6)) is now proved as a standalone result
+  for the constructed continuous Airy₁ process, along the paper's route:
+  `Airy1Gumbel.mesoscopic_sum_airy1` in `Airy1Gumbel/MesoscopicStandalone.lean`. For the
+  block maxima `Y_j` (the maximum of `Ã` over `[j, j + 1]`), every `χ` with
+  `(1/2)^{1/3} < χ < 1` and every cutoff `R(M) = O(√M)`,
+  `Σ_{⌈χ√(2M)⌉ ≤ j ≤ ⌊R(M)⌋} ℙ{Y_0 > M, Y_j > M} = o(ρ(M))` as `M → ∞` through the reals.
+- Inputs: five hypotheses. The standing inputs `Airy1FddPositive` and `GOELeftTail`, and
+  three named inputs, each assumed, not proved:
+  `NonnegativeWindowModulusEstimate` (the transferred local oscillation bound (4.2) on
+  windows inside `[0, ∞)`, Basu–Bhattacharjee 2024; already the input of Lemma 4.1),
+  `ProcessAssociated` (the association of the Airy₁ process, Pu 2025, Theorem 1.2;
+  already the input of Lemma 4.2) and `CubicCovarianceDecay` (the covariance asymptotic
+  of the Airy₁ process, Basu–Busani–Ferrari 2023, Theorem 1.1; until this release used
+  only by the earlier association-route headline `_final` and its intermediate forms).
+  No new named input.
+- Proved helpers: the unit-block oscillation event of (4.9) and its shift invariance
+  (`block_oscillation_probability_shift_airy1`), the block-to-grid cover (4.10)
+  (`block_pair_grid_cover_airy1`) and the one-point bound (4.11) at level `M − 1`
+  (`one_point_tail_minus_one_airy1`).
+- Docstrings, from the review of the development line: the shift lemma's docstring now
+  says that it is shift invariance of the law applied to the oscillation event of
+  Lemma 4.1 and that Lemma 4.1 itself is not used; the docstrings of
+  `one_point_tail_minus_one_airy1` and `mesoscopic_sum_airy1` name their inputs.
+- No existing statement or proof changed. The headline theorem still uses exactly its
+  three inputs and none of the three named inputs above; the comparator statements are
+  the same. Five claims are appended to `claims.yaml`, all `internal` (built, not
+  compared). `coverage.yaml`: the Proposition 4.3 row moves from outside to inputs
+  supplied, with the three named inputs on the row as assumptions.
+- The contrib package `airy1-gumbel-lean-contrib` is unchanged; its version stays 0.4.0
+  and its v0.4.0 receipts still bind.
+
 ## 0.5.0
 
 Zenodo: version DOI [10.5281/zenodo.24421088](https://doi.org/10.5281/zenodo.24421088); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).

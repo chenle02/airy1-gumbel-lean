@@ -6,7 +6,7 @@ kind: paper
 manuscript:
   title: "Gumbel Fluctuations of the Maximum of the Airy_1 Process"
   version: "arXiv:2611.23658v1"
-summary: "Theorem 1.1 is proved for a constructed Airy_1 process with continuous paths under three named inputs, its mesoscopic step proved by a two-time Fredholm determinant bound instead of the paper's association route; Lemma 4.1 is proved under a fourth named input, the bound (4.2), assumed; Lemma 4.2 under the association input ProcessAssociated, assumed; Proposition 4.3 and Remark 5.3 are outside."
+summary: "Theorem 1.1 is proved for a constructed Airy_1 process with continuous paths under three named inputs, its mesoscopic step by a two-time Fredholm determinant bound; Lemma 4.1 under the bound (4.2), assumed; Lemma 4.2 under ProcessAssociated, assumed; Proposition 4.3 under NonnegativeWindowModulusEstimate, ProcessAssociated and CubicCovarianceDecay, all three assumed; Remark 5.3 is outside."
 rows:
   - paper: {number: "Theorem 1.1", title: "Gumbel limit of the normalized maximum"}
     class: inputs-supplied
@@ -77,8 +77,19 @@ rows:
       - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process; GOELeftTail is not a hypothesis of the paper's Lemma 4.2"
     note: "Proved as eq. (4.3) for every u >= u0 and every lag d >= 0, constants independent of d. The covariance is genuine: both marginals are proved square-integrable. The one-point tail ratio, from a density bound in the paper, is proved from the GOE Fredholm determinant: no new named input. The headline (Theorem 1.1) does not use this lemma."
   - paper: {number: "Proposition 4.3", title: "Mesoscopic sum"}
-    class: outside
-    note: "The general statement (arbitrary level M and cutoff R(M)) is not formalized; the specialisation used in Section 5.2 is proved along the two-point route (mesoscopic-of-bounds-tp)."
+    class: inputs-supplied
+    claims:
+      - airy1-gumbel-lean/standalone-mesoscopic-sum-prop-4-3
+      - airy1-gumbel-lean/mesoscopic-block-pair-grid-cover
+      - airy1-gumbel-lean/one-point-tail-minus-one
+      - airy1-gumbel-lean/unit-block-oscillation-shift
+      - airy1-gumbel-lean/unit-block-oscillation-event
+    inputs:
+      - "NonnegativeWindowModulusEstimate, assumed, not proved: the transferred local oscillation bound (4.2) on windows inside [0, infinity) (Basu-Bhattacharjee 2024); already the input of Lemma 4.1, through which it is used"
+      - "ProcessAssociated, assumed, not proved: the association of the Airy_1 process (Pu 2025, Theorem 1.2); already the input of Lemma 4.2, through which it is used"
+      - "CubicCovarianceDecay, assumed, not proved: the covariance asymptotic of the Airy_1 process (Basu-Busani-Ferrari 2023, Theorem 1.1), as the upper bound Cov(A(0), A(d)) <= exp(c d^2 - (4/3) d^3) for d > 1; used only through its proved corollary Cov(A(0), A(d)) <= exp(-theta d^3) for theta < 4/3 and large d. Until v0.6.0 used only by the earlier association-route headline and its intermediate forms"
+      - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process"
+    note: "Proved as eq. (4.6) for the block maxima Y_j of the continuous version, for every chi in ((1/2)^(1/3), 1) and every cutoff R(M) = O(sqrt(M)), as M -> infinity through the reals (mesoscopic_sum_airy1), along the paper's route. No new named input. The headline (Theorem 1.1) does not use this result or its three named inputs: it proves the specialisation needed in Section 5.2 along the two-point route (mesoscopic-of-bounds-tp)."
   - paper: {number: "Lemmas 5.1-5.2", title: "Centering, normalization and the blocking assembly of Section 5.2"}
     class: inputs-supplied
     claims:
