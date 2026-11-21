@@ -2,6 +2,35 @@
 
 Result numbers are those of arXiv:2611.23658v1.
 
+## 0.5.0
+
+- Lemma 4.2 (the threshold-sensitive Newman bound, eq. (4.3)) is now proved for the
+  constructed continuous Airy₁ process: `Airy1Gumbel.tail_sensitive_newman_airy1` in
+  `Airy1Gumbel/TailSensitiveNewman.lean`. There are `C > 0` and `u₀` such that, for every
+  `u ≥ u₀` and every lag `d ≥ 0`,
+  `ℙ{Ã(0) > u, Ã(d) > u} ≤ C ℙ{Ã(0) > u}² + C u Cov(Ã(0), Ã(d))`; the constants do not
+  depend on `d`.
+- Inputs: the standing inputs `Airy1FddPositive` and `GOELeftTail`, and the association
+  input `ProcessAssociated`: the association of the Airy₁ process (Pu 2025, Theorem 1.2),
+  for bounded, monotone, measurable test functions of finitely many coordinates.
+  `ProcessAssociated` is an existing named input, assumed, not proved; until this release
+  only the earlier association-route headline `_final` and its intermediate forms used it,
+  and it is now also used by Lemma 4.2. `GOELeftTail` is not a hypothesis of the paper's
+  Lemma 4.2. No new named input: the one-point tail ratio
+  `ℙ{Ã(0) > u − u^{−1/2}} ≤ K ℙ{Ã(0) > u}`, which the paper takes from a density bound,
+  is proved here from the GOE Fredholm determinant (`one_point_tail_shift_le_airy1`,
+  `one_point_tail_profile_bounds_airy1`, `goe_singleton_right_tail_sub_profile_isLittleO`,
+  `trace_goeOp_eq_half_integral`).
+- The covariance in (4.3) is a genuine one: every time marginal is proved
+  square-integrable (`memLp_two_airy1ContR`).
+- No existing statement or proof changed. The headline theorem still uses exactly its
+  three inputs and does not use `ProcessAssociated`; the comparator statements are the
+  same. Six claims are appended to `claims.yaml`, all `internal` (built, not compared).
+  `coverage.yaml`: the Lemma 4.2 row moves from outside to inputs supplied, with
+  `ProcessAssociated` named on the row as an assumption.
+- The contrib package `airy1-gumbel-lean-contrib` is unchanged; its version stays 0.4.0
+  and its v0.4.0 receipts still bind.
+
 ## 0.4.0
 
 Zenodo: version DOI [10.5281/zenodo.24410662](https://doi.org/10.5281/zenodo.24410662); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).

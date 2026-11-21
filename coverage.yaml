@@ -6,7 +6,7 @@ kind: paper
 manuscript:
   title: "Gumbel Fluctuations of the Maximum of the Airy_1 Process"
   version: "arXiv:2611.23658v1"
-summary: "Theorem 1.1 is proved for a constructed Airy_1 process with continuous paths under three named inputs, with the mesoscopic step proved by a two-time Fredholm determinant bound instead of the paper's association route; Lemma 4.1 is proved under a fourth named input, the bound (4.2), assumed; Lemma 4.2, Proposition 4.3 and Remark 5.3 are outside."
+summary: "Theorem 1.1 is proved for a constructed Airy_1 process with continuous paths under three named inputs, its mesoscopic step proved by a two-time Fredholm determinant bound instead of the paper's association route; Lemma 4.1 is proved under a fourth named input, the bound (4.2), assumed; Lemma 4.2 under the association input ProcessAssociated, assumed; Proposition 4.3 and Remark 5.3 are outside."
 rows:
   - paper: {number: "Theorem 1.1", title: "Gumbel limit of the normalized maximum"}
     class: inputs-supplied
@@ -64,8 +64,18 @@ rows:
       - "Airy1FddPositive and GOELeftTail, for the continuous version of the constructed process"
     note: "Proved as eq. (4.1) for the continuous version on [0, 1] (block-modulus-lemma-4-1). The input is new in v0.4.0; the zero process satisfies it and the process t^2 violates it (the two audit claims). The headline (Theorem 1.1) does not use this lemma or the new input: its mesoscopic step goes through a high-level upcrossing bound."
   - paper: {number: "Lemma 4.2", title: "Pair bound under association"}
-    class: outside
-    note: "The Lean proof does not use association; it bounds grid pairs by a two-time Fredholm determinant estimate. Newman's covariance inequality itself is proved (newman-lemma3)."
+    class: inputs-supplied
+    claims:
+      - airy1-gumbel-lean/threshold-sensitive-newman-lemma-4-2
+      - airy1-gumbel-lean/airy1-continuous-point-second-moment
+      - airy1-gumbel-lean/airy1-one-point-tail-shift
+      - airy1-gumbel-lean/airy1-one-point-tail-profile
+      - airy1-gumbel-lean/goe-singleton-right-tail
+      - airy1-gumbel-lean/goe-operator-diagonal-trace
+    inputs:
+      - "ProcessAssociated, assumed, not proved: the association of the Airy_1 process (Pu 2025, Theorem 1.2), in the form that every finite-dimensional marginal gives nonnegative covariance to bounded, monotone, measurable test functions. An existing named input, until v0.5.0 used only by the earlier association-route headline"
+      - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process; GOELeftTail is not a hypothesis of the paper's Lemma 4.2"
+    note: "Proved as eq. (4.3) for every u >= u0 and every lag d >= 0, constants independent of d. The covariance is genuine: both marginals are proved square-integrable. The one-point tail ratio, from a density bound in the paper, is proved from the GOE Fredholm determinant: no new named input. The headline (Theorem 1.1) does not use this lemma."
   - paper: {number: "Proposition 4.3", title: "Mesoscopic sum"}
     class: outside
     note: "The general statement (arbitrary level M and cutoff R(M)) is not formalized; the specialisation used in Section 5.2 is proved along the two-point route (mesoscopic-of-bounds-tp)."

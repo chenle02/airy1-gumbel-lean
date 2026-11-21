@@ -51,8 +51,8 @@ upcrossing bound used in the mesoscopic step. The nested package
 [`contrib/`](contrib/) holds the analytic infrastructure: the Gumbel law, Airy functions
 and their asymptotics, the Mills ratio, Hilbert–Schmidt and trace-class operators,
 Fredholm determinants, and the Airy₁ finite-dimensional and two-time estimates. Newman's
-covariance inequality (`newman_lemma3`) is also proved; only the earlier association-route
-headline uses it.
+covariance inequality (`newman_lemma3`) is also proved; the headline does not use it, and
+the earlier association-route headline and Lemma 4.2 (since v0.5.0) do.
 
 > [!IMPORTANT]
 > **Not proved here.**
@@ -60,10 +60,15 @@ headline uses it.
 >   `GOELeftTail` is an extra explicit input relative to the paper, which starts from an
 >   existing continuous Airy₁ process.
 > - The paper proves its mesoscopic step through association (Pu 2025), Newman's
->   inequality and the Basu–Busani–Ferrari covariance asymptotic. The Lean proof takes a
->   different route for that step (a two-time Fredholm determinant bound), so it does not
->   check the paper's Proposition 4.3 or Lemma 4.2 as stated (arbitrary level `M` and
+>   inequality and the Basu–Busani–Ferrari covariance asymptotic. The headline's Lean
+>   proof takes a different route for that step (a two-time Fredholm determinant bound),
+>   so it does not check the paper's Proposition 4.3 as stated (arbitrary level `M` and
 >   cutoff `R(M)`); only the specialisation used in Section 5.2 is proved.
+> - Lemma 4.2 (the threshold-sensitive Newman bound, eq. (4.3)) is proved for the
+>   constructed process (since v0.5.0) under the standing inputs `Airy1FddPositive` and
+>   `GOELeftTail` and the association input `ProcessAssociated`: the association of the
+>   Airy₁ process (Pu 2025, Theorem 1.2), which is assumed, not proved, here. The headline
+>   `_final₂` still uses exactly its three inputs and does not use `ProcessAssociated`.
 > - Lemma 4.1 (the block modulus, eq. (4.1)) is proved for the constructed process
 >   (since v0.4.0) under `Airy1FddPositive`, `GOELeftTail` and a fourth named input,
 >   `NonnegativeWindowModulusEstimate`: the transferred local oscillation bound (4.2) of
@@ -83,6 +88,31 @@ headline uses it.
 > - This repository does not certify the whole manuscript: it checks the main theorem
 >   along the route described above and the component results listed in
 >   [`claims.yaml`](claims.yaml) and [`contrib/claims.yaml`](contrib/claims.yaml).
+
+Since v0.5.0, Lemma 4.2 (the threshold-sensitive Newman bound, eq. (4.3)) is proved for
+the constructed continuous process under the standing inputs `Airy1FddPositive` and
+`GOELeftTail` and the association input
+[`Airy1Gumbel.ProcessAssociated`](Airy1Gumbel/ExternalInputs.lean): the association of the
+Airy₁ process (Pu 2025, Theorem 1.2), in the form that every finite-dimensional marginal
+gives nonnegative covariance to bounded, monotone, measurable test functions.
+`ProcessAssociated` is an existing named input, assumed, not proved, here; until this
+release only the earlier association-route headline `_final` (below) and its intermediate
+forms used it. `GOELeftTail` is not a
+hypothesis of the paper's Lemma 4.2; it is a standing input of every process-level result
+here because the process is constructed. Under these inputs,
+[`Airy1Gumbel.tail_sensitive_newman_airy1`](Airy1Gumbel/TailSensitiveNewman.lean) states
+that there are `C > 0` and `u₀` such that, for every `u ≥ u₀` and every lag `d ≥ 0`,
+`ℙ{Ã(0) > u, Ã(d) > u} ≤ C ℙ{Ã(0) > u}² + C u Cov(Ã(0), Ã(d))`; the constants do not
+depend on `d`. The covariance is a genuine one: both marginals are proved
+square-integrable (`memLp_two_airy1ContR`), so it is not the value `0` that Lean assigns
+off `L²`. The one-point tail ratio `ℙ{Ã(0) > u − u^{−1/2}} ≤ K ℙ{Ã(0) > u}`, which the
+paper takes from the density bound (4.4)–(4.5), is proved here from the GOE Fredholm
+determinant (`one_point_tail_shift_le_airy1`, through the sharp singleton tail
+`goe_singleton_right_tail_sub_profile_isLittleO`), so this release adds no new named
+input. The headline `_final₂` still uses exactly its three inputs and does not use
+`ProcessAssociated`, and no existing statement changed. The six new claims are
+`internal`: Lean's kernel checked their proofs, but the comparator does not compare their
+statements.
 
 Since v0.4.0, Lemma 4.1 (the block modulus, eq. (4.1)) is proved for the constructed
 process under `Airy1FddPositive`, `GOELeftTail` and a fourth named input,
@@ -237,7 +267,7 @@ To use the library from another Lake project:
 [[require]]
 name = "airy1-gumbel-lean"
 git = "https://github.com/chenle02/airy1-gumbel-lean"
-rev = "v0.4.0"
+rev = "v0.5.0"
 ```
 
 ## Trust and axioms
@@ -247,7 +277,9 @@ rev = "v0.4.0"
 - The headline is conditional. Its hypotheses are the three named structures above; read
   their definitions before relying on the theorem. Lemma 4.1 (`block_modulus_airy1`)
   assumes, besides the first two, the fourth named input
-  `NonnegativeWindowModulusEstimate`, which is not proved here.
+  `NonnegativeWindowModulusEstimate`, which is not proved here. Lemma 4.2
+  (`tail_sensitive_newman_airy1`) assumes, besides the first two, the association input
+  `ProcessAssociated` (Pu 2025, Theorem 1.2), which is not proved here.
 - The correspondence between the Lean statements and the paper was checked by AI-assisted
   review, not by an independent human referee.
 
