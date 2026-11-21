@@ -304,11 +304,11 @@ and [`CITATION.cff`](CITATION.cff).
 
 **How to read this page.** Lean has checked every step of the proofs listed here. It cannot check that a Lean statement says what the paper says: that comparison is yours. For each result below, read the paper's statement beside the Lean statement, and check that the hypotheses match.
 
-Theorem 1.1 is proved for a constructed Airy\_1 process with continuous paths under three named inputs, with the mesoscopic step proved by a two-time Fredholm determinant bound instead of the paper's association route; Lemma 4.1 is proved under a fourth named input, the bound (4.2), assumed; Lemma 4.2, Proposition 4.3 and Remark 5.3 are outside.
+Theorem 1.1 is proved for a constructed Airy\_1 process with continuous paths under three named inputs, its mesoscopic step proved by a two-time Fredholm determinant bound instead of the paper's association route; Lemma 4.1 is proved under a fourth named input, the bound (4.2), assumed; Lemma 4.2 under the association input ProcessAssociated, assumed; Proposition 4.3 and Remark 5.3 are outside.
 
 - Paper: *Gumbel Fluctuations of the Maximum of the Airy\_1 Process*, [arXiv:2611.23658v1](https://arxiv.org/abs/2611.23658v1).
-- Results listed: 10. In Lean with the paper's own hypotheses: 0; in Lean with extra hypotheses, named below: 7; not formalized: 3.
-- Verified: 1 of the 7 result(s) in Lean.
+- Results listed: 10. In Lean with the paper's own hypotheses: 0; in Lean with extra hypotheses, named below: 8; not formalized: 2.
+- Verified: 1 of the 8 result(s) in Lean.
 
 ## The paper's results in Lean
 
@@ -318,7 +318,7 @@ Theorem 1.1 is proved for a constructed Airy\_1 process with continuous paths un
 
 **In the paper.** The statement is not quoted here; read it in the paper.
 
-**In Lean.** `Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂` in [Challenge.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Challenge.lean): the statement the proof was checked against (the proof is in a separate file, and a second checker confirmed it proves exactly this).
+**In Lean.** `Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂` in [Challenge.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Challenge.lean): the statement the proof was checked against (the proof is in a separate file, and a second checker confirmed it proves exactly this).
 
 ```lean
 theorem gumbel_limit_continuum_real_normalized_airy1_final₂
@@ -332,7 +332,7 @@ theorem gumbel_limit_continuum_real_normalized_airy1_final₂
               atTop (𝓝 (Real.exp (-Real.exp (-z))))
 ```
 
-**In Lean.** `Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord` in [Challenge.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Challenge.lean): the statement the proof was checked against (the proof is in a separate file, and a second checker confirmed it proves exactly this).
+**In Lean.** `Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord` in [Challenge.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Challenge.lean): the statement the proof was checked against (the proof is in a separate file, and a second checker confirmed it proves exactly this).
 
 ```lean
 theorem gumbel_limit_continuum_real_normalized_airy1_final₂_coord
@@ -360,7 +360,7 @@ theorem gumbel_limit_continuum_real_normalized_airy1_final₂_coord
 
 **In the paper.** The statement is not quoted here; read it in the paper.
 
-**In Lean.** `Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO` in [Airy1Gumbel/BlockLawUnconditional.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockLawUnconditional.lean).
+**In Lean.** `Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO` in [Airy1Gumbel/BlockLawUnconditional.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/BlockLawUnconditional.lean).
 
 ```lean
 theorem airy1Law_interval_tail_sub_traceLead_isLittleO
@@ -369,7 +369,7 @@ theorem airy1Law_interval_tail_sub_traceLead_isLittleO
       - AiryConj.traceLead M T) =o[atTop] (fun M => AiryConj.rhoM M / M)
 ```
 
-**In Lean.** `Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_at_weight'` in [Airy1Gumbel/BlockLawUnconditional.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockLawUnconditional.lean).
+**In Lean.** `Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_at_weight'` in [Airy1Gumbel/BlockLawUnconditional.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/BlockLawUnconditional.lean).
 
 ```lean
 theorem airy1Law_sup_le_eq_fredholmDet_at_weight' (h : Airy1FddPositive) (hLeft : GOELeftTail)
@@ -378,7 +378,7 @@ theorem airy1Law_sup_le_eq_fredholmDet_at_weight' (h : Airy1FddPositive) (hLeft 
       = HilbertSchmidt.fredholmDet (AiryConj.airyTildeOp M T a hT hM ha) 1
 ```
 
-**In Lean.** `Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet` in [Airy1Gumbel/BlockLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockLaw.lean).
+**In Lean.** `Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet` in [Airy1Gumbel/BlockLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/BlockLaw.lean).
 
 ```lean
 theorem airy1Law_sup_le_eq_fredholmDet (h : Airy1FddPositive) (hT : GOELeftTail) {x M T : ℝ}
@@ -388,7 +388,7 @@ theorem airy1Law_sup_le_eq_fredholmDet (h : Airy1FddPositive) (hT : GOELeftTail)
           (AiryConj.airyTildeOp M T (2 * T) (by linarith) hM (by linarith)) 1
 ```
 
-**In Lean.** `Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet'` in [Airy1Gumbel/BlockLawUnconditional.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockLawUnconditional.lean).
+**In Lean.** `Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet'` in [Airy1Gumbel/BlockLawUnconditional.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/BlockLawUnconditional.lean).
 
 ```lean
 theorem airy1Law_sup_le_eq_fredholmDet' (h : Airy1FddPositive) (hT : GOELeftTail) {x M T : ℝ}
@@ -398,7 +398,7 @@ theorem airy1Law_sup_le_eq_fredholmDet' (h : Airy1FddPositive) (hT : GOELeftTail
           (AiryConj.airyTildeOp M T (2 * T) (by linarith) hM (by linarith)) 1
 ```
 
-**In Lean.** `Airy1Gumbel.sharp_tail_of_QRUnitBlockLaw` in [Airy1Gumbel/SharpTail.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/SharpTail.lean).
+**In Lean.** `Airy1Gumbel.sharp_tail_of_QRUnitBlockLaw` in [Airy1Gumbel/SharpTail.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/SharpTail.lean).
 
 ```lean
 theorem sharp_tail_of_QRUnitBlockLaw {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
@@ -420,7 +420,7 @@ theorem sharp_tail_of_QRUnitBlockLaw {Ω : Type*} [MeasurableSpace Ω] {P : Meas
 
 **In the paper.** The statement is not quoted here; read it in the paper.
 
-**In Lean.** `Airy1Gumbel.touching_of_QR` in [Airy1Gumbel/Touching.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/Touching.lean).
+**In Lean.** `Airy1Gumbel.touching_of_QR` in [Airy1Gumbel/Touching.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/Touching.lean).
 
 ```lean
 theorem touching_of_QR {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
@@ -431,7 +431,7 @@ theorem touching_of_QR {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
       (N : ℝ) * P.real {ω | Y 0 ω > gumbelU N z ∧ Y 1 ω > gumbelU N z}) atTop (𝓝 0)
 ```
 
-**In Lean.** `Airy1Gumbel.qrTwoBlockLaw_airy1` in [Airy1Gumbel/BlockLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockLaw.lean).
+**In Lean.** `Airy1Gumbel.qrTwoBlockLaw_airy1` in [Airy1Gumbel/BlockLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/BlockLaw.lean).
 
 ```lean
 theorem qrTwoBlockLaw_airy1 (h : Airy1FddPositive) (hT : GOELeftTail)
@@ -451,7 +451,7 @@ theorem qrTwoBlockLaw_airy1 (h : Airy1FddPositive) (hT : GOELeftTail)
 
 **In the paper.** The statement is not quoted here; read it in the paper.
 
-**In Lean.** `Airy1Gumbel.separated_of_QR` in [Airy1Gumbel/Separated.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/Separated.lean).
+**In Lean.** `Airy1Gumbel.separated_of_QR` in [Airy1Gumbel/Separated.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/Separated.lean).
 
 ```lean
 theorem separated_of_QR {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
@@ -464,7 +464,7 @@ theorem separated_of_QR {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
           P.real {ω | Y 0 ω > gumbelU N z ∧ Y j ω > gumbelU N z}) atTop (𝓝 0)
 ```
 
-**In Lean.** `Airy1Gumbel.qrTwoIntervalLaw_airy1` in [Airy1Gumbel/TwoIntervalLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/TwoIntervalLaw.lean).
+**In Lean.** `Airy1Gumbel.qrTwoIntervalLaw_airy1` in [Airy1Gumbel/TwoIntervalLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/TwoIntervalLaw.lean).
 
 ```lean
 theorem qrTwoIntervalLaw_airy1 (h : Airy1FddPositive) (hT : GOELeftTail) :
@@ -484,7 +484,7 @@ theorem qrTwoIntervalLaw_airy1 (h : Airy1FddPositive) (hT : GOELeftTail) :
 
 **In the paper.** The statement is not quoted here; read it in the paper.
 
-**In Lean.** `Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length` in [Airy1Gumbel/TwoIntervalLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/TwoIntervalLaw.lean).
+**In Lean.** `Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length` in [Airy1Gumbel/TwoIntervalLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/TwoIntervalLaw.lean).
 
 ```lean
 theorem airy1Law_two_blocks_le_eq_fredholmDet_of_length (h : Airy1FddPositive) (hLeft : GOELeftTail)
@@ -496,7 +496,7 @@ theorem airy1Law_two_blocks_le_eq_fredholmDet_of_length (h : Airy1FddPositive) (
           (HilbertSchmidt.kernelOperator (AiryFdd.memLp_kcupKerT_of_length hT hr hM ha)) 1
 ```
 
-**In Lean.** `Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet` in [Airy1Gumbel/TwoIntervalLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/TwoIntervalLaw.lean).
+**In Lean.** `Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet` in [Airy1Gumbel/TwoIntervalLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/TwoIntervalLaw.lean).
 
 ```lean
 theorem airy1Law_two_blocks_le_eq_fredholmDet (h : Airy1FddPositive) (hT : GOELeftTail)
@@ -507,7 +507,7 @@ theorem airy1Law_two_blocks_le_eq_fredholmDet (h : Airy1FddPositive) (hT : GOELe
           (HilbertSchmidt.kernelOperator (AiryTwoInt.memLp_kcupKerT hr hM ha)) 1
 ```
 
-**In Lean.** `Airy1Gumbel.qrTwoIntervalLaw_airy1` in [Airy1Gumbel/TwoIntervalLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/TwoIntervalLaw.lean).
+**In Lean.** `Airy1Gumbel.qrTwoIntervalLaw_airy1` in [Airy1Gumbel/TwoIntervalLaw.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/TwoIntervalLaw.lean).
 
 ```lean
 theorem qrTwoIntervalLaw_airy1 (h : Airy1FddPositive) (hT : GOELeftTail) :
@@ -529,7 +529,7 @@ theorem qrTwoIntervalLaw_airy1 (h : Airy1FddPositive) (hT : GOELeftTail) :
 
 **In the paper.** The statement is not quoted here; read it in the paper.
 
-**In Lean.** `Airy1Gumbel.block_modulus_airy1` in [Airy1Gumbel/BlockModulus.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockModulus.lean).
+**In Lean.** `Airy1Gumbel.block_modulus_airy1` in [Airy1Gumbel/BlockModulus.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/BlockModulus.lean).
 
 ```lean
 theorem block_modulus_airy1 (h : Airy1FddPositive) (hT : GOELeftTail)
@@ -542,9 +542,9 @@ theorem block_modulus_airy1 (h : Airy1FddPositive) (hT : GOELeftTail)
           ≤ C * δ⁻¹ * Real.exp (-c * δ ^ (-(1 / 2 : ℝ)))
 ```
 
-**In Lean.** `Airy1Gumbel.NonnegativeWindowModulusEstimate` in [Airy1Gumbel/BlockModulus.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockModulus.lean). Its statement could not be read reliably from the source; open the file to read it.
+**In Lean.** `Airy1Gumbel.NonnegativeWindowModulusEstimate` in [Airy1Gumbel/BlockModulus.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/BlockModulus.lean). Its statement could not be read reliably from the source; open the file to read it.
 
-**In Lean.** `Airy1Gumbel.nonnegativeWindowModulusEstimate_const` in [Airy1Gumbel/BlockModulus.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockModulus.lean).
+**In Lean.** `Airy1Gumbel.nonnegativeWindowModulusEstimate_const` in [Airy1Gumbel/BlockModulus.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/BlockModulus.lean).
 
 ```lean
 theorem nonnegativeWindowModulusEstimate_const {Ω : Type*} [MeasurableSpace Ω]
@@ -552,7 +552,7 @@ theorem nonnegativeWindowModulusEstimate_const {Ω : Type*} [MeasurableSpace Ω]
     Nonempty (NonnegativeWindowModulusEstimate P (fun (_ : ℝ) (_ : Ω) => (0 : ℝ)))
 ```
 
-**In Lean.** `Airy1Gumbel.isEmpty_nonnegativeWindowModulusEstimate_sq` in [Airy1Gumbel/BlockModulus.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockModulus.lean).
+**In Lean.** `Airy1Gumbel.isEmpty_nonnegativeWindowModulusEstimate_sq` in [Airy1Gumbel/BlockModulus.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/BlockModulus.lean).
 
 ```lean
 theorem isEmpty_nonnegativeWindowModulusEstimate_sq {Ω : Type*} [MeasurableSpace Ω]
@@ -566,6 +566,74 @@ theorem isEmpty_nonnegativeWindowModulusEstimate_sq {Ω : Type*} [MeasurableSpac
 
 **Note.** Proved as eq. (4.1) for the continuous version on \[0, 1\] (block-modulus-lemma-4-1). The input is new in v0.4.0; the zero process satisfies it and the process t^2 violates it (the two audit claims). The headline (Theorem 1.1) does not use this lemma or the new input: its mesoscopic step goes through a high-level upcrossing bound.
 
+### Lemma 4.2: Pair bound under association
+
+**Built, not compared.** Lean accepts the proof (the build passed), but its statement has not been compared by a second checker, which lean-pkg needs before it counts the result as verified.
+
+**Internal.** `airy1-gumbel-lean/threshold-sensitive-newman-lemma-4-2`, `airy1-gumbel-lean/airy1-continuous-point-second-moment`, `airy1-gumbel-lean/airy1-one-point-tail-shift`, `airy1-gumbel-lean/airy1-one-point-tail-profile`, `airy1-gumbel-lean/goe-singleton-right-tail`, `airy1-gumbel-lean/goe-operator-diagonal-trace`: marked internal in `claims.yaml`, a step of the formalization rather than a result offered for reuse. An internal claim counts as verified only when the statement comparison judged its declaration, on the same evidence as any other result.
+
+**In the paper.** The statement is not quoted here; read it in the paper.
+
+**In Lean.** `Airy1Gumbel.tail_sensitive_newman_airy1` in [Airy1Gumbel/TailSensitiveNewman.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/TailSensitiveNewman.lean).
+
+```lean
+theorem tail_sensitive_newman_airy1 (h : Airy1FddPositive) (hT : GOELeftTail)
+    (As : ProcessAssociated (airy1SRP h hT)) :
+    ∃ C u₀ : ℝ, 0 < C ∧ ∀ u d : ℝ, u₀ ≤ u → 0 ≤ d →
+      (airy1Law h).real {f | u < airy1ContR h 0 f ∧ u < airy1ContR h d f}
+        ≤ C * ((airy1Law h).real {f | u < airy1ContR h 0 f}) ^ 2 +
+          C * u * covariance (airy1ContR h 0) (airy1ContR h d) (airy1Law h)
+```
+
+**In Lean.** `Airy1Gumbel.memLp_two_airy1ContR` in [Airy1Gumbel/TailSensitiveNewman.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/TailSensitiveNewman.lean).
+
+```lean
+theorem memLp_two_airy1ContR (h : Airy1FddPositive) (hT : GOELeftTail) (t : ℝ) :
+    MemLp (airy1ContR h t) 2 (airy1Law h)
+```
+
+**In Lean.** `Airy1Gumbel.one_point_tail_shift_le_airy1` in [Airy1Gumbel/TailSensitiveNewman.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/TailSensitiveNewman.lean).
+
+```lean
+theorem one_point_tail_shift_le_airy1 (h : Airy1FddPositive) (hT : GOELeftTail) :
+    ∃ K u₀ : ℝ, 0 < K ∧ 0 < u₀ ∧ ∀ u : ℝ, u₀ ≤ u →
+      (airy1Law h).real {f | u - (Real.sqrt u)⁻¹ < airy1ContR h 0 f}
+        ≤ K * (airy1Law h).real {f | u < airy1ContR h 0 f}
+```
+
+**In Lean.** `Airy1Gumbel.one_point_tail_profile_bounds_airy1` in [Airy1Gumbel/TailSensitiveNewman.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/TailSensitiveNewman.lean).
+
+```lean
+theorem one_point_tail_profile_bounds_airy1 (h : Airy1FddPositive) (hT : GOELeftTail) :
+    ∃ A B u₀ : ℝ, 0 < A ∧ 0 < B ∧ 0 < u₀ ∧
+      ∀ u : ℝ, u₀ ≤ u →
+        A * (AiryConj.rhoM u / u) ≤
+          (airy1Law h).real {f | u < airy1ContR h 0 f} ∧
+        (airy1Law h).real {f | u < airy1ContR h 0 f} ≤ B * (AiryConj.rhoM u / u)
+```
+
+**In Lean.** `Airy1Gumbel.goe_singleton_right_tail_sub_profile_isLittleO` in [Airy1Gumbel/TailSensitiveNewman.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/TailSensitiveNewman.lean).
+
+```lean
+theorem goe_singleton_right_tail_sub_profile_isLittleO :
+    (fun u : ℝ => 1 - AiryFdd.airy1FinCdf {0} (fun _ => u) -
+      AiryConj.rhoM u / (8 * u)) =o[atTop] (fun u => AiryConj.rhoM u / u)
+```
+
+**In Lean.** `Airy1Gumbel.trace_goeOp_eq_half_integral` in [Airy1Gumbel/TailSensitiveNewman.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/TailSensitiveNewman.lean).
+
+```lean
+theorem trace_goeOp_eq_half_integral (u : ℝ) :
+    HilbertSchmidt.trace (AiryFdd.goeOp u) =
+      (1 / 2 : ℝ) * (∫ x in Ioi (2 * u), airyAiReal x)
+```
+
+**Hypotheses.** The paper's, plus these, which the Lean statement assumes and the paper proves or assumes elsewhere: ProcessAssociated, assumed, not proved: the association of the Airy\_1 process (Pu 2025, Theorem 1.2), in the form that every finite-dimensional marginal gives nonnegative covariance to bounded, monotone, measurable test functions. An existing named input, until v0.5.0 used only by the earlier association-route headline; Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process; GOELeftTail is not a hypothesis of the paper's Lemma 4.2.
+
+**Axioms.** At most `Classical.choice`, `Quot.sound`, `propext` (what the build check records for the whole package).
+
+**Note.** Proved as eq. (4.3) for every u &gt;= u0 and every lag d &gt;= 0, constants independent of d. The covariance is genuine: both marginals are proved square-integrable. The one-point tail ratio, from a density bound in the paper, is proved from the GOE Fredholm determinant: no new named input. The headline (Theorem 1.1) does not use this lemma.
+
 ### Lemmas 5.1-5.2: Centering, normalization and the blocking assembly of Section 5.2
 
 **Built, not compared.** Lean accepts the proof (the build passed), but its statement has not been compared by a second checker, which lean-pkg needs before it counts the result as verified.
@@ -574,14 +642,14 @@ theorem isEmpty_nonnegativeWindowModulusEstimate_sq {Ω : Type*} [MeasurableSpac
 
 **In the paper.** The statement is not quoted here; read it in the paper.
 
-**In Lean.** `Airy1Gumbel.airyH_gumbelA` in [Airy1Gumbel/Normalization.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/Normalization.lean).
+**In Lean.** `Airy1Gumbel.airyH_gumbelA` in [Airy1Gumbel/Normalization.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/Normalization.lean).
 
 ```lean
 theorem airyH_gumbelA :
     Tendsto (fun N : ℕ => airyH (gumbelA N) - Real.log N) atTop (𝓝 0)
 ```
 
-**In Lean.** `Airy1Gumbel.gumbel_normalization` in [Airy1Gumbel/Normalization.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/Normalization.lean).
+**In Lean.** `Airy1Gumbel.gumbel_normalization` in [Airy1Gumbel/Normalization.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/Normalization.lean).
 
 ```lean
 theorem gumbel_normalization (z : ℝ) :
@@ -589,7 +657,7 @@ theorem gumbel_normalization (z : ℝ) :
       atTop (𝓝 (Real.exp (-z)))
 ```
 
-**In Lean.** `Airy1Gumbel.decouple_of_CubicStrongMixing` in [Airy1Gumbel/MixingRecord.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/MixingRecord.lean).
+**In Lean.** `Airy1Gumbel.decouple_of_CubicStrongMixing` in [Airy1Gumbel/MixingRecord.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/MixingRecord.lean).
 
 ```lean
 theorem decouple_of_CubicStrongMixing (M : CubicStrongMixing X) (C : Airy1ContinuousMax P)
@@ -601,7 +669,7 @@ theorem decouple_of_CubicStrongMixing (M : CubicStrongMixing X) (C : Airy1Contin
         ≤ M.alphaY q
 ```
 
-**In Lean.** `Airy1Gumbel.Airy1BlockExtremes.gumbel_limit` in [Airy1Gumbel/GumbelLimit.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/GumbelLimit.lean).
+**In Lean.** `Airy1Gumbel.Airy1BlockExtremes.gumbel_limit` in [Airy1Gumbel/GumbelLimit.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/GumbelLimit.lean).
 
 ```lean
 theorem Airy1BlockExtremes.gumbel_limit
@@ -611,7 +679,7 @@ theorem Airy1BlockExtremes.gumbel_limit
       atTop (𝓝 (Real.exp (-Real.exp (-z))))
 ```
 
-**In Lean.** `Airy1Gumbel.mesoscopic_of_boundsTP` in [Airy1Gumbel/MesoscopicTP.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/MesoscopicTP.lean).
+**In Lean.** `Airy1Gumbel.mesoscopic_of_boundsTP` in [Airy1Gumbel/MesoscopicTP.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/70a76a23b5723bebafc087d245598a0265e306c9/Airy1Gumbel/MesoscopicTP.lean).
 
 ```lean
 theorem mesoscopic_of_boundsTP {Y : ℕ → Ω → ℝ} {W : ℝ → Ω → ℝ}
@@ -628,7 +696,6 @@ theorem mesoscopic_of_boundsTP {Y : ℕ → Ω → ℝ} {W : ℝ → Ω → ℝ}
 
 ## Not formalized
 
-- Lemma 4.2 (Pair bound under association): The Lean proof does not use association; it bounds grid pairs by a two-time Fredholm determinant estimate. Newman's covariance inequality itself is proved (newman-lemma3).
 - Proposition 4.3 (Mesoscopic sum): The general statement (arbitrary level M and cutoff R(M)) is not formalized; the specialisation used in Section 5.2 is proved along the two-point route (mesoscopic-of-bounds-tp).
 - Remark 5.3 (Persistence derivation): The separate Ferrari-Liu derivation is not part of the Lean proof.
 
@@ -642,20 +709,22 @@ The full account of what each check covers and what it takes on trust is lean-pk
 
 ## How this was checked
 
-- lean-pkg's claims ledger: **ready**, every required claim is closed by the recorded receipts; 2 of 2 required claim(s) verified (`sha256:831eea531cdfdf51…`).
-- Build check (`lean-pkg gate`) at commit `33d81943f406`: `sorry` count 0; axioms used: `Classical.choice`, `Quot.sound`, `propext`.
-- Axioms of every claim: read from the built environment (Lean's `collectAxioms`) for all 60 claim(s) in `claims.yaml`, not only the theorems the build prints; none uses an axiom beyond `propext`, `Quot.sound` and `Classical.choice`.
-- Statement comparison (comparator) at commit `33d81943f406`: 1 configuration(s), 2 theorem(s) compared (each Challenge statement against its Solution proof); permitted axioms: `Classical.choice`, `Quot.sound`, `propext`; definitions compared by name only: none.
+- lean-pkg's claims ledger: **ready**, every required claim is closed by the recorded receipts; 2 of 2 required claim(s) verified (`sha256:b706973ca9558e20…`).
+- Build check (`lean-pkg gate`) at commit `70a76a23b572`: `sorry` count 0; axioms used: `Classical.choice`, `Quot.sound`, `propext`.
+- Axioms of every claim: read from the built environment (Lean's `collectAxioms`) for all 66 claim(s) in `claims.yaml`, not only the theorems the build prints; none uses an axiom beyond `propext`, `Quot.sound` and `Classical.choice`.
+- Statement comparison (comparator) at commit `70a76a23b572`: 1 configuration(s), 2 theorem(s) compared (each Challenge statement against its Solution proof); permitted axioms: `Classical.choice`, `Quot.sound`, `propext`; definitions compared by name only: none.
 
 ### Receipts
 
 | Receipt | Check | Commit | Date | Job | SHA-256 |
 |---|---|---|---|---|---|
 | `.lean-receipts/19901ea8b3fe-systemd-user-airy1-gumbel-lean-verify.service-0ebf95d044bb440482efe94120401c18-h-f985343177f7.json` | build | `19901ea8b3fe` | 2026-11-20 | — | `1a6c1ec5f03436f64683563735165e027679053e90a2a5bb3a74822eee8dc9c1` |
-| `.lean-receipts/33d81943f406-comparator.json` (used here) | statement comparison | `33d81943f406` | 2026-11-21 | — | `2bea2d74fd5abf27ffc211e56e7497faefab88db9d08d2a38a48b874e45d6b0f` |
-| `.lean-receipts/33d81943f406-systemd-user-airy1-v040-main-verify.service-80fdf618b1ee4191a2783cb37149f438-h-f985343177f7.json` (used here) | build | `33d81943f406` | 2026-11-21 | — | `5e281770ca82b443ed37f1cb445793a83f97f72ef258aeb18f2f047544d560ad` |
+| `.lean-receipts/33d81943f406-comparator.json` | statement comparison | `33d81943f406` | 2026-11-21 | — | `2bea2d74fd5abf27ffc211e56e7497faefab88db9d08d2a38a48b874e45d6b0f` |
+| `.lean-receipts/33d81943f406-systemd-user-airy1-v040-main-verify.service-80fdf618b1ee4191a2783cb37149f438-h-f985343177f7.json` | build | `33d81943f406` | 2026-11-21 | — | `5e281770ca82b443ed37f1cb445793a83f97f72ef258aeb18f2f047544d560ad` |
 | `.lean-receipts/66ac891274b1-comparator.json` | statement comparison | `66ac891274b1` | 2026-11-20 | — | `abbb43a25d904bf50477fa50d267124fef4060f81a8ed0a52dbf57a4fe9da459` |
 | `.lean-receipts/66ac891274b1-systemd-user-airy1-v020-main-verify.service-37bfacd30061492d8a7d92f9d1677d7e-h-f985343177f7.json` | build | `66ac891274b1` | 2026-11-20 | — | `423df7f9a678774ad470a0c55c740300cc849185a82f4d38d81e842909c82a35` |
+| `.lean-receipts/70a76a23b572-comparator.json` (used here) | statement comparison | `70a76a23b572` | 2026-11-21 | — | `dbbeff55269eddf9acda3beceaee40da73ef1eba4aa467256cc354e9ee842d6d` |
+| `.lean-receipts/70a76a23b572-systemd-user-airy1-v050-main-verify.service-a1a00e13c43a4ad68f1667d7d6c05465-h-f985343177f7.json` (used here) | build | `70a76a23b572` | 2026-11-21 | — | `139256c0a3b31b718dc225b0a6f24d9e5c3515624f402c308efc5d25cc11edd3` |
 | `.lean-receipts/962a984bcc36-comparator.json` | statement comparison | `962a984bcc36` | 2026-11-20 | — | `84b03ae346317b204f921def1b546e9fa621b35aae433cc6af96926e82f5d72b` |
 | `.lean-receipts/962a984bcc36-systemd-user-airy1-v031-main-verify.service-58730a798b4d4c3988e32f986ef518ae-h-f985343177f7.json` | build | `962a984bcc36` | 2026-11-20 | — | `8bf0409b4c3da4429ecce5e8fa25ca1b0580a0f1586a7265f2b6ebb62b583cf7` |
 | `.lean-receipts/a1bff15de04d-comparator.json` | statement comparison | `a1bff15de04d` | 2026-11-20 | — | `b72c743b1c1c684a7c9c8361e54a124708ac49549d129fa5ba465709543de5d0` |
@@ -675,7 +744,7 @@ The full account of what each check covers and what it takes on trust is lean-pk
 ```bash
 git clone https://github.com/chenle02/airy1-gumbel-lean
 cd airy1-gumbel-lean
-git checkout 33d81943f406671a1061435747875944ad512ca2   # the commit the build check binds
+git checkout 70a76a23b5723bebafc087d245598a0265e306c9   # the commit the build check binds
 lake exe cache get
 lake build
 ```
@@ -684,7 +753,7 @@ Expected: `#print axioms` on any declaration above reports a subset of {`Classic
 
 ## Citation
 
-Le Chen. *airy1-gumbel-lean: Lean companion to Gumbel fluctuations of the maximum of the Airy\_1 process*. Version 0.4.0. [doi:10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+Le Chen. *airy1-gumbel-lean: Lean companion to Gumbel fluctuations of the maximum of the Airy\_1 process*. Version 0.5.0. [doi:10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
 
 It formalizes results of *Gumbel Fluctuations of the Maximum of the Airy\_1 Process*, [arXiv:2611.23658v1](https://arxiv.org/abs/2611.23658v1). See [CITATION.cff](CITATION.cff).
 
