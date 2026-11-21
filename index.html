@@ -14,6 +14,7 @@
   <a class="skip" href="#content">Skip to content</a>
   <header>
     <a class="brand" href="./"><span>Airy₁ Gumbel: Lean Companion</span></a>
+    <a class="version" href="https://github.com/chenle02/airy1-gumbel-lean/releases/tag/v0.4.0" title="Release v0.4.0">v0.4.0</a>
     <span class="tagline">Lean 4 paper companion · Theorem 1.1 under three named inputs · Apache-2.0</span>
   </header>
   <div class="shell">
@@ -150,8 +151,16 @@ existing continuous Airy₁ process.</p>
 <p>The paper proves its mesoscopic step through association (Pu 2025), Newman's
 inequality and the Basu–Busani–Ferrari covariance asymptotic. The Lean proof takes a
 different route for that step (a two-time Fredholm determinant bound), so it does not
-check the paper's Proposition 4.3 or Lemmas 4.1–4.2 as stated (arbitrary level <code>M</code>
-and cutoff <code>R(M)</code>); only the specialisation used in Section 5.2 is proved.</p>
+check the paper's Proposition 4.3 or Lemma 4.2 as stated (arbitrary level <code>M</code> and
+cutoff <code>R(M)</code>); only the specialisation used in Section 5.2 is proved.</p>
+</li>
+<li>
+<p>Lemma 4.1 (the block modulus, eq. (4.1)) is proved for the constructed process
+(since v0.4.0) under <code>Airy1FddPositive</code>, <code>GOELeftTail</code> and a fourth named input,
+<code>NonnegativeWindowModulusEstimate</code>: the transferred local oscillation bound (4.2) of
+arXiv:2611.23658v1 on windows inside <code>[0, ∞)</code>, which the paper derives from
+Basu–Bhattacharjee (2024) and which is assumed, not proved, here. The headline
+<code>_final₂</code> still uses exactly its three inputs and does not use the new one.</p>
 </li>
 <li>
 <p>Proposition 1.2 is proved for the constructed process for every <code>T &gt; 0</code> (since
@@ -174,6 +183,26 @@ along the route described above and the component results listed in
 <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/claims.yaml"><code>claims.yaml</code></a> and <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/claims.yaml"><code>contrib/claims.yaml</code></a>.</li>
 </ul>
 </div>
+<p>Since v0.4.0, Lemma 4.1 (the block modulus, eq. (4.1)) is proved for the constructed
+process under <code>Airy1FddPositive</code>, <code>GOELeftTail</code> and a fourth named input,
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/BlockModulus.lean"><code>Airy1Gumbel.NonnegativeWindowModulusEstimate</code></a>: the
+transferred local oscillation bound (4.2) of arXiv:2611.23658v1 on windows inside
+<code>[0, ∞)</code>, which the paper derives from Basu–Bhattacharjee (2024,
+<a href="https://arxiv.org/abs/2406.11826">arXiv 2406.11826</a>, Lemma 5.1 with Theorem 1.4) and
+which is assumed, not proved, here. The input says that there are <code>C₀, c₀ &gt; 0</code> such that,
+for all sufficiently large <code>ℓ</code>, every radius <code>0 &lt; s ≤ 1</code> and every centre <code>c ≥ s</code>,
+<code>ℙ{|Ã(t₁) − Ã(t₂)| &gt; C₀ ℓ √s for some t₁, t₂ ∈ [c − s, c + s]} ≤ C₀ e^{−c₀ ℓ}</code>; it is
+not a verbatim Basu–Bhattacharjee statement. Under these inputs,
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/BlockModulus.lean"><code>Airy1Gumbel.block_modulus_airy1</code></a> states that there are
+<code>C, c, h₀ &gt; 0</code> such that, for <code>0 &lt; δ ≤ h₀</code>,
+<code>ℙ{|Ã(x) − Ã(y)| &gt; 1 for some x, y ∈ [0, 1] with |x − y| ≤ 2δ} ≤ C δ⁻¹ e^{−c δ^{−1/2}}</code>.
+Two audit theorems check that the input is neither vacuous nor trivially true: the zero
+process satisfies it (<code>nonnegativeWindowModulusEstimate_const</code>) and the process <code>t²</code>
+violates it (<code>isEmpty_nonnegativeWindowModulusEstimate_sq</code>). This is the first release
+that adds a named input. The headline <code>_final₂</code> still uses exactly its three inputs and
+does not use the new one (its mesoscopic step goes through a high-level upcrossing
+bound), and no existing statement changed. The new claims are <code>internal</code>: Lean's kernel
+checked their proofs, but the comparator does not compare their statements.</p>
 <p>Since v0.3.0, Lemma 3.1 (the two-interval determinant formula) is proved for the
 constructed process for every equal length <code>T &gt; 0</code>, under <code>Airy1FddPositive</code> and
 <code>GOELeftTail</code>:
@@ -215,7 +244,7 @@ site repeats them.</p>
     </main>
   </div>
   <footer>
-    airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
+    Version 0.4.0 (released 2026-11-20) · <a href="https://doi.org/10.5281/zenodo.24410662">doi:10.5281/zenodo.24410662</a> · airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
   </footer>
 </body>
 </html>

@@ -14,6 +14,7 @@
   <a class="skip" href="#content">Skip to content</a>
   <header>
     <a class="brand" href="./"><span>Airy₁ Gumbel: Lean Companion</span></a>
+    <a class="version" href="https://github.com/chenle02/airy1-gumbel-lean/releases/tag/v0.4.0" title="Release v0.4.0">v0.4.0</a>
     <span class="tagline">Lean 4 paper companion · Theorem 1.1 under three named inputs · Apache-2.0</span>
   </header>
   <div class="shell">
@@ -72,8 +73,8 @@
 
 <p>Manuscript: <em>Gumbel Fluctuations of the Maximum of the Airy_1 Process</em>, <a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>.</p>
 <ul>
-<li>Paper results: 10 (0 same assumptions, 6 inputs supplied, 4 outside this formalization).</li>
-<li>lean-pkg's claims ledger: <strong>ready</strong> (<code>sha256:596651b4c6c34fb2…</code>).</li>
+<li>Paper results: 10 (0 same assumptions, 7 inputs supplied, 3 outside this formalization).</li>
+<li>lean-pkg's claims ledger: <strong>ready</strong> (<code>sha256:831eea531cdfdf51…</code>).</li>
 </ul>
 <table>
 <thead>
@@ -94,7 +95,7 @@
 <td>Gumbel limit of the normalized maximum</td>
 <td>Inputs supplied</td>
 <td><code>airy1-gumbel-lean/continuous-instance-headline-final2</code><br><code>airy1-gumbel-lean/continuous-instance-headline-final2-coord</code></td>
-<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/FinalHeadlineTP.lean"><code>Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/FinalHeadlineTP.lean"><code>Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord</code></a></td>
+<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/FinalHeadlineTP.lean"><code>Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/FinalHeadlineTP.lean"><code>Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord</code></a></td>
 <td>verified<br>verified</td>
 <td>Airy1FddPositive: for every finite set of times, a probability law whose box distribution function is the Airy_1 Fredholm-determinant formula (Quastel-Remenik, Theorem 1; Borodin-Ferrari-Prahofer 2007)<br>GOELeftTail: a cubic left-tail bound for the one-point law (Baik-Buckingham-DiFranco 2008 with the Ferrari-Spohn GOE identity); an input the paper does not need, since it starts from an existing continuous process<br>CubicStrongMixing: strong mixing between past and future sigma-algebras at rate exp(-c d^3) (Chen-Pu, arXiv 2607.17113, Proposition 3.1)</td>
 <td>The process is the version of the Kolmogorov-extension law with continuous paths on [0, infinity); centering and scaling are those of (1.1)-(1.2) for real T. The mesoscopic step is proved by the two-time Fredholm determinant bound and a high-level upcrossing bound, not by association and the covariance asymptotic.</td>
@@ -104,7 +105,7 @@
 <td>Two-term expansion of the one-block tail</td>
 <td>Inputs supplied</td>
 <td><code>airy1-gumbel-lean/fixed-interval-tail-expansion</code><br><code>airy1-gumbel-lean/interval-hitting-law-positive-length</code><br><code>airy1-gumbel-lean/block-law-core</code><br><code>airy1-gumbel-lean/block-law-unconditional</code><br><code>airy1-gumbel-lean/sharp-tail-discharge</code></td>
-<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/BlockLawUnconditional.lean"><code>Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/BlockLawUnconditional.lean"><code>Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_at_weight'</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/BlockLaw.lean"><code>Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/BlockLawUnconditional.lean"><code>Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet'</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/SharpTail.lean"><code>Airy1Gumbel.sharp_tail_of_QRUnitBlockLaw</code></a></td>
+<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockLawUnconditional.lean"><code>Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockLawUnconditional.lean"><code>Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_at_weight'</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockLaw.lean"><code>Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockLawUnconditional.lean"><code>Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet'</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/SharpTail.lean"><code>Airy1Gumbel.sharp_tail_of_QRUnitBlockLaw</code></a></td>
 <td>out-of-scope (internal)<br>out-of-scope (internal)<br>out-of-scope (internal)<br>out-of-scope (internal)<br>out-of-scope (internal)</td>
 <td>Airy1FddPositive and GOELeftTail, for the process-level interval hitting law</td>
 <td>Proved for the continuous version of the constructed process on [0, T], for every fixed T &gt; 0 (fixed-interval-tail-expansion). The interval hitting law is proved at any weight a &gt;= T + 1 by the dyadic mesh limit and combined with the determinant expansion of contrib. Version 0.1.0 had the process-level statement for T &gt;= 1 only.</td>
@@ -114,7 +115,7 @@
 <td>Touching blocks</td>
 <td>Inputs supplied</td>
 <td><code>airy1-gumbel-lean/touching-discharge</code><br><code>airy1-gumbel-lean/qr-block-laws-theorems</code></td>
-<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/Touching.lean"><code>Airy1Gumbel.touching_of_QR</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/BlockLaw.lean"><code>Airy1Gumbel.qrTwoBlockLaw_airy1</code></a></td>
+<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/Touching.lean"><code>Airy1Gumbel.touching_of_QR</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockLaw.lean"><code>Airy1Gumbel.qrTwoBlockLaw_airy1</code></a></td>
 <td>out-of-scope (internal)<br>out-of-scope (internal)</td>
 <td>Airy1FddPositive and GOELeftTail, for the one- and two-block laws of the constructed process</td>
 <td>—</td>
@@ -124,7 +125,7 @@
 <td>Separated blocks</td>
 <td>Inputs supplied</td>
 <td><code>airy1-gumbel-lean/separated-discharge</code><br><code>airy1-gumbel-lean/qr-two-interval-law-theorem</code></td>
-<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/Separated.lean"><code>Airy1Gumbel.separated_of_QR</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/TwoIntervalLaw.lean"><code>Airy1Gumbel.qrTwoIntervalLaw_airy1</code></a></td>
+<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/Separated.lean"><code>Airy1Gumbel.separated_of_QR</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/TwoIntervalLaw.lean"><code>Airy1Gumbel.qrTwoIntervalLaw_airy1</code></a></td>
 <td>out-of-scope (internal)<br>out-of-scope (internal)</td>
 <td>Airy1FddPositive and GOELeftTail, for the unit-block and two-interval laws of the constructed process</td>
 <td>—</td>
@@ -134,7 +135,7 @@
 <td>Two-interval determinant formula</td>
 <td>Inputs supplied</td>
 <td><code>airy1-gumbel-lean/two-interval-law-equal-length</code><br><code>airy1-gumbel-lean/two-block-law</code><br><code>airy1-gumbel-lean/qr-two-interval-law-theorem</code></td>
-<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/TwoIntervalLaw.lean"><code>Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/TwoIntervalLaw.lean"><code>Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/TwoIntervalLaw.lean"><code>Airy1Gumbel.qrTwoIntervalLaw_airy1</code></a></td>
+<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/TwoIntervalLaw.lean"><code>Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/TwoIntervalLaw.lean"><code>Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/TwoIntervalLaw.lean"><code>Airy1Gumbel.qrTwoIntervalLaw_airy1</code></a></td>
 <td>out-of-scope (internal)<br>out-of-scope (internal)<br>out-of-scope (internal)</td>
 <td>Airy1FddPositive and GOELeftTail, for the two-interval hitting law of the constructed process</td>
 <td>Proved for every T &gt; 0, r &gt; 0, M &gt; 0 at any weight a &gt;= 2T + r + 1 (two-interval-law-equal-length), in the trace-class form (3.3) of Remark 3.2: det(I - K~), K~ the conjugated kernel of (3.2). The determinant displayed in (3.1) has no separate Lean definition; the paper reads it through (3.3). Versions 0.1.0 and 0.2.0 had T = 1 only.</td>
@@ -142,12 +143,12 @@
 <tr>
 <td>Lemma 4.1</td>
 <td>Block modulus</td>
-<td>Outside this formalization</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>The Lean proof does not use this lemma: its mesoscopic step goes through a high-level upcrossing bound.</td>
+<td>Inputs supplied</td>
+<td><code>airy1-gumbel-lean/block-modulus-lemma-4-1</code><br><code>airy1-gumbel-lean/nonnegative-window-modulus-input</code><br><code>airy1-gumbel-lean/nonnegative-window-modulus-constant</code><br><code>airy1-gumbel-lean/nonnegative-window-modulus-falsity-witness</code></td>
+<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockModulus.lean"><code>Airy1Gumbel.block_modulus_airy1</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockModulus.lean"><code>Airy1Gumbel.NonnegativeWindowModulusEstimate</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockModulus.lean"><code>Airy1Gumbel.nonnegativeWindowModulusEstimate_const</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/BlockModulus.lean"><code>Airy1Gumbel.isEmpty_nonnegativeWindowModulusEstimate_sq</code></a></td>
+<td>out-of-scope (internal)<br>out-of-scope (internal)<br>out-of-scope (internal)<br>out-of-scope (internal)</td>
+<td>NonnegativeWindowModulusEstimate, assumed, not proved: the transferred local oscillation bound (4.2) of arXiv:2611.23658v1 on windows inside [0, infinity): for large l, 0 &lt; s &lt;= 1 and centres c &gt;= s, P(|A(t1) - A(t2)| &gt; C0 l sqrt(s) for some t1, t2 in [c - s, c + s]) &lt;= C0 exp(-c0 l). The paper derives it from Basu-Bhattacharjee (2024, arXiv 2406.11826); that derivation is not formalized<br>Airy1FddPositive and GOELeftTail, for the continuous version of the constructed process</td>
+<td>Proved as eq. (4.1) for the continuous version on [0, 1] (block-modulus-lemma-4-1). The input is new in v0.4.0; the zero process satisfies it and the process t^2 violates it (the two audit claims). The headline (Theorem 1.1) does not use this lemma or the new input: its mesoscopic step goes through a high-level upcrossing bound.</td>
 </tr>
 <tr>
 <td>Lemma 4.2</td>
@@ -174,7 +175,7 @@
 <td>Centering, normalization and the blocking assembly of Section 5.2</td>
 <td>Inputs supplied</td>
 <td><code>airy1-gumbel-lean/normalization-centering</code><br><code>airy1-gumbel-lean/normalization-scaling</code><br><code>airy1-gumbel-lean/decouple-discharge</code><br><code>airy1-gumbel-lean/gumbel-limit-conditional</code><br><code>airy1-gumbel-lean/mesoscopic-of-bounds-tp</code></td>
-<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/Normalization.lean"><code>Airy1Gumbel.airyH_gumbelA</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/Normalization.lean"><code>Airy1Gumbel.gumbel_normalization</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/MixingRecord.lean"><code>Airy1Gumbel.decouple_of_CubicStrongMixing</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/GumbelLimit.lean"><code>Airy1Gumbel.Airy1BlockExtremes.gumbel_limit</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/b098667dfbf373f871c14a22280dbca82761ad28/Airy1Gumbel/MesoscopicTP.lean"><code>Airy1Gumbel.mesoscopic_of_boundsTP</code></a></td>
+<td><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/Normalization.lean"><code>Airy1Gumbel.airyH_gumbelA</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/Normalization.lean"><code>Airy1Gumbel.gumbel_normalization</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/MixingRecord.lean"><code>Airy1Gumbel.decouple_of_CubicStrongMixing</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/GumbelLimit.lean"><code>Airy1Gumbel.Airy1BlockExtremes.gumbel_limit</code></a><br><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/33d81943f406671a1061435747875944ad512ca2/Airy1Gumbel/MesoscopicTP.lean"><code>Airy1Gumbel.mesoscopic_of_boundsTP</code></a></td>
 <td>out-of-scope (internal)<br>out-of-scope (internal)<br>out-of-scope (internal)<br>out-of-scope (internal)<br>out-of-scope (internal)</td>
 <td>CubicStrongMixing, for the decoupling of distant blocks</td>
 <td>—</td>
@@ -196,7 +197,7 @@
     </main>
   </div>
   <footer>
-    airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
+    Version 0.4.0 (released 2026-11-20) · <a href="https://doi.org/10.5281/zenodo.24410662">doi:10.5281/zenodo.24410662</a> · airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
   </footer>
 </body>
 </html>
