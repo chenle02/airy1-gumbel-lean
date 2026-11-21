@@ -421,3 +421,45 @@ claims:
     file: Airy1Gumbel/BlockModulus.lean
     status: internal
     keywords: [airy1, block-modulus, discretization]
+  - id: airy1-gumbel-lean/goe-operator-diagonal-trace
+    decl: Airy1Gumbel.trace_goeOp_eq_half_integral
+    kind: theorem
+    summary: The GOE operator trace is half the Airy integral above twice the level.
+    file: Airy1Gumbel/TailSensitiveNewman.lean
+    status: internal
+    keywords: [airy1, goe, trace]
+  - id: airy1-gumbel-lean/goe-singleton-right-tail
+    decl: Airy1Gumbel.goe_singleton_right_tail_sub_profile_isLittleO
+    kind: theorem
+    summary: The singleton Fredholm upper tail has leading term rhoM u divided by 8u and a little-o remainder relative to rhoM u divided by u.
+    file: Airy1Gumbel/TailSensitiveNewman.lean
+    status: internal
+    keywords: [airy1, goe, right-tail]
+  - id: airy1-gumbel-lean/airy1-one-point-tail-profile
+    decl: Airy1Gumbel.one_point_tail_profile_bounds_airy1
+    kind: theorem
+    summary: The continuous Airy1 one-point tail is bounded above and below by positive multiples of the sharp singleton profile at high levels.
+    file: Airy1Gumbel/TailSensitiveNewman.lean
+    status: internal
+    keywords: [airy1, right-tail, asymptotics]
+  - id: airy1-gumbel-lean/airy1-one-point-tail-shift
+    decl: Airy1Gumbel.one_point_tail_shift_le_airy1
+    kind: theorem
+    summary: Lowering a sufficiently high Airy1 threshold by the inverse square root of the level changes the tail by at most a constant factor.
+    file: Airy1Gumbel/TailSensitiveNewman.lean
+    status: internal
+    keywords: [airy1, right-tail, threshold]
+  - id: airy1-gumbel-lean/airy1-continuous-point-second-moment
+    decl: Airy1Gumbel.memLp_two_airy1ContR
+    kind: theorem
+    summary: Every time marginal of the continuous Airy1 version is square-integrable under the existing finite-law and GOE left-tail inputs.
+    file: Airy1Gumbel/TailSensitiveNewman.lean
+    status: internal
+    keywords: [airy1, square-integrable, covariance]
+  - id: airy1-gumbel-lean/threshold-sensitive-newman-lemma-4-2
+    decl: Airy1Gumbel.tail_sensitive_newman_airy1
+    kind: theorem
+    summary: "arXiv:2611.23658v1 Lemma 4.2, equation (4.3), under Airy1FddPositive, GOELeftTail and ProcessAssociated, with constants uniform for every nonnegative lag."
+    file: Airy1Gumbel/TailSensitiveNewman.lean
+    status: internal
+    keywords: [airy1, association, newman, joint-exceedance]

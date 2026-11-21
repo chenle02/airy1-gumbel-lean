@@ -708,3 +708,9 @@ import Airy1Gumbel
 #print axioms Airy1Gumbel.nonnegativeWindowModulusEstimate_const
 #print axioms Airy1Gumbel.isEmpty_nonnegativeWindowModulusEstimate_sq
 #print axioms Airy1Gumbel.block_modulus_airy1
+#print axioms Airy1Gumbel.trace_goeOp_eq_half_integral
+#print axioms Airy1Gumbel.goe_singleton_right_tail_sub_profile_isLittleO
+#print axioms Airy1Gumbel.one_point_tail_profile_bounds_airy1
+#print axioms Airy1Gumbel.one_point_tail_shift_le_airy1
+#print axioms Airy1Gumbel.memLp_two_airy1ContR
+#print axioms Airy1Gumbel.tail_sensitive_newman_airy1
