@@ -4,6 +4,8 @@ Result numbers are those of arXiv:2611.23658v1.
 
 ## 0.5.0
 
+Zenodo: version DOI [10.5281/zenodo.24421088](https://doi.org/10.5281/zenodo.24421088); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+
 - Lemma 4.2 (the threshold-sensitive Newman bound, eq. (4.3)) is now proved for the
   constructed continuous Airy₁ process: `Airy1Gumbel.tail_sensitive_newman_airy1` in
   `Airy1Gumbel/TailSensitiveNewman.lean`. There are `C > 0` and `u₀` such that, for every
