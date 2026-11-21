@@ -158,6 +158,17 @@ narrated by a synthetic voice). The last one also describes this Lean companion.
 5. [The middle range and the blocking argument](https://www.youtube.com/watch?v=15Vr6Y1wSUA)
 6. [What is new, what is open, and the Lean check](https://www.youtube.com/watch?v=Tmh-qMmnL04)
 
+A second series of four videos explains the companion paper, Chen and Pu, *Two-time spatial
+decorrelation for the flat KPZ fixed point* ([arXiv 2607.17113](https://arxiv.org/abs/2607.17113)),
+whose Proposition 3.1 is the hypothesis `CubicStrongMixing` above
+([playlist](https://www.youtube.com/playlist?list=PLI4CESkmuyPo); about 36 minutes in total,
+narrated by a synthetic voice). Episode 2 explains that mixing bound.
+
+1. [One surface at two times](https://www.youtube.com/watch?v=cXnOSYAVEz4)
+2. [The Airy₁ process forgets fast](https://www.youtube.com/watch?v=rLz7QcSSj4I)
+3. [Where the optimizer lives](https://www.youtube.com/watch?v=eEzVI7CSdrE)
+4. [Spatial averages and the dynamic susceptibility](https://www.youtube.com/watch?v=J1yQqgdr79M)
+
 ## Build and verify
 
 Pinned toolchain `leanprover/lean4:v4.35.0` ([`lean-toolchain`](lean-toolchain)),
