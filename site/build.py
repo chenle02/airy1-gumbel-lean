@@ -44,9 +44,11 @@ DESCRIPTION = ("Lean 4 companion to Le Chen and Fei Pu, Gumbel Fluctuations of t
                "route. It does not certify the whole manuscript. Apache-2.0.")
 
 # page file -> (title, list of sources). A source is ("file", path), ("readme", [sections]),
-# ("hand", path under site/) or ("gen", name in the lean-pkg pages directory).
+# ("readme_subsection", (section, heading)), ("hand", path under site/) or
+# ("gen", name in the lean-pkg pages directory).
 PAGES = [
-    ("index.html", "Home", [("hand", "index.md")]),
+    ("index.html", "Home",
+     [("hand", "index.md"), ("readme_subsection", ("Paper and references", "Video series"))]),
     ("getting-started.html", "Build and verify", [("readme", ["Build and verify"])]),
     ("verification.html", "Verification page (lean-pkg)", [("gen", "verification.md")]),
     ("coverage.html", "Coverage by result (lean-pkg)", [("gen", "coverage.md")]),
@@ -216,6 +218,15 @@ GEN_PAGES = {"verification.md": "verification.html", "coverage.md": "coverage.ht
 GEN_DIR = None
 
 
+def readme_subsection(section, heading):
+    """Render a level-3 README subsection as a top-level section on a site page."""
+    chapter = SECTIONS.get(section, "")
+    match = re.search(r"(?ms)^### " + re.escape(heading) + r"[ \t]*\n(.*?)(?=^### |\Z)", chapter)
+    if match is None:
+        raise SystemExit("README subsection missing: %s / %s (review site/)" % (section, heading))
+    return "## " + heading + "\n" + match.group(1)
+
+
 def gen_markdown(name):
     """A lean-pkg generated page: its links between the two pages go to their HTML pages; a
     relative link to a repository file goes to GitHub like any other."""
@@ -238,8 +249,9 @@ def page_markdown(sources):
             md = open(os.path.join(REPO, "site", arg), encoding="utf-8").read()
             md = expand_includes(md)
             md = rewrite_links(alerts(mark_html_blocks(md)), "README.md")
-        elif kind == "readme":
-            md = "\n\n".join(SECTIONS[name] for name in arg)
+        elif kind in {"readme", "readme_subsection"}:
+            md = ("\n\n".join(SECTIONS[name] for name in arg) if kind == "readme"
+                  else readme_subsection(*arg))
             md = rewrite_links(alerts(mark_html_blocks(md)), "README.md")
         else:
             md = open(os.path.join(REPO, arg), encoding="utf-8").read()
