@@ -118,6 +118,19 @@ Le Chen and Fei Pu, *Gumbel Fluctuations of the Maximum of the Airy₁ Process*,
 }
 ```
 
+### Video series
+
+Six videos explain the paper, from the question to the proof
+([playlist](https://www.youtube.com/playlist?list=PLNddpUb0UMeE); about an hour in total,
+narrated by a synthetic voice). The last one also describes this Lean companion.
+
+1. [The highest point of a flat interface](https://www.youtube.com/watch?v=jEq5fAASCd4)
+2. [The classical recipe and why clusters matter](https://www.youtube.com/watch?v=gbM2TdlgBLY)
+3. [The tail over one interval](https://www.youtube.com/watch?v=S4BQ94UsA4E)
+4. [Two separated intervals](https://www.youtube.com/watch?v=zdchJXLYgP4)
+5. [The middle range and the blocking argument](https://www.youtube.com/watch?v=15Vr6Y1wSUA)
+6. [What is new, what is open, and the Lean check](https://www.youtube.com/watch?v=Tmh-qMmnL04)
+
 ## Build and verify
 
 Pinned toolchain `leanprover/lean4:v4.35.0` ([`lean-toolchain`](lean-toolchain)),
