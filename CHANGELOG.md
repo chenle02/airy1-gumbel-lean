@@ -2,6 +2,31 @@
 
 Result numbers are those of arXiv:2611.23658v1.
 
+## 0.4.0
+
+- Lemma 4.1 (the block modulus, eq. (4.1)) is now proved for the constructed Airy₁
+  process under `Airy1FddPositive`, `GOELeftTail` and a new, fourth named input:
+  `Airy1Gumbel.block_modulus_airy1` in `Airy1Gumbel/BlockModulus.lean`. For some
+  `C, c, h₀ > 0` and every `0 < δ ≤ h₀`, the probability that `|Ã(x) − Ã(y)| > 1` for
+  some `x, y ∈ [0, 1]` with `|x − y| ≤ 2δ` is at most `C δ⁻¹ e^{−c δ^{−1/2}}`.
+- This is the first release that adds a named input. The new input,
+  `Airy1Gumbel.NonnegativeWindowModulusEstimate`, is the transferred local oscillation
+  bound (4.2) of arXiv:2611.23658v1 on windows inside `[0, ∞)`: there are `C₀, c₀ > 0`
+  such that, for all sufficiently large `ℓ`, every radius `0 < s ≤ 1` and every centre
+  `c ≥ s`, the probability that `|Ã(t₁) − Ã(t₂)| > C₀ ℓ √s` for some
+  `t₁, t₂ ∈ [c − s, c + s]` is at most `C₀ e^{−c₀ ℓ}`. The paper derives it from
+  Basu–Bhattacharjee (2024, arXiv 2406.11826, Lemma 5.1 with Theorem 1.4); here it is
+  assumed, not proved. It is not a verbatim Basu–Bhattacharjee statement. Two audit
+  theorems show that it is neither vacuous nor trivially true: the zero process satisfies
+  it (`nonnegativeWindowModulusEstimate_const`) and the process `t²` violates it
+  (`isEmpty_nonnegativeWindowModulusEstimate_sq`). The earlier record
+  `LocalModulusEstimate` is unchanged.
+- No existing statement or proof changed. The headline theorem still uses exactly its
+  three inputs and does not use the new one; the comparator statements of both packages
+  are the same. Four claims are appended to `claims.yaml`, all `internal` (built, not
+  compared). `coverage.yaml`: the Lemma 4.1 row moves from outside to inputs supplied,
+  with the new input named on the row.
+
 ## 0.3.1
 
 Zenodo: version DOI [10.5281/zenodo.24408134](https://doi.org/10.5281/zenodo.24408134); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).

@@ -6,7 +6,7 @@ kind: paper
 manuscript:
   title: "Gumbel Fluctuations of the Maximum of the Airy_1 Process"
   version: "arXiv:2611.23658v1"
-summary: "Theorem 1.1 is proved for a constructed Airy_1 process with continuous paths under three named inputs, with the mesoscopic step proved by a two-time Fredholm determinant bound instead of the paper's association route; Lemmas 4.1-4.2, Proposition 4.3 and Remark 5.3 are outside."
+summary: "Theorem 1.1 is proved for a constructed Airy_1 process with continuous paths under three named inputs, with the mesoscopic step proved by a two-time Fredholm determinant bound instead of the paper's association route; Lemma 4.1 is proved under a fourth named input, the bound (4.2), assumed; Lemma 4.2, Proposition 4.3 and Remark 5.3 are outside."
 rows:
   - paper: {number: "Theorem 1.1", title: "Gumbel limit of the normalized maximum"}
     class: inputs-supplied
@@ -53,8 +53,16 @@ rows:
       - "Airy1FddPositive and GOELeftTail, for the two-interval hitting law of the constructed process"
     note: "Proved for every T > 0, r > 0, M > 0 at any weight a >= 2T + r + 1 (two-interval-law-equal-length), in the trace-class form (3.3) of Remark 3.2: det(I - K~), K~ the conjugated kernel of (3.2). The determinant displayed in (3.1) has no separate Lean definition; the paper reads it through (3.3). Versions 0.1.0 and 0.2.0 had T = 1 only."
   - paper: {number: "Lemma 4.1", title: "Block modulus"}
-    class: outside
-    note: "The Lean proof does not use this lemma: its mesoscopic step goes through a high-level upcrossing bound."
+    class: inputs-supplied
+    claims:
+      - airy1-gumbel-lean/block-modulus-lemma-4-1
+      - airy1-gumbel-lean/nonnegative-window-modulus-input
+      - airy1-gumbel-lean/nonnegative-window-modulus-constant
+      - airy1-gumbel-lean/nonnegative-window-modulus-falsity-witness
+    inputs:
+      - "NonnegativeWindowModulusEstimate, assumed, not proved: the transferred local oscillation bound (4.2) of arXiv:2611.23658v1 on windows inside [0, infinity): for large l, 0 < s <= 1 and centres c >= s, P(|A(t1) - A(t2)| > C0 l sqrt(s) for some t1, t2 in [c - s, c + s]) <= C0 exp(-c0 l). The paper derives it from Basu-Bhattacharjee (2024, arXiv 2406.11826); that derivation is not formalized"
+      - "Airy1FddPositive and GOELeftTail, for the continuous version of the constructed process"
+    note: "Proved as eq. (4.1) for the continuous version on [0, 1] (block-modulus-lemma-4-1). The input is new in v0.4.0; the zero process satisfies it and the process t^2 violates it (the two audit claims). The headline (Theorem 1.1) does not use this lemma or the new input: its mesoscopic step goes through a high-level upcrossing bound."
   - paper: {number: "Lemma 4.2", title: "Pair bound under association"}
     class: outside
     note: "The Lean proof does not use association; it bounds grid pairs by a two-time Fredholm determinant estimate. Newman's covariance inequality itself is proved (newman-lemma3)."

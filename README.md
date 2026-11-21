@@ -62,8 +62,14 @@ headline uses it.
 > - The paper proves its mesoscopic step through association (Pu 2025), Newman's
 >   inequality and the Basu–Busani–Ferrari covariance asymptotic. The Lean proof takes a
 >   different route for that step (a two-time Fredholm determinant bound), so it does not
->   check the paper's Proposition 4.3 or Lemmas 4.1–4.2 as stated (arbitrary level `M`
->   and cutoff `R(M)`); only the specialisation used in Section 5.2 is proved.
+>   check the paper's Proposition 4.3 or Lemma 4.2 as stated (arbitrary level `M` and
+>   cutoff `R(M)`); only the specialisation used in Section 5.2 is proved.
+> - Lemma 4.1 (the block modulus, eq. (4.1)) is proved for the constructed process
+>   (since v0.4.0) under `Airy1FddPositive`, `GOELeftTail` and a fourth named input,
+>   `NonnegativeWindowModulusEstimate`: the transferred local oscillation bound (4.2) of
+>   arXiv:2611.23658v1 on windows inside `[0, ∞)`, which the paper derives from
+>   Basu–Bhattacharjee (2024) and which is assumed, not proved, here. The headline
+>   `_final₂` still uses exactly its three inputs and does not use the new one.
 > - Proposition 1.2 is proved for the constructed process for every `T > 0` (since
 >   v0.2.0), under `Airy1FddPositive` and `GOELeftTail`; like the headline, it is
 >   conditional on those inputs.
@@ -77,6 +83,27 @@ headline uses it.
 > - This repository does not certify the whole manuscript: it checks the main theorem
 >   along the route described above and the component results listed in
 >   [`claims.yaml`](claims.yaml) and [`contrib/claims.yaml`](contrib/claims.yaml).
+
+Since v0.4.0, Lemma 4.1 (the block modulus, eq. (4.1)) is proved for the constructed
+process under `Airy1FddPositive`, `GOELeftTail` and a fourth named input,
+[`Airy1Gumbel.NonnegativeWindowModulusEstimate`](Airy1Gumbel/BlockModulus.lean): the
+transferred local oscillation bound (4.2) of arXiv:2611.23658v1 on windows inside
+`[0, ∞)`, which the paper derives from Basu–Bhattacharjee (2024,
+[arXiv 2406.11826](https://arxiv.org/abs/2406.11826), Lemma 5.1 with Theorem 1.4) and
+which is assumed, not proved, here. The input says that there are `C₀, c₀ > 0` such that,
+for all sufficiently large `ℓ`, every radius `0 < s ≤ 1` and every centre `c ≥ s`,
+`ℙ{|Ã(t₁) − Ã(t₂)| > C₀ ℓ √s for some t₁, t₂ ∈ [c − s, c + s]} ≤ C₀ e^{−c₀ ℓ}`; it is
+not a verbatim Basu–Bhattacharjee statement. Under these inputs,
+[`Airy1Gumbel.block_modulus_airy1`](Airy1Gumbel/BlockModulus.lean) states that there are
+`C, c, h₀ > 0` such that, for `0 < δ ≤ h₀`,
+`ℙ{|Ã(x) − Ã(y)| > 1 for some x, y ∈ [0, 1] with |x − y| ≤ 2δ} ≤ C δ⁻¹ e^{−c δ^{−1/2}}`.
+Two audit theorems check that the input is neither vacuous nor trivially true: the zero
+process satisfies it (`nonnegativeWindowModulusEstimate_const`) and the process `t²`
+violates it (`isEmpty_nonnegativeWindowModulusEstimate_sq`). This is the first release
+that adds a named input. The headline `_final₂` still uses exactly its three inputs and
+does not use the new one (its mesoscopic step goes through a high-level upcrossing
+bound), and no existing statement changed. The new claims are `internal`: Lean's kernel
+checked their proofs, but the comparator does not compare their statements.
 
 Since v0.3.0, Lemma 3.1 (the two-interval determinant formula) is proved for the
 constructed process for every equal length `T > 0`, under `Airy1FddPositive` and
@@ -186,7 +213,7 @@ To use the library from another Lake project:
 [[require]]
 name = "airy1-gumbel-lean"
 git = "https://github.com/chenle02/airy1-gumbel-lean"
-rev = "v0.3.1"
+rev = "v0.4.0"
 ```
 
 ## Trust and axioms
@@ -194,7 +221,9 @@ rev = "v0.3.1"
 - No `sorry` and no new axioms: every audited theorem depends only on `propext`,
   `Classical.choice` and `Quot.sound`.
 - The headline is conditional. Its hypotheses are the three named structures above; read
-  their definitions before relying on the theorem.
+  their definitions before relying on the theorem. Lemma 4.1 (`block_modulus_airy1`)
+  assumes, besides the first two, the fourth named input
+  `NonnegativeWindowModulusEstimate`, which is not proved here.
 - The correspondence between the Lean statements and the paper was checked by AI-assisted
   review, not by an independent human referee.
 
