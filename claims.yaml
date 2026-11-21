@@ -463,3 +463,38 @@ claims:
     file: Airy1Gumbel/TailSensitiveNewman.lean
     status: internal
     keywords: [airy1, association, newman, joint-exceedance]
+  - id: airy1-gumbel-lean/unit-block-oscillation-event
+    decl: Airy1Gumbel.unit_block_oscillation_event
+    kind: construction
+    summary: The strict unit-block oscillation event used in arXiv:2611.23658v1 equation (4.9).
+    file: Airy1Gumbel/MesoscopicStandalone.lean
+    status: internal
+    keywords: [airy1, block-modulus]
+  - id: airy1-gumbel-lean/unit-block-oscillation-shift
+    decl: Airy1Gumbel.block_oscillation_probability_shift_airy1
+    kind: theorem
+    summary: The strict oscillation event has the same probability on each nonnegative integer translate of the unit block.
+    file: Airy1Gumbel/MesoscopicStandalone.lean
+    status: internal
+    keywords: [airy1, stationarity, block-modulus]
+  - id: airy1-gumbel-lean/mesoscopic-block-pair-grid-cover
+    decl: Airy1Gumbel.block_pair_grid_cover_airy1
+    kind: theorem
+    summary: "arXiv:2611.23658v1 equation (4.10). Two block exceedances are covered by two oscillation events and the pairs of grid exceedances at level M minus one."
+    file: Airy1Gumbel/MesoscopicStandalone.lean
+    status: internal
+    keywords: [airy1, mesoscopic, discretization]
+  - id: airy1-gumbel-lean/one-point-tail-minus-one
+    decl: Airy1Gumbel.one_point_tail_minus_one_airy1
+    kind: theorem
+    summary: "arXiv:2611.23658v1 equation (4.11). The Airy1 tail at level M minus one has the sharp polynomial factor and an exponential correction of order square root M."
+    file: Airy1Gumbel/MesoscopicStandalone.lean
+    status: internal
+    keywords: [airy1, right-tail, mesoscopic]
+  - id: airy1-gumbel-lean/standalone-mesoscopic-sum-prop-4-3
+    decl: Airy1Gumbel.mesoscopic_sum_airy1
+    kind: theorem
+    summary: "arXiv:2611.23658v1 Proposition 4.3, equation (4.6), under the finite-law, GOE left-tail, local modulus, association and covariance records, for real M and arbitrary R of order at most square root M."
+    file: Airy1Gumbel/MesoscopicStandalone.lean
+    status: internal
+    keywords: [airy1, mesoscopic, anti-clustering]

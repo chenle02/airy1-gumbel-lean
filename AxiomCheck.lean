@@ -714,3 +714,7 @@ import Airy1Gumbel
 #print axioms Airy1Gumbel.one_point_tail_shift_le_airy1
 #print axioms Airy1Gumbel.memLp_two_airy1ContR
 #print axioms Airy1Gumbel.tail_sensitive_newman_airy1
+#print axioms Airy1Gumbel.block_oscillation_probability_shift_airy1
+#print axioms Airy1Gumbel.block_pair_grid_cover_airy1
+#print axioms Airy1Gumbel.one_point_tail_minus_one_airy1
+#print axioms Airy1Gumbel.mesoscopic_sum_airy1
