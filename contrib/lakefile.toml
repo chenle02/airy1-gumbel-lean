@@ -1,5 +1,5 @@
 name = "airy1-gumbel-lean-contrib"
-version = "0.3.1"
+version = "0.4.0"
 description = "Analytic infrastructure for the Airy_1 Gumbel companion: Gumbel law, Airy functions, Mills ratio, Hilbert-Schmidt and trace-class operators, Fredholm determinants, Airy_1 finite-dimensional laws and two-time estimates"
 license = "Apache-2.0"
 keywords = ["airy-function", "fredholm-determinant", "trace-class", "hilbert-schmidt", "airy-process"]

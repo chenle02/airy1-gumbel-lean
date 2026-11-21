@@ -1,5 +1,5 @@
 name = "airy1-gumbel-lean"
-version = "0.3.1"
+version = "0.4.0"
 description = "Lean companion to Chen and Pu, Gumbel fluctuations of the maximum of the Airy_1 process (arXiv 2611.23658): the normalized Gumbel limit for a constructed Airy_1 process under three named inputs"
 license = "Apache-2.0"
 keywords = ["airy-process", "extreme-value-theory", "gumbel", "kpz", "fredholm-determinant", "probability"]

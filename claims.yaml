@@ -393,3 +393,31 @@ claims:
     file: Airy1Gumbel/TwoIntervalLaw.lean
     status: internal
     keywords: [airy1, fredholm-determinant, two-interval]
+  - id: airy1-gumbel-lean/nonnegative-window-modulus-input
+    decl: Airy1Gumbel.NonnegativeWindowModulusEstimate
+    kind: construction
+    summary: "Named input for arXiv:2611.23658v1 equation (4.2), restricted to windows in [0, infinity)."
+    file: Airy1Gumbel/BlockModulus.lean
+    status: internal
+    keywords: [airy1, local-modulus, external-input]
+  - id: airy1-gumbel-lean/nonnegative-window-modulus-constant
+    decl: Airy1Gumbel.nonnegativeWindowModulusEstimate_const
+    kind: theorem
+    summary: The deterministic zero process satisfies the local modulus input on nonnegative windows.
+    file: Airy1Gumbel/BlockModulus.lean
+    status: internal
+    keywords: [local-modulus, input-audit]
+  - id: airy1-gumbel-lean/nonnegative-window-modulus-falsity-witness
+    decl: Airy1Gumbel.isEmpty_nonnegativeWindowModulusEstimate_sq
+    kind: theorem
+    summary: The deterministic quadratic process violates the uniform nonnegative-window modulus input.
+    file: Airy1Gumbel/BlockModulus.lean
+    status: internal
+    keywords: [local-modulus, input-audit]
+  - id: airy1-gumbel-lean/block-modulus-lemma-4-1
+    decl: Airy1Gumbel.block_modulus_airy1
+    kind: theorem
+    summary: "arXiv:2611.23658v1 Lemma 4.1, equation (4.1), under Airy1FddPositive, GOELeftTail, and the nonnegative-window estimate (4.2)."
+    file: Airy1Gumbel/BlockModulus.lean
+    status: internal
+    keywords: [airy1, block-modulus, discretization]

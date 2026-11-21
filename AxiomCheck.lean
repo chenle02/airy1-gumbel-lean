@@ -705,3 +705,6 @@ import Airy1Gumbel
 #print axioms Airy1Gumbel.exists_abs_airy1FinCdf_pair_const_sub_sq_le_sharp_e
 #print axioms Airy1Gumbel.twoPointExcess_airy1_sharp_e
 #print axioms Airy1Gumbel.pairTP_airy1SRP_sharp_e
+#print axioms Airy1Gumbel.nonnegativeWindowModulusEstimate_const
+#print axioms Airy1Gumbel.isEmpty_nonnegativeWindowModulusEstimate_sq
+#print axioms Airy1Gumbel.block_modulus_airy1

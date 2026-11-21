@@ -32,6 +32,7 @@ import Airy1Gumbel.ContinuousVersion
 import Airy1Gumbel.GOELeftTail
 import Airy1Gumbel.LowerBound
 import Airy1Gumbel.ContinuousInstance
+import Airy1Gumbel.BlockModulus
 import Airy1Gumbel.Upcrossing
 import Airy1Gumbel.UpcrossingRecord
 import Airy1Gumbel.BlockLaw
