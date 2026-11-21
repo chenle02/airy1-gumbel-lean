@@ -4,6 +4,8 @@ Result numbers are those of arXiv:2611.23658v1.
 
 ## 0.6.0
 
+Zenodo: version DOI [10.5281/zenodo.24428431](https://doi.org/10.5281/zenodo.24428431); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+
 - Proposition 4.3 (the mesoscopic sum, eq. (4.6)) is now proved as a standalone result
   for the constructed continuous Airy₁ process, along the paper's route:
   `Airy1Gumbel.mesoscopic_sum_airy1` in `Airy1Gumbel/MesoscopicStandalone.lean`. For the
