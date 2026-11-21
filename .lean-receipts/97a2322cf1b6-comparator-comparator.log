@@ -1,0 +1,1043 @@
+Current branch: HEAD
+Using cache from origin: (some leanprover-community/mathlib4)
+No files to download
+Already decompressed 9040 file(s)
+lean-path-shadow: none (16 entries, roots Airy1Gumbel,Challenge,ChallengeDefs,Solution)
+== lake comparator (toolchain) comparator.json
+Resolving dependencies
+Building Challenge
+⚠ [3139/3159] Replayed ChallengeDefs.Airy1Gumbel.Analytic
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.Analysis.SpecialFunctions.RegularizedHypergeometric` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.Analysis.InnerProductSpace.l2Space` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.MeasureTheory.Function.L2Space` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.LinearAlgebra.Matrix.Determinant.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.Data.Finset.Sort` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3157/3159] Replayed ChallengeDefs.Airy1Gumbel.Process
+warning: ChallengeDefs/Airy1Gumbel/Process.lean: imports `Mathlib.Probability.Notation` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Process.lean: imports `Mathlib.MeasureTheory.Measure.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Process.lean: imports `Mathlib.MeasureTheory.Constructions.BorelSpace.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Process.lean:55:0: Definition `Airy1GumbelSpec.pastSigma` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+warning: ChallengeDefs/Airy1Gumbel/Process.lean:59:0: Definition `Airy1GumbelSpec.futureSigma` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+⚠ [3158/3159] Replayed Challenge
+warning: Challenge.lean:48:8: declaration uses `sorry`
+warning: Challenge.lean:64:8: declaration uses `sorry`
+Build completed successfully (3159 jobs).
+Exporting #[Quot, Quot.mk, Quot.lift, Quot.ind, Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂, Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord, propext, Quot.sound, Classical.choice, Nat.add, Nat.sub, Nat.mul, Nat.pow, Nat.gcd, Nat.div, Nat.mod, Nat.beq, Nat.ble, Nat.land, Nat.lor, Nat.xor, Nat.shiftLeft, Nat.shiftRight, String.ofList, Char.ofNat, List, eagerReduce, Nat, String, String.mk, Char, optParam, autoParam, semiOutParam, outParam] from Challenge
+Building Solution
+⚠ [3138/3452] Replayed ChallengeDefs.Airy1Gumbel.Analytic
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.Analysis.SpecialFunctions.RegularizedHypergeometric` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.Analysis.InnerProductSpace.l2Space` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.MeasureTheory.Function.L2Space` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.LinearAlgebra.Matrix.Determinant.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Analytic.lean: imports `Mathlib.Data.Finset.Sort` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3156/3452] Replayed ChallengeDefs.Airy1Gumbel.Process
+warning: ChallengeDefs/Airy1Gumbel/Process.lean: imports `Mathlib.Probability.Notation` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Process.lean: imports `Mathlib.MeasureTheory.Measure.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Process.lean: imports `Mathlib.MeasureTheory.Constructions.BorelSpace.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: ChallengeDefs/Airy1Gumbel/Process.lean:55:0: Definition `Airy1GumbelSpec.pastSigma` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+warning: ChallengeDefs/Airy1Gumbel/Process.lean:59:0: Definition `Airy1GumbelSpec.futureSigma` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+⚠ [3719/3812] Replayed Airy1Gumbel.Blocking
+warning: Airy1Gumbel/Blocking.lean: imports `Mathlib.Analysis.SpecialFunctions.Complex.LogBounds` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Blocking.lean: imports `Mathlib.Tactic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3720/3812] Replayed Airy1Gumbel.Normalization
+warning: Airy1Gumbel/Normalization.lean: imports `Mathlib.Tactic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Normalization.lean: imports `Mathlib.Analysis.SpecialFunctions.Log.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Normalization.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Normalization.lean: imports `Mathlib.Analysis.SpecialFunctions.Exp` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3721/3812] Replayed Airy1Gumbel.BlockExtremes
+warning: Airy1Gumbel/BlockExtremes.lean: imports `Mathlib.MeasureTheory.Measure.Typeclasses.Probability` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/BlockExtremes.lean: imports `Mathlib.MeasureTheory.Constructions.BorelSpace.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/BlockExtremes.lean: imports `Mathlib.Analysis.SpecificLimits.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/BlockExtremes.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Continuity` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/BlockExtremes.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3722/3812] Replayed Airy1Gumbel.Assembly
+warning: Airy1Gumbel/Assembly.lean: imports `Mathlib.MeasureTheory.Constructions.BorelSpace.Order` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Assembly.lean: imports `Mathlib.Tactic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Assembly.lean:157:30: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/Assembly.lean:164:10: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/Assembly.lean:164:44: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/Assembly.lean:165:10: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/Assembly.lean:165:20: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+⚠ [3724/3812] Replayed Airy1Gumbel.ContinuumMax
+warning: Airy1Gumbel/ContinuumMax.lean: imports `Mathlib.Order.ConditionallyCompleteLattice.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/ContinuumMax.lean: imports `Mathlib.Topology.Compactness.Compact` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/ContinuumMax.lean: imports `Mathlib.Topology.Order.Compact` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3955/4132] Replayed Airy1Gumbel.TwoSidedBM
+warning: Airy1Gumbel/TwoSidedBM.lean: imports `Mathlib.Probability.Process.FiniteDimensionalLaws` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/TwoSidedBM.lean:127:20: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:129:20: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:378:16: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:379:16: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:386:14: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:390:16: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:391:16: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:550:8: `dif_pos` has been deprecated: Use `dite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  d̵i̵f̵_̵p̵o̵s̵d̲i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:565:14: `dif_pos` has been deprecated: Use `dite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  d̵i̵f̵_̵p̵o̵s̵d̲i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:571:14: `dif_neg` has been deprecated: Use `dite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  d̵i̵f̵_̵n̵e̵g̵d̲i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:582:14: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:589:14: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:611:12: `dif_pos` has been deprecated: Use `dite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  d̵i̵f̵_̵p̵o̵s̵d̲i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:631:10: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/TwoSidedBM.lean:641:10: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+⚠ [3956/4132] Replayed Airy1Gumbel.Groeneboom
+warning: Airy1Gumbel/Groeneboom.lean:131:22: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1Gumbel/Groeneboom.lean:147:22: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+⚠ [3958/4132] Replayed Airy1GumbelContrib.Gaussian.MillsRatio
+warning: Airy1GumbelContrib/Gaussian/MillsRatio.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Gaussian/MillsRatio.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Gaussian/MillsRatio.lean: imports `Mathlib.Analysis.Asymptotics.AsymptoticEquivalent` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Gaussian/MillsRatio.lean: imports `Mathlib.MeasureTheory.Integral.IntegralEqImproper` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Gaussian/MillsRatio.lean: imports `Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3960/4132] Replayed Airy1GumbelContrib.Airy.BesselK13
+warning: Airy1GumbelContrib/Airy/BesselK13.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/BesselK13.lean: imports `Mathlib.Analysis.SpecialFunctions.Trigonometric.Series` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3961/4132] Replayed Airy1GumbelContrib.Airy.Airy
+warning: Airy1GumbelContrib/Airy/Airy.lean: imports `Mathlib.Analysis.SpecialFunctions.RegularizedHypergeometric` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/Airy.lean: imports `Mathlib.Analysis.SpecialFunctions.Complex.Analytic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3963/4132] Replayed Airy1GumbelContrib.Airy.AiryODE
+warning: Airy1GumbelContrib/Airy/AiryODE.lean: imports `Mathlib.Analysis.Calculus.UniformLimitsDeriv` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryODE.lean: imports `Mathlib.Analysis.SpecialFunctions.Gamma.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryODE.lean: imports `Mathlib.Analysis.SpecificLimits.Normed` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3964/4132] Replayed Airy1GumbelContrib.Airy.AiryReal
+warning: Airy1GumbelContrib/Airy/AiryReal.lean: imports `Mathlib.Analysis.Complex.RealDeriv` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3969/4132] Replayed Airy1GumbelContrib.Airy.AiryBessel
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean: imports `Mathlib.Analysis.SpecialFunctions.Gamma.Beta` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean: imports `Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean: imports `Mathlib.Analysis.Calculus.ParametricIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean: imports `Mathlib.Analysis.ODE.Gronwall` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean: imports `Mathlib.MeasureTheory.Integral.IntegralEqImproper` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean:773:8: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean:796:14: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/Airy/AiryBessel.lean:806:14: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+⚠ [3970/4132] Replayed Airy1GumbelContrib.Airy.AiryAsymptotics
+warning: Airy1GumbelContrib/Airy/AiryAsymptotics.lean: imports `Mathlib.Analysis.SpecialFunctions.Integrals.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryAsymptotics.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3973/4132] Replayed Airy1GumbelContrib.Airy.AiryLaplace
+warning: Airy1GumbelContrib/Airy/AiryLaplace.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3975/4132] Replayed Airy1GumbelContrib.AiryKernel.BackwardAiry
+warning: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean:1867:4: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean:2169:10: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean:2176:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+info: Airy1GumbelContrib/AiryKernel/BackwardAiry.lean:2372:39: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+⚠ [3979/4132] Replayed Airy1GumbelContrib.HilbertSchmidt.HilbertSchmidt
+warning: Airy1GumbelContrib/HilbertSchmidt/HilbertSchmidt.lean: imports `Mathlib.Analysis.InnerProductSpace.Adjoint` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/HilbertSchmidt/HilbertSchmidt.lean: imports `Mathlib.Analysis.InnerProductSpace.l2Space` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3980/4132] Replayed Airy1GumbelContrib.HilbertSchmidt.KernelHS
+warning: Airy1GumbelContrib/HilbertSchmidt/KernelHS.lean: imports `Mathlib.MeasureTheory.Function.L2Space` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/HilbertSchmidt/KernelHS.lean: imports `Mathlib.MeasureTheory.Integral.MeanInequalities` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/HilbertSchmidt/KernelHS.lean: imports `Mathlib.MeasureTheory.Integral.Prod` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3981/4132] Replayed Airy1GumbelContrib.TraceClass.TraceClass
+warning: Airy1GumbelContrib/TraceClass/TraceClass.lean: imports `Mathlib.Analysis.Normed.Operator.Compact.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/TraceClass/TraceClass.lean: imports `Mathlib.Analysis.Normed.Operator.Compact.FiniteDimension` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3983/4132] Replayed Airy1GumbelContrib.AiryKernel.TraceProduct
+warning: Airy1GumbelContrib/AiryKernel/TraceProduct.lean: imports `Mathlib.MeasureTheory.Integral.DominatedConvergence` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/AiryKernel/TraceProduct.lean: imports `Mathlib.MeasureTheory.Measure.SeparableMeasure` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/AiryKernel/TraceProduct.lean:161:2: Try this: 
+  haveI̵
+
+The goal is a proposition, so `have` is preferred over `haveI`.
+The difference between `have` and `haveI` is that `haveI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+warning: Airy1GumbelContrib/AiryKernel/TraceProduct.lean:193:2: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+⚠ [3984/4132] Replayed Airy1GumbelContrib.TraceClass.FredholmTwo
+warning: Airy1GumbelContrib/TraceClass/FredholmTwo.lean: imports `Mathlib.Analysis.Analytic.OfScalars` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/TraceClass/FredholmTwo.lean: imports `Mathlib.Analysis.SpecialFunctions.Exponential` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/TraceClass/FredholmTwo.lean: imports `Mathlib.Analysis.Calculus.FDeriv.Analytic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3987/4132] Replayed Airy1GumbelContrib.AiryKernel.TraceExpansion
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:284:33: Variable name `hT` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hT
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:323:35: Variable name `hT` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hT
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:657:15: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:673:15: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:871:19: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:894:19: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1088:15: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1106:15: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1220:15: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+info: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1394:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1548:31: Variable name `hT` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hT
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1771:17: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1796:17: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1807:17: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+
+Hint: Replace the deprecated name:
+  S̵e̵t̵.̵m̵e̵m̵_̵s̵e̵t̵O̵f̵_̵e̵q̵m̲e̲m̲_̲o̲f̲P̲r̲e̲d̲_̲e̲q̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1987:12: `if_pos` has been deprecated: Use `ite_eq_left` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵p̵o̵s̵i̲t̲e̲_̲e̲q̲_̲l̲e̲f̲t̲
+warning: Airy1GumbelContrib/AiryKernel/TraceExpansion.lean:1988:12: `if_neg` has been deprecated: Use `ite_eq_right` instead
+
+Hint: Replace the deprecated name:
+  i̵f̵_̵n̵e̵g̵i̲t̲e̲_̲e̲q̲_̲r̲i̲g̲h̲t̲
+⚠ [3991/4132] Replayed Airy1GumbelContrib.TwoInterval.TwoIntervalTrace
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalTrace.lean:497:5: Variable name `hQα` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hQα
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [3993/4132] Replayed Airy1GumbelContrib.AiryKernel.ConjugateUPhi
+warning: Airy1GumbelContrib/AiryKernel/ConjugateUPhi.lean: imports `Mathlib.Analysis.Real.Pi.Bounds` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/AiryKernel/ConjugateUPhi.lean:1080:47: Variable name `haeq` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _haeq
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [3995/4132] Replayed Airy1GumbelContrib.FredholmDet.Hadamard
+warning: Airy1GumbelContrib/FredholmDet/Hadamard.lean: imports `Mathlib.Analysis.InnerProductSpace.GramSchmidtOrtho` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/Hadamard.lean: imports `Mathlib.Analysis.InnerProductSpace.Projection.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/Hadamard.lean: imports `Mathlib.Analysis.SpecialFunctions.Exponential` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/Hadamard.lean: imports `Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [3999/4132] Replayed Airy1GumbelContrib.FredholmDet.MatrixPlemelj
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.Matrix.Normed` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.Calculus.SmoothSeries` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.Calculus.Deriv.Polynomial` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.Calculus.Deriv.Shift` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.Calculus.MeanValue` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.Analysis.SpecialFunctions.Exponential` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/MatrixPlemelj.lean: imports `Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4001/4132] Replayed Airy1GumbelContrib.FredholmDet.DiskAgreement
+warning: Airy1GumbelContrib/FredholmDet/DiskAgreement.lean: imports `Mathlib.Analysis.Normed.Group.Tannery` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/DiskAgreement.lean: imports `Mathlib.Analysis.Analytic.Uniqueness` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4002/4132] Replayed Airy1Gumbel.ExternalInputs
+warning: Airy1Gumbel/ExternalInputs.lean: imports `Mathlib.MeasureTheory.Measure.Typeclasses.Probability` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/ExternalInputs.lean: imports `Mathlib.Probability.Moments.Covariance` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/ExternalInputs.lean: imports `Mathlib.Topology.MetricSpace.Lipschitz` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/ExternalInputs.lean:140:0: Definition `Airy1Gumbel.pastSigma` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+warning: Airy1Gumbel/ExternalInputs.lean:147:0: Definition `Airy1Gumbel.futureSigma` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+⚠ [4007/4132] Replayed Airy1GumbelContrib.TwoInterval.TwoIntervalDetRem
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:550:36: Variable name `hM1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:550:50: Variable name `hr1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:550:64: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:551:7: Variable name `haeq` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _haeq
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:619:36: Variable name `hM1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:619:50: Variable name `hr1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:619:64: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:620:7: Variable name `haeq` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _haeq
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:733:50: Variable name `hM1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:733:64: Variable name `hr1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:733:78: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:734:7: Variable name `haeq` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _haeq
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:971:32: Variable name `hC0` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hC0
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:995:46: Variable name `hM1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:995:60: Variable name `hr1` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr1
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:995:74: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:996:7: Variable name `haeq` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _haeq
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1261:39: Variable name `hM0` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM0
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1261:54: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1262:7: Variable name `hrM` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hrM
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1262:39: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1339:39: Variable name `hM0` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM0
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1339:54: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1340:7: Variable name `hrM` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hrM
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalDetRem.lean:1340:39: Variable name `hadr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hadr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [4009/4132] Replayed Airy1GumbelContrib.AiryKernel.GaussianSaddle
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:127:37: Variable name `d` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _d
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:128:37: Variable name `d` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _d
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:137:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:136:4: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+info: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:205:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:254:10: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:204:4: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:253:10: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+info: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:331:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:330:4: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:650:47: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:677:23: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:677:35: Unused tactic linter: `rfl` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:677:52: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:680:23: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:680:35: Unused tactic linter: `rfl` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:686:25: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:686:37: Unused tactic linter: `rfl` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:697:23: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:697:35: Unused tactic linter: `rfl` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:677:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:680:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:686:25: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:697:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:707:23: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:707:35: Unused tactic linter: `rfl` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:707:52: Unused tactic linter: `ring` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:707:23: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:823:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean:816:35: Variable name `hM` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hM
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [4010/4132] Replayed Airy1GumbelContrib.TwoInterval.TwoIntervalSumEst
+warning: Airy1GumbelContrib/TwoInterval/TwoIntervalSumEst.lean:237:57: Variable name `hχ0` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hχ0
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [4011/4132] Replayed Airy1GumbelContrib.TwoInterval.SectorRR
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:837:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:846:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1005:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1044:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1192:10: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1603:2: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1725:59: Variable name `hCa` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCa
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorRR.lean:1726:5: Variable name `hφnn` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hφnn
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:2598:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorRR.lean:3038:4: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/TwoInterval/SectorRR.lean:3157:54: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [4012/4132] Replayed Airy1GumbelContrib.TwoInterval.FRExponents
+warning: Airy1GumbelContrib/TwoInterval/FRExponents.lean: imports `Mathlib.MeasureTheory.Integral.Prod` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/TwoInterval/FRExponents.lean: imports `Mathlib.Analysis.SpecialFunctions.ImproperIntegrals` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+info: Airy1GumbelContrib/TwoInterval/FRExponents.lean:764:40: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/FRExponents.lean:832:12: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/FRExponents.lean:1493:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/FRExponents.lean:1713:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+⚠ [4013/4132] Replayed Airy1GumbelContrib.TwoInterval.SectorFR
+warning: Airy1GumbelContrib/TwoInterval/SectorFR.lean: imports `Mathlib.MeasureTheory.Integral.Prod` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+info: Airy1GumbelContrib/TwoInterval/SectorFR.lean:1375:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorFR.lean:1595:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+⚠ [4015/4132] Replayed Airy1GumbelContrib.TwoInterval.SectorFF
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:367:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:564:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:610:15: This simp argument is unused:
+  Function.uncurry_apply_pair
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:621:15: This simp argument is unused:
+  Function.uncurry_apply_pair
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1080:63: Variable name `hCa` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCa
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1109:64: Variable name `hCa` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCa
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1266:26: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1414:31: Variable name `M` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _M
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1414:52: Variable name `hCa` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCa
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1416:14: Variable name `hCm` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCm
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1642:33: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1804:38: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1834:38: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:1934:31: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2053:30: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2084:30: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2116:55: Variable name `hC₁` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hC₁
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2116:70: Variable name `hCa` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCa
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2117:5: Variable name `hCm` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hCm
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2298:32: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2416:28: Unused tactic linter: `<;>` should be replaced with `;` or be removed.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2416:28: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:2645:32: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:3018:28: Variable name `ht` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _ht
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:3449:40: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:3515:12: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:3805:5: Variable name `hα` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hα
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:3959:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: Airy1GumbelContrib/TwoInterval/SectorFF.lean:4011:14: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:4009:14: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+warning: Airy1GumbelContrib/TwoInterval/SectorFF.lean:4010:14: Unused tactic linter: `congr 1` does nothing.
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+⚠ [4020/4132] Replayed Airy1Gumbel.Newman
+warning: Airy1Gumbel/Newman.lean: imports `Mathlib.Probability.Moments.Covariance` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Newman.lean: imports `Mathlib.MeasureTheory.Integral.DominatedConvergence` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Newman.lean: imports `Mathlib.MeasureTheory.Function.LpSpace.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Newman.lean: imports `Mathlib.Topology.MetricSpace.Lipschitz` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Newman.lean: imports `Mathlib.Analysis.SpecialFunctions.NonIntegrable` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4021/4132] Replayed Airy1Gumbel.MesoscopicInputs
+warning: Airy1Gumbel/MesoscopicInputs.lean: imports `Mathlib.Probability.IdentDistrib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4037/4132] Replayed Airy1GumbelContrib.FredholmDet.TraceNorm
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean: imports `Mathlib.Analysis.InnerProductSpace.ProdL2` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean:117:8: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+
+Hint: Replace the deprecated name:
+  C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵s̵m̵u̵l̵_̵a̵p̵p̵l̵y̵s̲m̲u̲l̲_̲a̲p̲p̲l̲y̲
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean:315:20: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+
+Hint: Replace the deprecated name:
+  C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵s̵m̵u̵l̵_̵a̵p̵p̵l̵y̵s̲m̲u̲l̲_̲a̲p̲p̲l̲y̲
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean:320:8: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+
+Hint: Replace the deprecated name:
+  C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵s̵m̵u̵l̵_̵a̵p̵p̵l̵y̵s̲m̲u̲l̲_̲a̲p̲p̲l̲y̲
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean:459:50: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+
+Hint: Replace the deprecated name:
+  C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵a̲d̲d̲_̲a̲p̲p̲l̲y̲
+warning: Airy1GumbelContrib/FredholmDet/TraceNorm.lean:717:34: `ofReal_norm_eq_enorm` has been deprecated: Use `ofReal_norm` instead
+
+Hint: Replace the deprecated name:
+  ofReal_norm_̵e̵q̵_̵e̵n̵o̵r̵m̵
+⚠ [4039/4132] Replayed Airy1GumbelContrib.FredholmDet.SimonBound
+warning: Airy1GumbelContrib/FredholmDet/SimonBound.lean:342:8: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+
+Hint: Replace the deprecated name:
+  C̵o̵n̵t̵i̵n̵u̵o̵u̵s̵L̵i̵n̵e̵a̵r̵M̵a̵p̵.̵a̵d̵d̵_̵a̵p̵p̵l̵y̵a̲d̲d̲_̲a̲p̲p̲l̲y̲
+⚠ [4045/4132] Replayed Airy1GumbelContrib.AiryKernel.AiryKernel
+warning: Airy1GumbelContrib/AiryKernel/AiryKernel.lean: imports `Mathlib.MeasureTheory.Integral.IntegralEqImproper` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/AiryKernel/AiryKernel.lean: imports `Mathlib.Analysis.SpecialFunctions.ImproperIntegrals` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4048/4132] Replayed Airy1Gumbel.FddRecord
+warning: Airy1Gumbel/FddRecord.lean: imports `Mathlib.Probability.CDF` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4055/4132] Replayed Airy1Gumbel.TruncatedMoment
+warning: Airy1Gumbel/TruncatedMoment.lean: imports `Mathlib.Analysis.SpecialFunctions.Pow.Integral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/TruncatedMoment.lean: imports `Mathlib.MeasureTheory.Integral.Gamma` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/TruncatedMoment.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/TruncatedMoment.lean: imports `Mathlib.Probability.Process.Kolmogorov` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4060/4132] Replayed Airy1Gumbel.ContinuousInstance
+warning: Airy1Gumbel/ContinuousInstance.lean: imports `Mathlib.Analysis.Real.Cardinality` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4062/4132] Replayed Airy1Gumbel.Upcrossing
+warning: Airy1Gumbel/Upcrossing.lean: imports `Mathlib.Probability.Distributions.Gaussian.Real` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/Upcrossing.lean:123:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: Airy1Gumbel/Upcrossing.lean:211:2: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: Airy1Gumbel/Upcrossing.lean:382:51: Variable name `hk` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hk
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [4066/4132] Replayed Airy1GumbelContrib.Mesh.Skeleton
+warning: Airy1GumbelContrib/Mesh/Skeleton.lean: imports `Mathlib.Probability.BrownianMotion.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4077/4132] Replayed Airy1GumbelContrib.FredholmDet.TraceClassAdd
+warning: Airy1GumbelContrib/FredholmDet/TraceClassAdd.lean: imports `Mathlib.SetTheory.Cardinal.Arithmetic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4088/4132] Replayed Airy1Gumbel.TailSensitiveNewman
+warning: Airy1Gumbel/TailSensitiveNewman.lean: imports `Mathlib.Analysis.SpecialFunctions.Integrals.Basic` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1Gumbel/TailSensitiveNewman.lean: imports `Mathlib.MeasureTheory.Integral.Layercake` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4089/4132] Replayed Airy1Gumbel.MesoscopicStandalone
+info: Airy1Gumbel/MesoscopicStandalone.lean:340:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+warning: Airy1Gumbel/MesoscopicStandalone.lean:215:50: Variable name `hχ₁` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hχ₁
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [4097/4132] Replayed Airy1GumbelContrib.Airy.AiryContour
+warning: Airy1GumbelContrib/Airy/AiryContour.lean: imports `Mathlib.Analysis.Complex.TaylorSeries` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryContour.lean: imports `Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+warning: Airy1GumbelContrib/Airy/AiryContour.lean: imports `Mathlib.MeasureTheory.Integral.Gamma` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4183/4194] Replayed Airy1GumbelContrib.Airy.AiryFourier
+warning: Airy1GumbelContrib/Airy/AiryFourier.lean: imports `Mathlib.Analysis.Distribution.TemperedDistribution` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+⚠ [4185/4194] Replayed Airy1GumbelContrib.Airy.AiryTransform
+warning: Airy1GumbelContrib/Airy/AiryTransform.lean: imports `Mathlib.Analysis.Distribution.FourierMultiplier` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+Build completed successfully (4194 jobs).
+Exporting #[Quot, Quot.mk, Quot.lift, Quot.ind, Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂, Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord, propext, Quot.sound, Classical.choice, Nat.add, Nat.sub, Nat.mul, Nat.pow, Nat.gcd, Nat.div, Nat.mod, Nat.beq, Nat.ble, Nat.land, Nat.lor, Nat.xor, Nat.shiftLeft, Nat.shiftRight, String.ofList, Char.ofNat, List, eagerReduce, Nat, String, String.mk, Char, optParam, autoParam, semiOutParam, outParam] from Solution
+Running con-ron kernel on solution
+con-ron: accepted 66958 declarations (--verified)
+con-ron kernel accepts the solution
+Running nanoda kernel on solution
+nanoda kernel accepts the solution
+Running Lean default kernel on solution
+Lean default kernel accepts the solution
+Your solution is okay!
