@@ -227,7 +227,7 @@ narrated by a synthetic voice). The last one also describes this Lean companion.
 
 A second series of four videos explains the companion paper, Chen and Pu, *Two-time spatial
 decorrelation for the flat KPZ fixed point* ([arXiv 2607.17113](https://arxiv.org/abs/2607.17113)),
-whose Proposition 3.1 is the hypothesis `CubicStrongMixing` above
+whose Proposition 3.1 is the hypothesis `CubicStrongMixing` in the table of inputs
 ([playlist](https://www.youtube.com/playlist?list=PLI4CESkmuyPo); about 36 minutes in total,
 narrated by a synthetic voice). Episode 2 explains that mixing bound.
 
