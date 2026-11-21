@@ -6,3 +6,6 @@
 # 0704.3636 is Baik-Buckingham-DiFranco (source of GOELeftTail),
 # 2406.11826 is the source of the local-modulus lemma cited in Airy1Gumbel/ExternalInputs.lean.
 allow: arXiv:\s*(2611\.23658|2607\.17113|0704\.3636|2406\.11826)(v\d+)?
+# Public on purpose: the result number in the claim id airy1-gumbel-lean/standalone-mesoscopic-sum-prop-4-3
+# (Proposition 4.3, kept exactly as on the development line); it is not a LaTeX label.
+allow: ^prop-4-3$
