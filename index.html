@@ -14,7 +14,7 @@
   <a class="skip" href="#content">Skip to content</a>
   <header>
     <a class="brand" href="./"><span>Airy₁ Gumbel: Lean Companion</span></a>
-    <a class="version" href="https://github.com/chenle02/airy1-gumbel-lean/releases/tag/v0.5.0" title="Release v0.5.0">v0.5.0</a>
+    <a class="version" href="https://github.com/chenle02/airy1-gumbel-lean/releases/tag/v0.6.0" title="Release v0.6.0">v0.6.0</a>
     <span class="tagline">Lean 4 paper companion · Theorem 1.1 under three named inputs · Apache-2.0</span>
   </header>
   <div class="shell">
@@ -138,7 +138,8 @@ upcrossing bound used in the mesoscopic step. The nested package
 and their asymptotics, the Mills ratio, Hilbert–Schmidt and trace-class operators,
 Fredholm determinants, and the Airy₁ finite-dimensional and two-time estimates. Newman's
 covariance inequality (<code>newman_lemma3</code>) is also proved; the headline does not use it, and
-the earlier association-route headline and Lemma 4.2 (since v0.5.0) do.</p>
+the earlier association-route headline, Lemma 4.2 (since v0.5.0) and Proposition 4.3
+(since v0.6.0) do.</p>
 <div class="boundary">
 <p><strong>Not proved here.</strong></p>
 <ul>
@@ -150,9 +151,14 @@ existing continuous Airy₁ process.</p>
 <li>
 <p>The paper proves its mesoscopic step through association (Pu 2025), Newman's
 inequality and the Basu–Busani–Ferrari covariance asymptotic. The headline's Lean
-proof takes a different route for that step (a two-time Fredholm determinant bound),
-so it does not check the paper's Proposition 4.3 as stated (arbitrary level <code>M</code> and
-cutoff <code>R(M)</code>); only the specialisation used in Section 5.2 is proved.</p>
+proof takes a different route for that step (a two-time Fredholm determinant bound)
+and uses only the specialisation of Proposition 4.3 needed in Section 5.2, which it
+proves along that route. Proposition 4.3 as stated (eq. (4.6), every
+<code>χ ∈ ((1/2)^{1/3}, 1)</code> and every cutoff <code>R(M) = O(√M)</code>) is proved separately (since
+v0.6.0), along the paper's route, under the standing inputs <code>Airy1FddPositive</code> and
+<code>GOELeftTail</code> and three named inputs, each assumed, not proved, here:
+<code>NonnegativeWindowModulusEstimate</code>, <code>ProcessAssociated</code> and <code>CubicCovarianceDecay</code>.
+The headline <code>_final₂</code> uses none of these three.</p>
 </li>
 <li>
 <p>Lemma 4.2 (the threshold-sensitive Newman bound, eq. (4.3)) is proved for the
@@ -190,6 +196,36 @@ along the route described above and the component results listed in
 <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/claims.yaml"><code>claims.yaml</code></a> and <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/claims.yaml"><code>contrib/claims.yaml</code></a>.</li>
 </ul>
 </div>
+<p>Since v0.6.0, Proposition 4.3 (the mesoscopic sum, eq. (4.6)) is proved as a standalone
+result for the constructed continuous process, along the paper's route. Write <code>Y_j</code> for
+the maximum of <code>Ã</code> over <code>[j, j + 1]</code> (<code>airy1BlockMax h j</code>) and <code>ρ(M)</code> for the one-block
+tail scale of (1.3) (<code>AiryConj.rhoM</code>).
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/MesoscopicStandalone.lean"><code>Airy1Gumbel.mesoscopic_sum_airy1</code></a> states that,
+for every <code>χ</code> with <code>(1/2)^{1/3} &lt; χ &lt; 1</code> and every cutoff <code>R : ℝ → ℝ</code> with
+<code>R(M) = O(√M)</code>, <code>Σ_{⌈χ√(2M)⌉ ≤ j ≤ ⌊R(M)⌋} ℙ{Y_0 &gt; M, Y_j &gt; M} = o(ρ(M))</code> as <code>M → ∞</code>
+through the reals (an empty range gives the sum <code>0</code>). Its five hypotheses are the
+standing inputs <code>Airy1FddPositive</code> and <code>GOELeftTail</code> and three named inputs, each
+assumed, not proved, here:</p>
+<ul>
+<li><code>NonnegativeWindowModulusEstimate</code>: the transferred local oscillation bound (4.2) on
+  windows inside <code>[0, ∞)</code> (Basu–Bhattacharjee 2024); already the input of Lemma 4.1.</li>
+<li><code>ProcessAssociated</code>: the association of the Airy₁ process (Pu 2025, Theorem 1.2);
+  already the input of Lemma 4.2.</li>
+<li><a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/ExternalInputs.lean"><code>CubicCovarianceDecay</code></a>: the covariance asymptotic of
+  the Airy₁ process (Basu–Busani–Ferrari 2023, Theorem 1.1), in the form of its upper
+  bound <code>Cov(Ã(0), Ã(d)) ≤ e^{c d² − (4/3) d³}</code> for <code>d &gt; 1</code>; until this release only the
+  earlier association-route headline <code>_final</code> (below) and its intermediate forms used it.</li>
+</ul>
+<p>The proof uses the first through Lemma 4.1 (the block modulus on <code>[0, 1]</code>, carried to
+every block <code>[j, j + 1]</code> by shift invariance of the law), the second through Lemma 4.2,
+and the third only through its proved corollary, the cubic covariance bound
+<code>Cov(Ã(0), Ã(d)) ≤ e^{−θd³}</code> for every <code>θ &lt; 4/3</code> and large <code>d</code>
+(<code>CubicCovarianceDecay.theta_bound</code>). The block-to-grid cover (4.10) and the one-point
+bound (4.11) at level <code>M − 1</code> are proved (<code>block_pair_grid_cover_airy1</code>,
+<code>one_point_tail_minus_one_airy1</code>). This release adds no new named input. The headline
+<code>_final₂</code> still uses exactly its three inputs and none of these three, and no existing
+statement changed. The five new claims are <code>internal</code>: Lean's kernel checked their
+proofs, but the comparator does not compare their statements.</p>
 <p>Since v0.5.0, Lemma 4.2 (the threshold-sensitive Newman bound, eq. (4.3)) is proved for
 the constructed continuous process under the standing inputs <code>Airy1FddPositive</code> and
 <code>GOELeftTail</code> and the association input
@@ -298,7 +334,7 @@ narrated by a synthetic voice). Episode 2 explains that mixing bound.</p>
     </main>
   </div>
   <footer>
-    Version 0.5.0 (released 2026-11-21) · <a href="https://doi.org/10.5281/zenodo.24421088">doi:10.5281/zenodo.24421088</a> · airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
+    Version 0.6.0 (released 2026-11-21) · <a href="https://doi.org/10.5281/zenodo.24428431">doi:10.5281/zenodo.24428431</a> · airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
   </footer>
 </body>
 </html>
