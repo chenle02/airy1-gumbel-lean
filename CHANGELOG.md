@@ -2,6 +2,24 @@
 
 Result numbers are those of arXiv:2611.23658v1.
 
+## 0.7.0
+
+A documentation-only release: four docstrings in `Airy1Gumbel/TailSensitiveNewman.lean`.
+
+- The docstring of `goe_singleton_right_tail_sub_profile_isLittleO` states the sharp
+  prefactor (the tail equals `rhoM u / (8 * u)` up to `o(rhoM u / u)`) and no longer says
+  that it is used in Lemma 4.2: Lemma 4.2 of arXiv:2611.23658v1 needs only the two-sided
+  bound derived from it (`one_point_tail_profile_bounds_airy1`).
+- The docstrings of the two one-point tail lemmas, `one_point_tail_profile_bounds_airy1`
+  and `one_point_tail_shift_le_airy1`, name their inputs `Airy1FddPositive` and
+  `GOELeftTail`.
+- The docstring of `tail_sensitive_newman_airy1` (Lemma 4.2) names the standing inputs
+  `Airy1FddPositive` and `GOELeftTail` and the association input `ProcessAssociated`, and
+  says that `GOELeftTail` is not a hypothesis of the paper's Lemma 4.2.
+- No statement, proof, claim or input changed; the comment-stripped source is the same as
+  v0.6.0's. The contrib package `airy1-gumbel-lean-contrib` is unchanged; its version
+  stays 0.4.0 and its v0.4.0 receipts still bind.
+
 ## 0.6.0
 
 Zenodo: version DOI [10.5281/zenodo.24428431](https://doi.org/10.5281/zenodo.24428431); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
