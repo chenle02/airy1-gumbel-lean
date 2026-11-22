@@ -30,8 +30,10 @@ theorem trace_goeOp_eq_half_integral (u : ℝ) :
   rw [integral_indicator measurableSet_Ioi, integral_comp_mul_left_Ioi _ _ two_pos]
   simp [smul_eq_mul, one_div]
 
-/-- The one-point Fredholm tail has the sharp Airy₁ prefactor used in arXiv:2611.23658v1,
-Lemma 4.2. The first determinant term is the GOE operator's diagonal trace. -/
+/-- The one-point Fredholm tail has the sharp Airy₁ prefactor: it equals
+`rhoM u / (8 * u)` up to `o(rhoM u / u)`. The first determinant term is the GOE operator's
+diagonal trace. Lemma 4.2 of arXiv:2611.23658v1 needs only the two-sided bound derived
+from it (`one_point_tail_profile_bounds_airy1`). -/
 theorem goe_singleton_right_tail_sub_profile_isLittleO :
     (fun u : ℝ => 1 - AiryFdd.airy1FinCdf {0} (fun _ => u) -
       AiryConj.rhoM u / (8 * u)) =o[atTop] (fun u => AiryConj.rhoM u / u) := by
@@ -145,7 +147,8 @@ theorem goe_singleton_right_tail_sub_profile_isLittleO :
     ring
   exact (hdet.add htrace).congr (fun _ => by ring) (fun _ => rfl)
 
-/-- Two-sided bounds for the right tail of the continuous Airy₁ one-point marginal. -/
+/-- Two-sided bounds for the right tail of the continuous Airy₁ one-point marginal.
+Under `Airy1FddPositive` and `GOELeftTail`. -/
 theorem one_point_tail_profile_bounds_airy1 (h : Airy1FddPositive) (hT : GOELeftTail) :
     ∃ A B u₀ : ℝ, 0 < A ∧ 0 < B ∧ 0 < u₀ ∧
       ∀ u : ℝ, u₀ ≤ u →
@@ -168,7 +171,8 @@ theorem one_point_tail_profile_bounds_airy1 (h : Airy1FddPositive) (hT : GOELeft
   exact ⟨by linarith [hb_u.1], by linarith [hb_u.2]⟩
 
 /-- Lowering a high threshold by the reciprocal square root of its level changes the
-Airy₁ one-point tail by at most a constant factor. -/
+Airy₁ one-point tail by at most a constant factor.
+Under `Airy1FddPositive` and `GOELeftTail`. -/
 theorem one_point_tail_shift_le_airy1 (h : Airy1FddPositive) (hT : GOELeftTail) :
     ∃ K u₀ : ℝ, 0 < K ∧ 0 < u₀ ∧ ∀ u : ℝ, u₀ ≤ u →
       (airy1Law h).real {f | u - (Real.sqrt u)⁻¹ < airy1ContR h 0 f}
@@ -361,7 +365,10 @@ theorem memLp_two_airy1ContR (h : Airy1FddPositive) (hT : GOELeftTail) (t : ℝ)
     (Eventually.of_forall fun _ => sq_nonneg _)).1 hfinite.ne
 
 /-- Lemma 4.2, equation (4.3) of arXiv:2611.23658v1. The threshold-sensitive
-Newman bound holds uniformly over nonnegative lags for the continuous Airy₁ version. -/
+Newman bound holds uniformly over nonnegative lags for the continuous Airy₁ version.
+Under the standing inputs `Airy1FddPositive` and `GOELeftTail` of the construction
+(`GOELeftTail` is not a hypothesis of the paper's Lemma 4.2) and the association input
+`ProcessAssociated`. -/
 theorem tail_sensitive_newman_airy1 (h : Airy1FddPositive) (hT : GOELeftTail)
     (As : ProcessAssociated (airy1SRP h hT)) :
     ∃ C u₀ : ℝ, 0 < C ∧ ∀ u d : ℝ, u₀ ≤ u → 0 ≤ d →
