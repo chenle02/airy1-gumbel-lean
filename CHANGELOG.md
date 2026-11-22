@@ -4,6 +4,8 @@ Result numbers are those of arXiv:2611.23658v1.
 
 ## 0.7.0
 
+Zenodo: version DOI [10.5281/zenodo.24442505](https://doi.org/10.5281/zenodo.24442505); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+
 A documentation-only release: four docstrings in `Airy1Gumbel/TailSensitiveNewman.lean`.
 
 - The docstring of `goe_singleton_right_tail_sub_profile_isLittleO` states the sharp
