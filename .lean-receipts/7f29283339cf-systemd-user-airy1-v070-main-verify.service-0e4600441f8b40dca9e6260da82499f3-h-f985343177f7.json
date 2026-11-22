@@ -1,0 +1,38 @@
+{
+  "schema": "lower-receipt/1",
+  "commit": "7f29283339cfe7da894e3bb590912157fbd46d82",
+  "lean_toolchain": "leanprover/lean4:v4.35.0",
+  "mathlib_rev": "cfc55fc58714a59dc06e6e79edc6d1d95140d3c2",
+  "sorry_count": 0,
+  "axioms": [
+    "Classical.choice",
+    "Quot.sound",
+    "propext"
+  ],
+  "report_sha256": "d708bbcebe3961fd6da64c19c39143f04c05b68e56f2dd8ed6b88dc0014003dc",
+  "job_id": "systemd-user:airy1-v070-main-verify.service:0e4600441f8b40dca9e6260da82499f3@h-f985343177f7",
+  "checker": "verify.sh (lake build Airy1Gumbel Airy1GumbelContrib; scripts/audit.py exact theorem inventory over AxiomCheck.lean #print axioms; negative controls)",
+  "generated_at": "2026-11-22T13:34:35Z",
+  "job_stdout_sha256": "3ba347f454097d7c861139b03c5f650f8c5efa38a62727dc70ccabf638629ad5",
+  "manifest_sha256": "b1e42509f71fada2a7538291a8d5c5763062d67807c67751465e98c600763698",
+  "log_commit_bound": true,
+  "claim_axioms": {
+    "checked": 71,
+    "nonstandard": [],
+    "missing": []
+  },
+  "producer": {
+    "lean_pkg": "0.30.0",
+    "install": "installed",
+    "commit": null,
+    "dirty": null,
+    "sources_sha256": "ea960a07ad89b9591dadf68f928d120587eb1cf92fc90e0abd4a4530ae507ce2",
+    "source_files": 101,
+    "python": "3.12.3",
+    "bytecode_tag": "cpython-312",
+    "bytecode_files": 85,
+    "bytecode_sha256": "cbd4df8f900676d0d04b7c3f022c01ca7d5f19f5febba8dc5fe6ae13999491aa",
+    "other_bytecode_files": 0
+  },
+  "unit_properties_sha256": "f66b916ab823a27be39c1127c85491c5badf3340e2f3a89fb0f207aebc982736"
+}
