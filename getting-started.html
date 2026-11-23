@@ -14,7 +14,7 @@
   <a class="skip" href="#content">Skip to content</a>
   <header>
     <a class="brand" href="./"><span>Airy₁ Gumbel: Lean Companion</span></a>
-    <a class="version" href="https://github.com/chenle02/airy1-gumbel-lean/releases/tag/v0.7.0" title="Release v0.7.0">v0.7.0</a>
+    <a class="version" href="https://github.com/chenle02/airy1-gumbel-lean/releases/tag/v0.8.0" title="Release v0.8.0">v0.8.0</a>
     <span class="tagline">Lean 4 paper companion · Theorem 1.1 under three named inputs · Apache-2.0</span>
   </header>
   <div class="shell">
@@ -104,9 +104,12 @@ theorem has exactly its Challenge type and uses only the three standard axioms):
 </code></pre>
 <h3 id="comparator-check-of-the-contrib-package">Comparator check of the contrib package</h3>
 <p>Since v0.3.1 the contrib package has its own comparator configuration,
-<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/comparator.json"><code>contrib/comparator.json</code></a>: all 103 theorem claims of
-<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/claims.yaml"><code>contrib/claims.yaml</code></a>, one Challenge theorem
-<code>Airy1GumbelLeanContribAudit.&lt;decl&gt;</code> each. <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/Comparator/Challenge.lean"><code>contrib/Comparator/Challenge.lean</code></a>
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/comparator.json"><code>contrib/comparator.json</code></a>: the 103 theorem claims of
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/claims.yaml"><code>contrib/claims.yaml</code></a> up to v0.7.0, one Challenge theorem
+<code>Airy1GumbelLeanContribAudit.&lt;decl&gt;</code> each. The theorem claim added in v0.8.0
+(<code>box-cdf-measure</code>, the finite-box measure constructor) is <code>internal</code> and is not compared,
+and its module <code>FddMeasure/BoxCdf.lean</code> is not in the copied library.
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/Comparator/Challenge.lean"><code>contrib/Comparator/Challenge.lean</code></a>
 states them (76 as the elaborated types Lean prints, 27 as the declarations' own source
 statements) over <a href="https://github.com/chenle02/airy1-gumbel-lean/tree/main/contrib/Comparator/Defs"><code>contrib/Comparator/Defs</code></a>, a verbatim copy of the
 library that imports Mathlib modules only; <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/Comparator/Solution.lean"><code>contrib/Comparator/Solution.lean</code></a>
@@ -121,12 +124,12 @@ lake env lean --run scripts/comparator/CheckFidelity.lean
 <pre><code class="language-toml">[[require]]
 name = &quot;airy1-gumbel-lean&quot;
 git = &quot;https://github.com/chenle02/airy1-gumbel-lean&quot;
-rev = &quot;v0.7.0&quot;
+rev = &quot;v0.8.0&quot;
 </code></pre>
     </main>
   </div>
   <footer>
-    Version 0.7.0 (released 2026-11-22) · <a href="https://doi.org/10.5281/zenodo.24442505">doi:10.5281/zenodo.24442505</a> · airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
+    Version 0.8.0 (released 2026-11-23) · <a href="https://doi.org/10.5281/zenodo.24466896">doi:10.5281/zenodo.24466896</a> · airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
   </footer>
 </body>
 </html>
