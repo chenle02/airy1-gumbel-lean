@@ -6,7 +6,7 @@ kind: paper
 manuscript:
   title: "Gumbel Fluctuations of the Maximum of the Airy_1 Process"
   version: "arXiv:2611.23658v1"
-summary: "Theorem 1.1 is proved for a constructed Airy_1 process with continuous paths under three named inputs, its mesoscopic step by a two-time Fredholm determinant bound; Lemma 4.1 under the bound (4.2), assumed; Lemma 4.2 under ProcessAssociated, assumed; Proposition 4.3 under NonnegativeWindowModulusEstimate, ProcessAssociated and CubicCovarianceDecay, all three assumed; Remark 5.3 is outside."
+summary: "Theorem 1.1 is proved for a constructed Airy_1 process with continuous paths under three named inputs, its mesoscopic step by a two-time Fredholm determinant bound; Lemma 4.1 under the bound (4.2); Lemma 4.2 under ProcessAssociated; Proposition 4.3 under NonnegativeWindowModulusEstimate, ProcessAssociated and CubicCovarianceDecay; Remark 5.3 under FerrariLiuPersistence; each of these assumed."
 rows:
   - paper: {number: "Theorem 1.1", title: "Gumbel limit of the normalized maximum"}
     class: inputs-supplied
@@ -101,5 +101,14 @@ rows:
     inputs:
       - "CubicStrongMixing, for the decoupling of distant blocks"
   - paper: {number: "Remark 5.3", title: "Persistence derivation"}
-    class: outside
-    note: "The separate Ferrari-Liu derivation is not part of the Lean proof."
+    class: inputs-supplied
+    claims:
+      - airy1-gumbel-lean/ferrari-liu-gumbel-limit-remark-5-3
+      - airy1-gumbel-lean/ferrari-liu-persistence-input
+      - airy1-gumbel-lean/ferrari-liu-persistence-remainders
+      - airy1-gumbel-lean/ferrari-liu-rate-normalization
+      - airy1-gumbel-lean/ferrari-liu-kappa-div-rho-limit
+    inputs:
+      - "FerrariLiuPersistence, assumed, not proved: the finite-length persistence expansion of Ferrari-Liu (2024, Theorem 1.1, Proposition 2.5, Section 2.4): for c >= 3/2 and L >= 1, P(A <= c on [0, L]) = exp(-L kappa(c) - S(c) + E(c, L)), |S(c)| <= -6 log(1 - 2 beta(c)), E(c, L) bounded by their trace remainder; it includes their identity log det(1 - K) = -sum Tr(K^n)/n. Used only by Remark 5.3"
+      - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process"
+    note: "Proved as the remark states: P(A(x) <= a_N + b_N z for all x in [0, N]) -> exp(-e^(-z)) along integer N, every real z (gumbel_limit_continuum_airy1_ferrariLiu). The input is new in v0.8.0. The summation of the error series and kappa(c) ~ rho(c) are proved. The headline (Theorem 1.1) does not use this result or FerrariLiuPersistence, and its three inputs are unchanged."

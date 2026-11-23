@@ -90,10 +90,62 @@ the earlier association-route headline, Lemma 4.2 (since v0.5.0) and Proposition
 >   conjugated kernel. The determinant displayed in (3.1) has no separate Lean
 >   definition: the paper reads it through (3.3), and that reading is the paper's, not
 >   a Lean theorem.
-> - Remark 5.3 (the Ferrari–Liu derivation) is not covered.
+> - Remark 5.3 (the Gumbel limit derived from the Ferrari–Liu persistence estimates) is
+>   proved for the constructed process (since v0.8.0), along integer lengths as the remark
+>   states, under the standing inputs `Airy1FddPositive` and `GOELeftTail` and a new named
+>   input, `FerrariLiuPersistence`: the finite-length persistence expansion of Ferrari–Liu
+>   (2024), which is assumed, not proved, here and is used only by Remark 5.3. The headline
+>   `_final₂` does not use it.
+> - `Airy1FddPositive` is still an input. Since v0.8.0 it is reduced
+>   (`airy1FddPositive_of_rectangle`) to three properties of the distribution functions
+>   `AiryFdd.airy1FinCdf` (nonnegativity, monotonicity, nonnegative rectangle increments)
+>   and `GOELeftTail`; those three properties are not proved here.
 > - This repository does not certify the whole manuscript: it checks the main theorem
 >   along the route described above and the component results listed in
 >   [`claims.yaml`](claims.yaml) and [`contrib/claims.yaml`](contrib/claims.yaml).
+
+Since v0.8.0, Remark 5.3 (the Gumbel limit derived from the Ferrari–Liu persistence
+estimates) is proved for the constructed continuous process, along integer lengths as the
+remark states.
+[`Airy1Gumbel.gumbel_limit_continuum_airy1_ferrariLiu`](Airy1Gumbel/FerrariLiuRoute.lean)
+states that, for every real `z`, `ℙ{Ã(x) ≤ a_N + b_N z for all x ∈ [0, N]} → exp(−e^{−z})`
+as `N → ∞` through the integers, with the centering and scaling `a_N`, `b_N` of (1.1)–(1.2)
+(`gumbelU N z`). Its hypotheses are the standing inputs `Airy1FddPositive` and
+`GOELeftTail` and a new named input,
+[`Airy1Gumbel.FerrariLiuPersistence`](Airy1Gumbel/FerrariLiuRoute.lean): the
+finite-length persistence expansion of Ferrari–Liu (2024, Theorem 1.1, with the bounds of
+their Proposition 2.5 and Section 2.4), which is assumed, not proved, here. For the
+continuous version on `[0, ∞)` it says that, for every level `c ≥ 3/2` and length `L ≥ 1`,
+`ℙ{Ã(t) ≤ c for all t ∈ [0, L]} = exp(−L κ(c) − S(c) + E(c, L))`, where
+`κ(c) = Σ_{n ≥ 1} −2 n^{−5/3} Ai′(2 n^{2/3} c)` is the Ferrari–Liu persistence rate,
+`|S(c)| ≤ −6 log(1 − 2β(c))` and
+`|E(c, L)| ≤ 2 e^{−4L³/3} + Σ_{n ≥ 2} 7^{n+1} β(c)ⁿ / n · e^{−4L³/(3n²)}`, with the explicit
+two-branch parameter `β(c)` of their Section 2.4 (`ferrariLiuBeta`). What is assumed
+includes Ferrari–Liu's identity `log det(1 − K) = −Σ_n Tr(Kⁿ)/n`; the input's docstring
+also records the sign convention of the rate and the coefficient `2` in the degree-one
+error. Proved here: the bound on `β(c)`, the summation of the error series, the vanishing
+of the offset `S`, and the asymptotic `κ(c) ~ ρ(c)` that turns the expansion into the
+Gumbel limit (`ferrariLiuKappa_div_rhoM_tendsto`). This is the second release that adds
+a named input (the first was v0.4.0). `FerrariLiuPersistence` is used only by Remark 5.3
+(through its lemma `ferrariLiu_remainders`); the headline `_final₂` does not use it and
+still uses exactly its three inputs, and no existing statement changed. The 25 new claims of this route are
+`internal`: Lean's kernel checked their proofs, but the comparator does not compare their
+statements.
+
+Also since v0.8.0, a first step towards proving `Airy1FddPositive`, which is still an
+input. The nested package proves a finite-box measure constructor,
+[`AiryFdd.exists_measure_of_box_cdf`](contrib/Airy1GumbelContrib/FddMeasure/BoxCdf.lean):
+a continuous function `F` on `ℝ^ι` (`ι` finite) that is nonnegative, monotone, gives every
+box `(a, b]` a nonnegative alternating corner sum (`boxCdfIncrement F a b ≥ 0`), tends to
+`0` when one coordinate tends to `−∞` and to `1` along the diagonal `x = (r, …, r)`,
+`r → +∞`, is the distribution function `x ↦ μ(∏ᵢ (−∞, xᵢ])` of a probability measure `μ`. With it,
+[`Airy1Gumbel.airy1FddPositive_of_rectangle`](Airy1Gumbel/FddRectangle.lean) derives
+`Airy1FddPositive` from `GOELeftTail` and three properties of the Fredholm-determinant
+formulas `AiryFdd.airy1FinCdf I`, for every finite set of times `I`: nonnegativity,
+monotonicity and nonnegative rectangle increments. Those three properties are hypotheses
+of the theorem, not proved here, so `Airy1FddPositive` remains a named input of every
+result above; this reduction removes none. The new claims (one in each package) are
+`internal`.
 
 Since v0.6.0, Proposition 4.3 (the mesoscopic sum, eq. (4.6)) is proved as a standalone
 result for the constructed continuous process, along the paper's route. Write `Y_j` for
@@ -282,9 +334,12 @@ lake build ChallengeDefs Challenge Solution
 ### Comparator check of the contrib package
 
 Since v0.3.1 the contrib package has its own comparator configuration,
-[`contrib/comparator.json`](contrib/comparator.json): all 103 theorem claims of
-[`contrib/claims.yaml`](contrib/claims.yaml), one Challenge theorem
-`Airy1GumbelLeanContribAudit.<decl>` each. [`contrib/Comparator/Challenge.lean`](contrib/Comparator/Challenge.lean)
+[`contrib/comparator.json`](contrib/comparator.json): the 103 theorem claims of
+[`contrib/claims.yaml`](contrib/claims.yaml) up to v0.7.0, one Challenge theorem
+`Airy1GumbelLeanContribAudit.<decl>` each. The theorem claim added in v0.8.0
+(`box-cdf-measure`, the finite-box measure constructor) is `internal` and is not compared,
+and its module `FddMeasure/BoxCdf.lean` is not in the copied library.
+[`contrib/Comparator/Challenge.lean`](contrib/Comparator/Challenge.lean)
 states them (76 as the elaborated types Lean prints, 27 as the declarations' own source
 statements) over [`contrib/Comparator/Defs`](contrib/Comparator/Defs), a verbatim copy of the
 library that imports Mathlib modules only; [`contrib/Comparator/Solution.lean`](contrib/Comparator/Solution.lean)
@@ -304,7 +359,7 @@ To use the library from another Lake project:
 [[require]]
 name = "airy1-gumbel-lean"
 git = "https://github.com/chenle02/airy1-gumbel-lean"
-rev = "v0.7.0"
+rev = "v0.8.0"
 ```
 
 ## Trust and axioms
@@ -320,7 +375,11 @@ rev = "v0.7.0"
   (`mesoscopic_sum_airy1`) assumes, besides the first two, these three:
   `NonnegativeWindowModulusEstimate`, `ProcessAssociated` and the covariance input
   `CubicCovarianceDecay` (Basu–Busani–Ferrari 2023, Theorem 1.1), none of which is
-  proved here.
+  proved here. Remark 5.3 (`gumbel_limit_continuum_airy1_ferrariLiu`) assumes, besides
+  the first two, the new input `FerrariLiuPersistence` (the finite-length persistence
+  expansion of Ferrari–Liu 2024), which is not proved here and which no other result uses.
+- `airy1FddPositive_of_rectangle` proves `Airy1FddPositive` only from three hypotheses on
+  `AiryFdd.airy1FinCdf` that are not proved here; `Airy1FddPositive` stays an input.
 - The correspondence between the Lean statements and the paper was checked by AI-assisted
   review, not by an independent human referee.
 

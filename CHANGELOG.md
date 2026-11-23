@@ -2,6 +2,40 @@
 
 Result numbers are those of arXiv:2611.23658v1.
 
+## 0.8.0
+
+- Remark 5.3 (the Gumbel limit derived from the Ferrari–Liu persistence estimates) is
+  now proved for the constructed continuous Airy₁ process, along integer lengths as the
+  remark states: `Airy1Gumbel.gumbel_limit_continuum_airy1_ferrariLiu` in
+  `Airy1Gumbel/FerrariLiuRoute.lean`. For every real `z`,
+  `ℙ{Ã(x) ≤ a_N + b_N z for all x ∈ [0, N]} → exp(−e^{−z})` as `N → ∞` through the
+  integers.
+- Inputs: the standing inputs `Airy1FddPositive` and `GOELeftTail`, and a new named input,
+  `Airy1Gumbel.FerrariLiuPersistence`: the finite-length persistence expansion of
+  Ferrari–Liu (2024, Theorem 1.1, with the bounds of their Proposition 2.5 and
+  Section 2.4), `ℙ{Ã ≤ c on [0, L]} = exp(−L κ(c) − S(c) + E(c, L))` for `c ≥ 3/2`,
+  `L ≥ 1`, with their bounds on `S` and `E`. It is assumed, not proved, here (including
+  their identity `log det(1 − K) = −Σ_n Tr(Kⁿ)/n`), and it is used only by Remark 5.3.
+  Proved: the bound on the parameter `β(c)`, the summation of the error series, the
+  vanishing of the offset, and `κ(c) ~ ρ(c)`. 25 claims appended to `claims.yaml`, all
+  `internal` (built, not compared). `coverage.yaml`: the Remark 5.3 row moves from outside
+  to inputs supplied, with `FerrariLiuPersistence` on the row as an assumption.
+- A first step towards proving `Airy1FddPositive` (still an input): the finite-box measure
+  constructor `AiryFdd.exists_measure_of_box_cdf` in the contrib package
+  (`contrib/Airy1GumbelContrib/FddMeasure/BoxCdf.lean`: a continuous, nonnegative,
+  monotone function with nonnegative rectangle increments and the two limits at `−∞` and
+  `+∞` is the orthant distribution function of a probability measure), and the reduction
+  `Airy1Gumbel.airy1FddPositive_of_rectangle` in `Airy1Gumbel/FddRectangle.lean`, which
+  derives `Airy1FddPositive` from `GOELeftTail` and three properties of
+  `AiryFdd.airy1FinCdf` (nonnegativity, monotonicity, nonnegative rectangle increments)
+  taken as hypotheses. No input is removed. One claim appended to each `claims.yaml`, both
+  `internal`; the contrib comparator keeps its 103 compared theorems.
+- No existing statement or proof changed. The headline theorem still uses exactly its
+  three inputs and neither the new input nor the reduction; the comparator statements are
+  the same.
+- Both packages move to version 0.8.0 (the contrib package from 0.4.0); the lower-tier
+  and comparator receipts of both are re-cut.
+
 ## 0.7.0
 
 Zenodo: version DOI [10.5281/zenodo.24442505](https://doi.org/10.5281/zenodo.24442505); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
