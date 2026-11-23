@@ -4,6 +4,8 @@ Result numbers are those of arXiv:2611.23658v1.
 
 ## 0.8.0
 
+Zenodo: version DOI [10.5281/zenodo.24466896](https://doi.org/10.5281/zenodo.24466896); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+
 - Remark 5.3 (the Gumbel limit derived from the Ferrari–Liu persistence estimates) is
   now proved for the constructed continuous Airy₁ process, along integer lengths as the
   remark states: `Airy1Gumbel.gumbel_limit_continuum_airy1_ferrariLiu` in
