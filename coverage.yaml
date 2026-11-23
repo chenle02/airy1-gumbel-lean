@@ -6,7 +6,7 @@ kind: paper
 manuscript:
   title: "Gumbel Fluctuations of the Maximum of the Airy_1 Process"
   version: "arXiv:2611.23658v1"
-summary: "Theorem 1.1 is proved for a constructed Airy_1 process with continuous paths under three named inputs, its mesoscopic step by a two-time Fredholm determinant bound; Lemma 4.1 under the bound (4.2); Lemma 4.2 under ProcessAssociated; Proposition 4.3 under NonnegativeWindowModulusEstimate, ProcessAssociated and CubicCovarianceDecay; Remark 5.3 under FerrariLiuPersistence; each of these assumed."
+summary: "Theorem 1.1 is proved for a constructed Airy_1 process with continuous paths under three named inputs; Lemma 4.1 under the bound (4.2); Lemma 4.2 under ProcessAssociated; Proposition 4.3 under NonnegativeWindowModulusEstimate, ProcessAssociated and CubicCovarianceDecay; Remark 5.3 under FerrariLiuPersistence; each of these assumed. Lemmas 3.3-3.8 are outside."
 rows:
   - paper: {number: "Theorem 1.1", title: "Gumbel limit of the normalized maximum"}
     class: inputs-supplied
@@ -52,6 +52,9 @@ rows:
     inputs:
       - "Airy1FddPositive and GOELeftTail, for the two-interval hitting law of the constructed process"
     note: "Proved for every T > 0, r > 0, M > 0 at any weight a >= 2T + r + 1 (two-interval-law-equal-length), in the trace-class form (3.3) of Remark 3.2: det(I - K~), K~ the conjugated kernel of (3.2). The determinant displayed in (3.1) has no separate Lean definition; the paper reads it through (3.3). Versions 0.1.0 and 0.2.0 had T = 1 only."
+  - paper: {number: "Lemmas 3.3-3.8", title: "Joint inclusion and trace estimates for separated blocks"}
+    class: outside
+    note: "Intermediate lemmas of the paper's proof of Proposition 1.4 (the joint determinant inclusion and the trace formulas and trace-norm bounds of the interaction operator). They are not checked as stated here. Proposition 1.4 itself is proved (row above) by the Lean library's own two-interval Fredholm estimates."
   - paper: {number: "Lemma 4.1", title: "Block modulus"}
     class: inputs-supplied
     claims:
