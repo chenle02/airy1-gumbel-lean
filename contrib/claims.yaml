@@ -799,3 +799,10 @@ claims:
     file: Airy1GumbelContrib/Mesh/TwoBlockMesh.lean
     status: internal
     keywords: [airy1, fredholm-determinant, dyadic-mesh]
+  - id: airy1-gumbel-lean-contrib/box-cdf-measure
+    decl: AiryFdd.exists_measure_of_box_cdf
+    kind: theorem
+    summary: "Probability measure with a prescribed continuous grounded finite-dimensional box CDF."
+    file: Airy1GumbelContrib/FddMeasure/BoxCdf.lean
+    status: internal
+    keywords: [measure, distribution-function, finite-dimensional-distributions]

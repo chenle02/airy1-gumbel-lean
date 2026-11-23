@@ -371,6 +371,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.airyAiReal_laplace_small
 #print axioms AiryFdd.airyLapC_pos
 #print axioms AiryFdd.airy_abs_le_exp_zero
+#print axioms AiryFdd.asCdfBox_coe
 #print axioms AiryFdd.bAiryKer_comp_heatKerTwo
 #print axioms AiryFdd.backwardAiry_zero
 #print axioms AiryFdd.blkInner_eq_mul_integral
@@ -378,6 +379,15 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.block12_eq
 #print axioms AiryFdd.block21_eq
 #print axioms AiryFdd.block22_eq
+#print axioms AiryFdd.boundedBoxes_generateFrom
+#print axioms AiryFdd.boundedBoxes_isSetSemiring
+#print axioms AiryFdd.boxCdfIncrement_eq_sum_update
+#print axioms AiryFdd.boxCdfIncrement_eq_zero_of_endpoint_eq
+#print axioms AiryFdd.boxCdfIncrement_of_measure
+#print axioms AiryFdd.boxCdfIncrement_split
+#print axioms AiryFdd.boxIncrementContent_apply
+#print axioms AiryFdd.boxIncrementContent_countableCover
+#print axioms AiryFdd.boxIncrementContent_openCover
 #print axioms AiryFdd.c0_anti
 #print axioms AiryFdd.c0_le_one_add
 #print axioms AiryFdd.c0_le_two_mul
@@ -392,6 +402,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.chernoffPts_range
 #print axioms AiryFdd.chernoffPts_snd
 #print axioms AiryFdd.chernoffPts_zipLev_snd
+#print axioms AiryFdd.coe_asCdfBox
 #print axioms AiryFdd.coe_gridT
 #print axioms AiryFdd.colOp_wOp_rowOp_eq
 #print axioms AiryFdd.compKernel_assoc_heat
@@ -418,6 +429,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.compl_survSet_mono
 #print axioms AiryFdd.continuousOn_blkInner
 #print axioms AiryFdd.continuous_airy1FinCdf
+#print axioms AiryFdd.continuous_boxCdfIncrement
 #print axioms AiryFdd.continuous_fddDetLev
 #print axioms AiryFdd.cupAdm
 #print axioms AiryFdd.cupHitKer_eq
@@ -466,6 +478,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.exists_lintegral_qKer_sq_le
 #print axioms AiryFdd.exists_lintegral_qKer_sq_le_poly
 #print axioms AiryFdd.exists_lintegral_qKer_sq_le_sqrt
+#print axioms AiryFdd.exists_measure_of_box_cdf
 #print axioms AiryFdd.exists_qKer_ne_zero
 #print axioms AiryFdd.exists_real_lt_of_ne_bot
 #print axioms AiryFdd.exp_mul_exp_sq
@@ -542,6 +555,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.gridT_mono
 #print axioms AiryFdd.gridT_pow
 #print axioms AiryFdd.gridT_zero
+#print axioms AiryFdd.halfOpenBox_mem_boundedBoxes
 #print axioms AiryFdd.heatKerTwo_comp_heatKerTwo
 #print axioms AiryFdd.heatKernel_add_eq
 #print axioms AiryFdd.heatKernel_le_of_le_of_le
@@ -567,6 +581,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.hsNorm_wKernel_smallWeight_le
 #print axioms AiryFdd.hsNorm_wKernel_three_le
 #print axioms AiryFdd.indicator_exp_nonneg
+#print axioms AiryFdd.indicator_halfOpenBox_eq_increment
 #print axioms AiryFdd.indicator_one_nonneg
 #print axioms AiryFdd.integrable_assoc_kaT_kb_t
 #print axioms AiryFdd.integrable_assoc_ka_kb_t
@@ -693,7 +708,9 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.map_snd_zipLev
 #print axioms AiryFdd.measurableSet_firstSet
 #print axioms AiryFdd.measurableSet_forall_lt
+#print axioms AiryFdd.measurableSet_halfOpenBox
 #print axioms AiryFdd.measurableSet_levSet
+#print axioms AiryFdd.measurableSet_orthant
 #print axioms AiryFdd.measurableSet_reflCond
 #print axioms AiryFdd.measurableSet_survSet
 #print axioms AiryFdd.measurable_compKernel_heat_meshLamKer
@@ -818,6 +835,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.pos_of_mem_single
 #print axioms AiryFdd.probe_point_gt
 #print axioms AiryFdd.probe_point_nonneg
+#print axioms AiryFdd.prod_zero_one
 #print axioms AiryFdd.psiTP_zero
 #print axioms AiryFdd.qKer_eq_compKernel
 #print axioms AiryFdd.qKer_eq_zero_of_le
@@ -872,6 +890,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.sq_integral_mul_le
 #print axioms AiryFdd.sq_mul_sub_le_sq_mul
 #print axioms AiryFdd.sub_mem_of_mem_map_addRight
+#print axioms AiryFdd.sum_image_le_sum_ennreal
 #print axioms AiryFdd.survSet_succ_subset
 #print axioms AiryFdd.tKer_le
 #print axioms AiryFdd.tKer_nonneg
@@ -885,6 +904,7 @@ import Airy1GumbelContrib
 #print axioms AiryFdd.tendsto_airy1FinCdf_meshSet_at_weight
 #print axioms AiryFdd.tendsto_airy1FinCdf_one
 #print axioms AiryFdd.tendsto_airy1FinCdf_update
+#print axioms AiryFdd.tendsto_boxCdfIncrement_lower
 #print axioms AiryFdd.tendsto_fddDetLev
 #print axioms AiryFdd.tendsto_fddDetLev_ereal
 #print axioms AiryFdd.tendsto_fddVKer_zipLev

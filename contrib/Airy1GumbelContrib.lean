@@ -549,3 +549,4 @@ import Airy1GumbelContrib.TwoTime.TwoTimeSharpSqrt
 import Airy1GumbelContrib.TwoTime.TwoTimeSharpD
 import Airy1GumbelContrib.TwoTime.TwoTimeQNorm
 import Airy1GumbelContrib.TwoTime.TwoTimeSharpE
+import Airy1GumbelContrib.FddMeasure.BoxCdf

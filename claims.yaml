@@ -498,3 +498,185 @@ claims:
     file: Airy1Gumbel/MesoscopicStandalone.lean
     status: internal
     keywords: [airy1, mesoscopic, anti-clustering]
+  - id: airy1-gumbel-lean/ferrari-liu-persistence-probability
+    decl: Airy1Gumbel.ferrariLiuP
+    kind: construction
+    summary: "Probability of staying at or below a level on a closed time interval."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-persistence-rate
+    decl: Airy1Gumbel.ferrariLiuKappa
+    kind: construction
+    summary: "Airy derivative series for the Ferrari–Liu persistence rate."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-beta
+    decl: Airy1Gumbel.ferrariLiuBeta
+    kind: construction
+    summary: "Exact two-branch parameter in the Ferrari–Liu raw trace estimates."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-error-bound
+    decl: Airy1Gumbel.ferrariLiuErrorBound
+    kind: construction
+    summary: "Raw finite-length trace remainder majorant used in Remark 5.3."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-persistence-input
+    decl: Airy1Gumbel.FerrariLiuPersistence
+    kind: construction
+    summary: "Named input for the raw finite-length persistence expansion."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence, conditional]
+  - id: airy1-gumbel-lean/ferrari-liu-persistence-event-measurable
+    decl: Airy1Gumbel.ferrariLiu_event_measurable_airy1
+    kind: theorem
+    summary: "Measurability of the closed interval constraint for the continuous Airy₁ version."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence, measurability]
+  - id: airy1-gumbel-lean/ferrari-liu-persistence-remainders
+    decl: Airy1Gumbel.ferrariLiu_remainders
+    kind: theorem
+    summary: "Uniform exponential length bound and vanishing threshold offset, from the raw persistence estimates."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-rate-summable
+    decl: Airy1Gumbel.ferrariLiuKappa_summable
+    kind: theorem
+    summary: "Convergence of the Ferrari–Liu persistence rate series for positive levels."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-rate-normalization
+    decl: Airy1Gumbel.ferrariLiuKappa_gumbel_normalization
+    kind: theorem
+    summary: "Persistence rate at the normalized Gumbel levels, multiplied by the interval length."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence, gumbel]
+  - id: airy1-gumbel-lean/ferrari-liu-gumbel-limit-remark-5-3
+    decl: Airy1Gumbel.gumbel_limit_continuum_airy1_ferrariLiu
+    kind: theorem
+    summary: "Remark 5.3 of arXiv:2611.23658v1, conditional on the raw Ferrari–Liu persistence expansion and the Airy₁ law inputs."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence, gumbel, conditional]
+  - id: airy1-gumbel-lean/ferrari-liu-rate-term
+    decl: Airy1Gumbel.ferrariLiuRateTerm
+    kind: construction
+    summary: "Positive-index summand in the persistence rate series."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-error-term
+    decl: Airy1Gumbel.ferrariLiuErrorTerm
+    kind: construction
+    summary: "Higher-degree trace remainder majorant at a positive index."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-beta-envelope
+    decl: Airy1Gumbel.ferrariLiuBeta_envelope
+    kind: theorem
+    summary: "The corrected exponential envelope bounds both branches of the Ferrari–Liu parameter."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-beta-exponent-le
+    decl: Airy1Gumbel.ferrariLiuBeta_exponent_le
+    kind: theorem
+    summary: "The envelope exponent is bounded above by a negative multiple of the square root."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-beta-uniform
+    decl: Airy1Gumbel.ferrariLiuBeta_uniform
+    kind: theorem
+    summary: "The uniform upper bound on the geometric ratio in the trace remainder."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-beta-limit
+    decl: Airy1Gumbel.ferrariLiuBeta_tendsto
+    kind: theorem
+    summary: "The two-branch parameter vanishes as the threshold tends to infinity."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-error-term-le-geometric
+    decl: Airy1Gumbel.ferrariLiuErrorTerm_le_geometric
+    kind: theorem
+    summary: "Bound on a higher-degree error term before summation."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-error-term-summable
+    decl: Airy1Gumbel.ferrariLiuErrorTerm_summable
+    kind: theorem
+    summary: "The higher-degree error majorant is summable in the persistence regime."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-error-bound-uniform
+    decl: Airy1Gumbel.ferrariLiuErrorBound_uniform
+    kind: theorem
+    summary: "The raw error majorant decays exponentially in length, uniformly over the thresholds."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-rate-term-bound
+    decl: Airy1Gumbel.ferrariLiuRateTerm_bound
+    kind: theorem
+    summary: "The leading Airy derivative estimate bounds each rate term above its argument cutoff."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-kappa-eq-head-add-tail
+    decl: Airy1Gumbel.ferrariLiuKappa_eq_head_add_tail
+    kind: theorem
+    summary: "Split the persistence rate into its degree-one term and the remaining series."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-decay-limit
+    decl: Airy1Gumbel.ferrariLiuDecay_tendsto
+    kind: theorem
+    summary: "The exponential factor in the Airy right-tail rate tends to zero."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-kappa-tail-is-big-o
+    decl: Airy1Gumbel.ferrariLiuKappa_tail_isBigO
+    kind: theorem
+    summary: "The higher-degree rate series has twice the leading exponential decay exponent."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-mul-rho-is-little-o
+    decl: Airy1Gumbel.ferrariLiu_mul_rhoM_isLittleO
+    kind: theorem
+    summary: "A multiplier tending to zero gives a lower-order term relative to the tail rate."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/ferrari-liu-kappa-div-rho-limit
+    decl: Airy1Gumbel.ferrariLiuKappa_div_rhoM_tendsto
+    kind: theorem
+    summary: "The persistence rate is asymptotic to the one-block tail rate at large thresholds."
+    file: Airy1Gumbel/FerrariLiuRoute.lean
+    status: internal
+    keywords: [airy1, persistence]
+  - id: airy1-gumbel-lean/fdd-positive-of-rectangle
+    decl: Airy1Gumbel.airy1FddPositive_of_rectangle
+    kind: theorem
+    summary: "Airy₁ finite-dimensional law existence from CDF nonnegativity, monotonicity, rectangular increments and the GOE left tail."
+    file: Airy1Gumbel/FddRectangle.lean
+    status: internal
+    keywords: [airy1, finite-dimensional-distributions, probability]
