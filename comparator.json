@@ -5,7 +5,10 @@
     "Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂",
     "Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord",
     "Airy1GumbelAudit.Airy1Gumbel.airy1FddPositive_of_goeLeftTail",
-    "Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input"
+    "Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input",
+    "Airy1GumbelAudit.Airy1Gumbel.goeLeftTail_holds",
+    "Airy1GumbelAudit.Airy1Gumbel.airy1FddPositive_holds",
+    "Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input"
   ],
   "definition_names": [],
   "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],

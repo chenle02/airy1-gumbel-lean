@@ -11,8 +11,9 @@ import Airy1Gumbel
 
 Each theorem of `Challenge.lean` is restated with the same name and type and proved from the
 package headlines `Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂` and
-`Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord`, and (since v0.9.0)
-from `Airy1Gumbel.airy1FddPositive_of_goeLeftTail`.
+`Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord`, (since v0.9.0)
+from `Airy1Gumbel.airy1FddPositive_of_goeLeftTail`, and (since v0.10.0) from
+`Airy1Gumbel.goeLeftTail_holds` and `Airy1Gumbel.airy1FddPositive_holds`.
 
 The bridges (namespace `Airy1GumbelBridge`):
 
@@ -306,5 +307,21 @@ theorem gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input (hT :
               (Y x f - gumbelAR T) / gumbelBR T ≤ z})
               atTop (𝓝 (Real.exp (-Real.exp (-z)))) :=
   gumbel_limit_continuum_real_normalized_airy1_final₂ (airy1FddPositive_of_goeLeftTail hT) hT
+
+theorem goeLeftTail_holds : GOELeftTail :=
+  Airy1GumbelBridge.goeLeftTail_iff.2 _root_.Airy1Gumbel.goeLeftTail_holds
+
+theorem airy1FddPositive_holds : Airy1FddPositive :=
+  Airy1GumbelBridge.airy1FddPositive_iff.2 _root_.Airy1Gumbel.airy1FddPositive_holds
+
+theorem gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input :
+    (∃ μ : Measure (ℝ → ℝ), IsAiry1Law μ) ∧
+      ∀ μ : Measure (ℝ → ℝ), IsAiry1Law μ →
+        (∃ Y : ℝ → (ℝ → ℝ) → ℝ, IsContinuousVersion μ Y) ∧
+          ∀ Y : ℝ → (ℝ → ℝ) → ℝ, IsContinuousVersion μ Y → CubicStrongMixing μ Y →
+            ∀ z : ℝ, Tendsto (fun T : ℝ => μ.real {f | ∀ x ∈ Icc (0 : ℝ) T,
+              (Y x f - gumbelAR T) / gumbelBR T ≤ z})
+              atTop (𝓝 (Real.exp (-Real.exp (-z)))) :=
+  gumbel_limit_continuum_real_normalized_airy1_final₂ airy1FddPositive_holds goeLeftTail_holds
 
 end Airy1GumbelAudit.Airy1Gumbel

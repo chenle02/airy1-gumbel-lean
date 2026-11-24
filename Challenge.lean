@@ -24,6 +24,13 @@ laws exist. `gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input`
 theorem without the hypothesis `Airy1FddPositive`, so its conclusion holds under `GOELeftTail`
 and `CubicStrongMixing` only. Neither proves `GOELeftTail` or `CubicStrongMixing`.
 
+Since v0.10.0 three more statements are compared. `goeLeftTail_holds` states the second input,
+`GOELeftTail`, with no hypothesis, and `airy1FddPositive_holds` states the first input,
+`Airy1FddPositive`, with no hypothesis.
+`gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input` is the first theorem
+without the hypotheses `Airy1FddPositive` and `GOELeftTail`, so its conclusion holds under
+`CubicStrongMixing` only. None of them proves `CubicStrongMixing`.
+
 Both theorems assert, from `Airy1FddPositive` and `GOELeftTail` alone, that an Airy₁ process
 law exists. They differ in where the mixing input enters.
 
@@ -90,6 +97,31 @@ version `Y` with paths continuous on `[0, ∞)` exists; and for every such versi
 `CubicStrongMixing` holds, and every real `z`,
 `μ{f : (Y x f − a_T)/b_T ≤ z for all x ∈ [0, T]} → exp(−e^{−z})` as `T → ∞`. -/
 theorem gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input (hT : GOELeftTail) :
+    (∃ μ : Measure (ℝ → ℝ), IsAiry1Law μ) ∧
+      ∀ μ : Measure (ℝ → ℝ), IsAiry1Law μ →
+        (∃ Y : ℝ → (ℝ → ℝ) → ℝ, IsContinuousVersion μ Y) ∧
+          ∀ Y : ℝ → (ℝ → ℝ) → ℝ, IsContinuousVersion μ Y → CubicStrongMixing μ Y →
+            ∀ z : ℝ, Tendsto (fun T : ℝ => μ.real {f | ∀ x ∈ Icc (0 : ℝ) T,
+              (Y x f - gumbelAR T) / gumbelBR T ≤ z})
+              atTop (𝓝 (Real.exp (-Real.exp (-z)))) := by
+  sorry
+
+/-- **The second input, proved (since v0.10.0).** There are `C, c > 0` with
+`airy1FinCdf {0} (fun _ => −M) ≤ C e^{−cM³}` for every `M ≥ 0`. -/
+theorem goeLeftTail_holds : GOELeftTail := by
+  sorry
+
+/-- **The first input, proved (since v0.10.0).** For every finite time set `I` there is a
+probability measure on `I → ℝ` whose distribution function is `airy1FinCdf I`: the Airy₁
+finite-dimensional laws exist. -/
+theorem airy1FddPositive_holds : Airy1FddPositive := by
+  sorry
+
+/-- **Theorem 1.1 (arXiv 2611.23658v1) under `CubicStrongMixing` only (since v0.10.0).** An Airy₁
+process law exists; for every Airy₁ law `μ` a version `Y` with paths continuous on `[0, ∞)`
+exists; and for every such version on which `CubicStrongMixing` holds, and every real `z`,
+`μ{f : (Y x f − a_T)/b_T ≤ z for all x ∈ [0, T]} → exp(−e^{−z})` as `T → ∞`. -/
+theorem gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input :
     (∃ μ : Measure (ℝ → ℝ), IsAiry1Law μ) ∧
       ∀ μ : Measure (ℝ → ℝ), IsAiry1Law μ →
         (∃ Y : ℝ → (ℝ → ℝ) → ℝ, IsContinuousVersion μ Y) ∧

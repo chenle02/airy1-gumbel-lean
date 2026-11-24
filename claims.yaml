@@ -1000,21 +1000,21 @@ claims:
     kind: theorem
     summary: "The one-time Airy₁ GOE determinant has a cubic left-tail bound with rate constant 1/163840."
     file: Airy1Gumbel/GOELeftTailDischarge.lean
-    status: internal
+    status: reusable
     keywords: [goe, airy1, left-tail, hermite]
   - id: airy1-gumbel-lean/airy1-fdd-positive-holds
     decl: Airy1Gumbel.airy1FddPositive_holds
     kind: theorem
     summary: "The Airy₁ finite-dimensional law record follows from flat TASEP and the proved GOE left tail."
     file: Airy1Gumbel/GOELeftTailCorollaries.lean
-    status: internal
+    status: reusable
     keywords: [airy1, goe]
   - id: airy1-gumbel-lean/gumbel-limit-continuum-real-normalized-airy1-final2-no-fdd-goe-input
     decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input
     kind: theorem
     summary: "Corollary of `gumbel_limit_continuum_real_normalized_airy1_final₂` with Airy1FddPositive and GOELeftTail discharged (proved). Inputs kept are CubicStrongMixing."
     file: Airy1Gumbel/GOELeftTailCorollaries.lean
-    status: internal
+    status: reusable
     keywords: [airy1, goe]
   - id: airy1-gumbel-lean/gumbel-limit-continuum-real-normalized-airy1-final2-no-fdd-input-no-goe-input
     decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input_no_goe_input
