@@ -4,6 +4,8 @@ Result numbers are those of arXiv:2611.23658v1.
 
 ## 0.10.0
 
+Zenodo: version DOI [10.5281/zenodo.24507461](https://doi.org/10.5281/zenodo.24507461); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+
 - `GOELeftTail` and `Airy1FddPositive` are proved with no hypothesis:
   `Airy1Gumbel.goeLeftTail_holds : GOELeftTail` in `Airy1Gumbel/GOELeftTailDischarge.lean`
   (the cubic left-tail bound with `c = 1/163840`: Hermite localization of the GOE kernel
