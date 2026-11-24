@@ -14,7 +14,7 @@
   <a class="skip" href="#content">Skip to content</a>
   <header>
     <a class="brand" href="./"><span>Airy₁ Gumbel: Lean Companion</span></a>
-    <a class="version" href="https://github.com/chenle02/airy1-gumbel-lean/releases/tag/v0.8.0" title="Release v0.8.0">v0.8.0</a>
+    <a class="version" href="https://github.com/chenle02/airy1-gumbel-lean/releases/tag/v0.9.0" title="Release v0.9.0">v0.9.0</a>
     <span class="tagline">Lean 4 paper companion · Theorem 1.1 under three named inputs · Apache-2.0</span>
   </header>
   <div class="shell">
@@ -96,8 +96,12 @@ are not constructed there: each statement asserts that an Airy₁ law exists, an
 laws a version continuous on <code>[0, ∞)</code> exists and the Gumbel limit holds for every such version
 (in the first form for every law and every continuous version satisfying the mixing input; in
 the second for every law whose coordinate process satisfies it). The check verifies the
-headline under the three inputs, not the inputs.
-<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Solution.lean"><code>Solution.lean</code></a> proves both statements from the package headlines, and
+headline under the three inputs, not the inputs. Since v0.9.0 <code>Challenge.lean</code> has two more
+statements: <code>airy1FddPositive_of_goeLeftTail</code> (under <code>GOELeftTail</code> alone, the Airy₁
+finite-dimensional laws exist) and <code>gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input</code>
+(the first form without the hypothesis <code>Airy1FddPositive</code>, so under <code>GOELeftTail</code> and
+<code>CubicStrongMixing</code> only); neither proves those two inputs.
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Solution.lean"><code>Solution.lean</code></a> proves all four statements from the package, and
 <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/comparator.json"><code>comparator.json</code></a> is the configuration the comparator checks (each Solution
 theorem has exactly its Challenge type and uses only the three standard axioms):</p>
 <pre><code class="language-sh">lake build ChallengeDefs Challenge Solution
@@ -107,8 +111,9 @@ theorem has exactly its Challenge type and uses only the three standard axioms):
 <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/comparator.json"><code>contrib/comparator.json</code></a>: the 103 theorem claims of
 <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/claims.yaml"><code>contrib/claims.yaml</code></a> up to v0.7.0, one Challenge theorem
 <code>Airy1GumbelLeanContribAudit.&lt;decl&gt;</code> each. The theorem claim added in v0.8.0
-(<code>box-cdf-measure</code>, the finite-box measure constructor) is <code>internal</code> and is not compared,
-and its module <code>FddMeasure/BoxCdf.lean</code> is not in the copied library.
+(<code>box-cdf-measure</code>, the finite-box measure constructor) and the nine added in v0.9.0 (flat
+TASEP and the extended Airy₁ determinants) are <code>internal</code> and are not compared, and their
+modules under <code>FddMeasure/</code> are not in the copied library.
 <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/contrib/Comparator/Challenge.lean"><code>contrib/Comparator/Challenge.lean</code></a>
 states them (76 as the elaborated types Lean prints, 27 as the declarations' own source
 statements) over <a href="https://github.com/chenle02/airy1-gumbel-lean/tree/main/contrib/Comparator/Defs"><code>contrib/Comparator/Defs</code></a>, a verbatim copy of the
@@ -124,12 +129,12 @@ lake env lean --run scripts/comparator/CheckFidelity.lean
 <pre><code class="language-toml">[[require]]
 name = &quot;airy1-gumbel-lean&quot;
 git = &quot;https://github.com/chenle02/airy1-gumbel-lean&quot;
-rev = &quot;v0.8.0&quot;
+rev = &quot;v0.9.0&quot;
 </code></pre>
     </main>
   </div>
   <footer>
-    Version 0.8.0 (released 2026-11-23) · <a href="https://doi.org/10.5281/zenodo.24466896">doi:10.5281/zenodo.24466896</a> · airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
+    Version 0.9.0 (released 2026-11-24) · <a href="https://doi.org/10.5281/zenodo.24488645">doi:10.5281/zenodo.24488645</a> · airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
   </footer>
 </body>
 </html>
