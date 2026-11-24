@@ -4,6 +4,8 @@ Result numbers are those of arXiv:2611.23658v1.
 
 ## 0.9.0
 
+Zenodo: version DOI [10.5281/zenodo.24488645](https://doi.org/10.5281/zenodo.24488645); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).
+
 - `Airy1FddPositive` is proved under `GOELeftTail`, not unconditionally:
   `Airy1Gumbel.airy1FddPositive_of_goeLeftTail (hT : GOELeftTail) : Airy1FddPositive` in
   `Airy1Gumbel/FddFromTasep.lean`. The contrib package formalizes flat discrete TASEP
