@@ -559,3 +559,8 @@ import Airy1GumbelContrib.FddMeasure.TasepKernel
 import Airy1GumbelContrib.FddMeasure.TasepSaddle
 import Airy1GumbelContrib.FddMeasure.TasepBinomial
 import Airy1GumbelContrib.FddMeasure.TasepScaling
+import Airy1GumbelContrib.GOE.GOEHermite
+import Airy1GumbelContrib.GOE.GOEHalfPhase
+import Airy1GumbelContrib.GOE.GOEHermiteLeakage
+import Airy1GumbelContrib.GOE.GOECompression
+import Airy1GumbelContrib.GOE.GOESpectralSection

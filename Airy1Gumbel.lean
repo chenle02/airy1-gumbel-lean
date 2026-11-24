@@ -55,3 +55,6 @@ import Airy1Gumbel.FerrariLiuRoute
 import Airy1Gumbel.FddRectangle
 import Airy1Gumbel.FddFromTasep
 import Airy1Gumbel.FddFromTasepCorollaries
+import Airy1Gumbel.GOETraceBound
+import Airy1Gumbel.GOELeftTailDischarge
+import Airy1Gumbel.GOELeftTailCorollaries

@@ -869,3 +869,87 @@ claims:
     file: Airy1GumbelContrib/FddMeasure/TasepScaling.lean
     status: internal
     keywords: [tasep, airy1, fredholm-determinant]
+  - id: airy1-gumbel-lean-contrib/hermite-normalized-poly-growth
+    decl: GOELocalization.norm_hermiteNormalizedPoly_le
+    kind: theorem
+    summary: "The normalized probabilists' Hermite polynomial obeys a complex exponential growth bound."
+    file: Airy1GumbelContrib/GOE/GOEHermite.lean
+    status: internal
+    keywords: [hermite, polynomial, growth]
+  - id: airy1-gumbel-lean-contrib/hermite-scaled-orthonormal
+    decl: GOELocalization.hermiteScaled_orthonormal
+    kind: theorem
+    summary: "The scaled Hermite functions are orthonormal on the real line for every positive dilation."
+    file: Airy1GumbelContrib/GOE/GOEHermite.lean
+    status: internal
+    keywords: [hermite, gaussian, orthonormality]
+  - id: airy1-gumbel-lean-contrib/goe-airy-involution-frequency
+    decl: GOELocalization.goeAiryInvolution_frequency
+    kind: theorem
+    summary: "The half-phase multiplier conjugates frequency reflection to the full Airy symbol times reflection."
+    file: Airy1GumbelContrib/GOE/GOEHalfPhase.lean
+    status: internal
+    keywords: [airy, fourier, isometry]
+  - id: airy1-gumbel-lean-contrib/half-airy-packet-real
+    decl: GOELocalization.halfAiryPacket_real
+    kind: theorem
+    summary: "An Airy half-phase packet with real even-mode Hermite coefficients takes real values."
+    file: Airy1GumbelContrib/GOE/GOEHalfPhase.lean
+    status: internal
+    keywords: [airy, hermite, fourier]
+  - id: airy1-gumbel-lean-contrib/half-airy-packet-shift
+    decl: GOELocalization.halfAiryPacket_shift
+    kind: theorem
+    summary: "An exponentially weighted Hermite packet is the inverse Fourier integral of its shifted frequency profile within the Gaussian strip."
+    file: Airy1GumbelContrib/GOE/GOEHalfPhase.lean
+    status: internal
+    keywords: [airy, hermite, fourier, contour]
+  - id: airy1-gumbel-lean-contrib/half-airy-packet-weighted-energy
+    decl: GOELocalization.halfAiryPacket_weightedEnergy
+    kind: theorem
+    summary: "For positive dilation and a nonnegative shift inside the Gaussian strip, the weighted squared packet norm equals the squared norm on the shifted frequency line."
+    file: Airy1GumbelContrib/GOE/GOEHermiteLeakage.lean
+    status: internal
+    keywords: [airy, hermite, fourier, plancherel]
+  - id: airy1-gumbel-lean-contrib/half-airy-packet-leakage
+    decl: GOELocalization.halfAiryPacket_leakage
+    kind: theorem
+    summary: "For cutoffs at least 16, the squared Hermite packet norm below the negative cutoff is bounded by the squared coefficient norm times exp(-M sqrt(M)/16)."
+    file: Airy1GumbelContrib/GOE/GOEHermiteLeakage.lean
+    status: internal
+    keywords: [airy, hermite, localization, leakage]
+  - id: airy1-gumbel-lean-contrib/goe-op-cut-involution
+    decl: GOELocalization.goeOp_eq_cut_involution
+    kind: theorem
+    summary: "The GOE operator is the real Airy involution compressed to the right open half-line."
+    file: Airy1GumbelContrib/GOE/GOECompression.lean
+    status: internal
+    keywords: [goe, airy, operator, compression]
+  - id: airy1-gumbel-lean-contrib/goe-op-norm-le-one
+    decl: GOELocalization.norm_goeOp_le_one
+    kind: theorem
+    summary: "The GOE operator has norm at most one at every real cutoff."
+    file: Airy1GumbelContrib/GOE/GOECompression.lean
+    status: internal
+    keywords: [goe, operator, contraction]
+  - id: airy1-gumbel-lean-contrib/goe-op-small-defect-family
+    decl: GOELocalization.goeOp_small_defect_family
+    kind: theorem
+    summary: "For M at least 16, the compressed GOE operator has an orthonormal family of goeModeCount M vectors with defect at most 4 exp(-M sqrt(M)/16)."
+    file: Airy1GumbelContrib/GOE/GOECompression.lean
+    status: internal
+    keywords: [goe, hermite, localization, compression]
+  - id: airy1-gumbel-lean-contrib/det-le-prod-diag-possemidef
+    decl: GOELocalization.det_le_prod_diag_of_posSemidef
+    kind: theorem
+    summary: "The determinant of a real positive semidefinite matrix is bounded above by the product of its diagonal entries."
+    file: Airy1GumbelContrib/GOE/GOESpectralSection.lean
+    status: internal
+    keywords: [hadamard, matrix, determinant]
+  - id: airy1-gumbel-lean-contrib/fredholm-det-orthonormal-defect
+    decl: GOELocalization.fredholmDet_le_of_orthonormal_defect
+    kind: theorem
+    summary: "For a real trace-class self-adjoint contraction, N orthonormal vectors with defect at most q give the unit-coupling determinant upper bound q^N exp(N - trace B)."
+    file: Airy1GumbelContrib/GOE/GOESpectralSection.lean
+    status: internal
+    keywords: [fredholm-determinant, trace-class, spectral, hadamard]
