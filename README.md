@@ -539,8 +539,8 @@ and [`CITATION.cff`](CITATION.cff).
 Theorem 1.1 is proved for a constructed continuous Airy\_1 process under three named inputs, and since v0.10.0 under CubicStrongMixing only (GOELeftTail and Airy1FddPositive proved); Lemmas 4.1, 4.2, Proposition 4.3 and Remark 5.3 under further named inputs, each assumed. Lemmas 3.3-3.8 and B.1-B.6 are contrib results, outside only because rows name main-package claims.
 
 - Paper: *Gumbel Fluctuations of the Maximum of the Airy\_1 Process*, [arXiv:2611.23658v1](https://arxiv.org/abs/2611.23658v1).
-- Results listed: 26. In Lean with the paper's own hypotheses: 2; in Lean with extra hypotheses, named below: 12; not formalized: 12.
-- Verified: 5 of the 14 result(s) in Lean.
+- Results listed: 24. In Lean with the paper's own hypotheses: 0; in Lean with extra hypotheses, named below: 12; not formalized: 12.
+- Verified: 3 of the 12 result(s) in Lean.
 
 ## The paper's results in Lean
 
@@ -650,43 +650,7 @@ theorem airy1FddPositive_holds : Airy1FddPositive
 
 **Axioms.** At most `Classical.choice`, `Quot.sound`, `propext` (what the build check records for the whole package).
 
-**Note.** New in v0.10.0: the conclusion of the first row under CubicStrongMixing only, with GOELeftTail and Airy1FddPositive proved with no hypothesis. No input is added; \_final2, \_final2\_no\_fdd\_input and every original statement are unchanged and still take the records as hypotheses. All three claims are compared. The form \_final2\_no\_fdd\_input\_no\_goe\_input is built, not compared.
-
-### Input GOELeftTail: Cubic left tail of the one-point GOE law
-
-**Verified.** Lean accepts the proof, and lean-pkg's record shows every check of this result passed (the build, and the statement comparison).
-
-**In the paper.** The statement is not quoted here; read it in the paper.
-
-**In Lean.** `Airy1GumbelAudit.Airy1Gumbel.goeLeftTail_holds` in [Challenge.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/8ccd7ca5114686844418b8e1d0a9ed1379559562/Challenge.lean): the statement the proof was checked against (the proof is in a separate file, and a second checker confirmed it proves exactly this).
-
-```lean
-theorem goeLeftTail_holds : GOELeftTail
-```
-
-**Hypotheses.** The paper's own: the Lean statement assumes nothing the paper does not.
-
-**Axioms.** At most `Classical.choice`, `Quot.sound`, `propext` (what the build check records for the whole package).
-
-**Note.** Not a numbered result of the paper: an input of the Lean construction (Baik-Buckingham-DiFranco 2008 with the Ferrari-Spohn identity). Proved with no hypothesis since v0.10.0: goeLeftTail\_holds, with c = 1/163840, by Hermite localization of the GOE kernel operator (contrib GOE/). Compared. The original statements still take it as a hypothesis, unchanged.
-
-### Input Airy1FddPositive: The finite-dimensional Airy\_1 laws
-
-**Verified.** Lean accepts the proof, and lean-pkg's record shows every check of this result passed (the build, and the statement comparison).
-
-**In the paper.** The statement is not quoted here; read it in the paper.
-
-**In Lean.** `Airy1GumbelAudit.Airy1Gumbel.airy1FddPositive_holds` in [Challenge.lean](https://github.com/chenle02/airy1-gumbel-lean/blob/8ccd7ca5114686844418b8e1d0a9ed1379559562/Challenge.lean): the statement the proof was checked against (the proof is in a separate file, and a second checker confirmed it proves exactly this).
-
-```lean
-theorem airy1FddPositive_holds : Airy1FddPositive
-```
-
-**Hypotheses.** The paper's own: the Lean statement assumes nothing the paper does not.
-
-**Axioms.** At most `Classical.choice`, `Quot.sound`, `propext` (what the build check records for the whole package).
-
-**Note.** Not a numbered result of the paper, which starts from the Airy\_1 process (Quastel-Remenik, Theorem 1; Borodin-Ferrari-Prahofer 2007). Proved with no hypothesis since v0.10.0: airy1FddPositive\_holds := airy1FddPositive\_of\_goeLeftTail goeLeftTail\_holds (flat discrete TASEP, since v0.9.0). Compared. The original statements still take it as a hypothesis, unchanged.
+**Note.** New in v0.10.0: the conclusion of the first row under CubicStrongMixing only. Both records are proved with no hypothesis: goeLeftTail\_holds : GOELeftTail, airy1FddPositive\_holds : Airy1FddPositive. No input is added; \_final2 and every original statement are unchanged and still take the records as hypotheses. All three claims are compared; \_final2\_no\_fdd\_input\_no\_goe\_input is built, not compared.
 
 ### Proposition 1.2: Two-term expansion of the one-block tail
 
