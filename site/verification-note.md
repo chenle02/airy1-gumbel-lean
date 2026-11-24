@@ -6,7 +6,7 @@ the two forms of Theorem 1.1 under three inputs, (since v0.9.0) the proof of
 `Airy1FddPositive` from `GOELeftTail` and the two-input form of Theorem 1.1, and (since
 v0.10.0) `GOELeftTail` and `Airy1FddPositive` with no hypothesis and the one-input form of
 Theorem 1.1, under `CubicStrongMixing` only. Those are the claims of the three Theorem 1.1
-rows and of the two rows of the records, so all five are reported as verified. The rows of the other results name claims that `claims.yaml` marks
+rows, so all three are reported as verified. The rows of the other results name claims that `claims.yaml` marks
 internal, whose statements no second checker compared; the page reports them as "Built, not
 compared": Lean's kernel checked their proofs in the build, and whether each Lean statement
 says what the paper says is the comparison the page asks the reader to make.

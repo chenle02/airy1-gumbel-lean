@@ -31,8 +31,9 @@ Result numbers are those of arXiv:2611.23658v1.
   18 claims appended to `claims.yaml` (those three compared, 15 `internal`) and 12 to
   `contrib/claims.yaml` (`internal`).
 - `coverage.yaml`: a row "Theorem 1.1, one-input form" under `CubicStrongMixing` only; the
-  three- and two-input rows are kept. Two rows for the records, each proved with no
-  hypothesis. The Proposition 1.2 row is checked against the current library: it names the
+  three- and two-input rows are kept. That row names `goeLeftTail_holds` and
+  `airy1FddPositive_holds` (the two records, proved with no hypothesis) beside the
+  headline; all three are compared. The Proposition 1.2 row is checked against the current library: it names the
   process-level expansion for every `T > 0` and the actual-process determinant law for
   `T ≥ 1` (the earlier `block-law-core`, under the extra hypothesis `MeshHittingLimit`, and
   the sharp one-block tail `sharp-tail-discharge` are no longer listed there). The 15

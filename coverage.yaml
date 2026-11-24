@@ -35,17 +35,7 @@ rows:
       - airy1-gumbel-lean/airy1-fdd-positive-holds
     inputs:
       - "CubicStrongMixing: strong mixing between past and future sigma-algebras at rate exp(-c d^3) (Chen-Pu, arXiv 2607.17113, Proposition 3.1), stated for the process built from airy1FddPositive_holds and goeLeftTail_holds"
-    note: "New in v0.10.0: the conclusion of the first row under CubicStrongMixing only, with GOELeftTail and Airy1FddPositive proved with no hypothesis. No input is added; _final2, _final2_no_fdd_input and every original statement are unchanged and still take the records as hypotheses. All three claims are compared. The form _final2_no_fdd_input_no_goe_input is built, not compared."
-  - paper: {number: "Input GOELeftTail", title: "Cubic left tail of the one-point GOE law"}
-    class: same-assumptions
-    claims:
-      - airy1-gumbel-lean/goe-left-tail-holds
-    note: "Not a numbered result of the paper: an input of the Lean construction (Baik-Buckingham-DiFranco 2008 with the Ferrari-Spohn identity). Proved with no hypothesis since v0.10.0: goeLeftTail_holds, with c = 1/163840, by Hermite localization of the GOE kernel operator (contrib GOE/). Compared. The original statements still take it as a hypothesis, unchanged."
-  - paper: {number: "Input Airy1FddPositive", title: "The finite-dimensional Airy_1 laws"}
-    class: same-assumptions
-    claims:
-      - airy1-gumbel-lean/airy1-fdd-positive-holds
-    note: "Not a numbered result of the paper, which starts from the Airy_1 process (Quastel-Remenik, Theorem 1; Borodin-Ferrari-Prahofer 2007). Proved with no hypothesis since v0.10.0: airy1FddPositive_holds := airy1FddPositive_of_goeLeftTail goeLeftTail_holds (flat discrete TASEP, since v0.9.0). Compared. The original statements still take it as a hypothesis, unchanged."
+    note: "New in v0.10.0: the conclusion of the first row under CubicStrongMixing only. Both records are proved with no hypothesis: goeLeftTail_holds : GOELeftTail, airy1FddPositive_holds : Airy1FddPositive. No input is added; _final2 and every original statement are unchanged and still take the records as hypotheses. All three claims are compared; _final2_no_fdd_input_no_goe_input is built, not compared."
   - paper: {number: "Proposition 1.2", title: "Two-term expansion of the one-block tail"}
     class: inputs-supplied
     claims:

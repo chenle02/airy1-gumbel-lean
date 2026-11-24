@@ -34,12 +34,13 @@ GH = "https://github.com/chenle02/airy1-gumbel-lean"
 SITE_URL = "https://chenle02.github.io/airy1-gumbel-lean/"
 PAPER_URL = "https://arxiv.org/abs/2611.23658v1"
 SITE_TITLE = "Airy₁ Gumbel: Lean Companion"
-TAGLINE = ("Lean 4 paper companion · Theorem 1.1 under three named inputs "
+TAGLINE = ("Lean 4 paper companion · Theorem 1.1 under one named input, CubicStrongMixing "
            "· Apache-2.0")
 DESCRIPTION = ("Lean 4 companion to Le Chen and Fei Pu, Gumbel Fluctuations of the Maximum "
                "of the Airy_1 Process (arXiv:2611.23658v1): Theorem 1.1 verified (build and "
-               "statement comparison) under three named inputs, Airy1FddPositive, "
-               "GOELeftTail and CubicStrongMixing; the mesoscopic step is proved by a "
+               "statement comparison) for the constructed Airy_1 process under one named "
+               "input, CubicStrongMixing (Airy1FddPositive and GOELeftTail are proved); "
+               "the three- and two-input forms remain; the mesoscopic step is proved by a "
                "two-time Fredholm determinant bound instead of the paper's association "
                "route. It does not certify the whole manuscript. Apache-2.0.")
 
