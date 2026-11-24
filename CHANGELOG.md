@@ -2,6 +2,43 @@
 
 Result numbers are those of arXiv:2611.23658v1.
 
+## 0.9.0
+
+- `Airy1FddPositive` is proved under `GOELeftTail`, not unconditionally:
+  `Airy1Gumbel.airy1FddPositive_of_goeLeftTail (hT : GOELeftTail) : Airy1FddPositive` in
+  `Airy1Gumbel/FddFromTasep.lean`. The contrib package formalizes flat discrete TASEP
+  (sequential update) and its finite-window law, expresses its gap probabilities as
+  Fredholm series of the Borodin–Ferrari–Prähofer kernel, and proves that the rescaled
+  distribution functions converge to the extended Airy₁ determinants `AiryFdd.airy1FinCdf`
+  (nine new modules under `contrib/Airy1GumbelContrib/FddMeasure/`). The limits are
+  nonnegative, monotone and have nonnegative rectangle increments, which the v0.8.0
+  reduction `airy1FddPositive_of_rectangle` turns into the finite-dimensional laws.
+- New headline form:
+  `Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input
+  (hT : GOELeftTail) (M : CubicStrongMixing (airy1SRP (airy1FddPositive_of_goeLeftTail hT) hT)) (z : ℝ)`,
+  the conclusion of `_final₂` under `GOELeftTail` and `CubicStrongMixing` only. With it,
+  175 `_no_fdd_input` forms of earlier results in `Airy1Gumbel/FddFromTasepCorollaries.lean`,
+  each its original with `Airy1FddPositive` supplied by `airy1FddPositive_of_goeLeftTail`
+  and every other hypothesis kept.
+- No input is added. `_final₂`, `_final₂_coord` and every earlier statement are
+  unchanged and still take `Airy1FddPositive` as a hypothesis; the comparator checks the
+  same two `_final₂` statements as before and does not check the `_no_fdd_input` forms.
+  44 claims appended to `claims.yaml` and 9 to `contrib/claims.yaml`, all `internal`
+  (built, not compared).
+- `coverage.yaml`: a row "Theorem 1.1, two-input form" with the two inputs `GOELeftTail`
+  and `CubicStrongMixing`; the Theorem 1.1 row keeps its three inputs and says that the
+  first is now proved under `GOELeftTail`. The single row "Lemmas 3.3-3.8" is replaced by
+  one row per lemma, each giving the contrib declarations that prove it: Lemmas 3.6 and
+  3.7 as stated, 3.3, 3.4 and 3.5 in a different form, 3.8 in a weaker form
+  (Hilbert–Schmidt norms, not trace norms). They stay outside the table because its rows
+  name claims of the main package only. A new outside row records that Lemmas B.1–B.6 of
+  Appendix B are not checked as stated.
+- The docstring of `FerrariLiuPersistence` cites Ferrari–Liu by the numbering of their
+  published paper (Electron. J. Probab. 29 (2024), paper 149) instead of line numbers of a
+  local source (comment only).
+- Both packages move to version 0.9.0; the lower-tier and comparator receipts of both are
+  re-cut.
+
 ## 0.8.0
 
 Zenodo: version DOI [10.5281/zenodo.24466896](https://doi.org/10.5281/zenodo.24466896); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).

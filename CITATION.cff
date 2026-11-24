@@ -3,16 +3,16 @@ message: "If you use this software, please cite it by its release version or exa
 title: "airy1-gumbel-lean: Lean companion to Gumbel fluctuations of the maximum of the Airy_1 process"
 type: software
 license: Apache-2.0
-version: "0.8.0"
+version: "0.9.0"
 doi: "10.5281/zenodo.24398888"
-date-released: "2026-11-23"
+date-released: "2026-11-24"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.24398888"
     description: "Concept DOI: all versions (resolves to the latest)"
   - type: doi
     value: "10.5281/zenodo.24466896"
-    description: "Version DOI: v0.8.0"
+    description: "Version DOI of the earlier release v0.8.0"
   - type: doi
     value: "10.5281/zenodo.24442505"
     description: "Version DOI of the earlier release v0.7.0"
@@ -69,9 +69,11 @@ abstract: >-
   estimates) is proved under the first two inputs and a new named input,
   the finite-length persistence expansion of Ferrari-Liu 2024
   (FerrariLiuPersistence), which is assumed, not proved, and used only
-  there. A reduction of the first input to three properties of the
-  Fredholm-determinant distribution functions is proved; the first input
-  remains an input. This checks the paper's main theorem along that route and the listed component
+  there. The first input is proved under the second (not unconditionally),
+  through flat discrete TASEP and its scaling limit, so the main theorem
+  also holds under the second and third inputs alone; the original
+  statements, which the comparator checks, still take the first input as a
+  hypothesis. This checks the paper's main theorem along that route and the listed component
   results; it does not certify the whole manuscript.
 keywords:
   - Lean 4

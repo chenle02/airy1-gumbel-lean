@@ -5,7 +5,9 @@
 Lean 4 companion to Le Chen and Fei Pu, *Gumbel Fluctuations of the Maximum of the
 Airy₁ Process* ([arXiv 2611.23658](https://arxiv.org/abs/2611.23658)): a kernel-checked
 proof that the maximum of a constructed Airy₁ process over `[0, T]`, centred and scaled
-as in the paper, converges to the Gumbel law, under three named inputs.
+as in the paper, converges to the Gumbel law, under three named inputs. Since v0.9.0 the
+first input, `Airy1FddPositive`, is proved under the second, `GOELeftTail`, so the same
+limit also holds under two named inputs (`GOELeftTail` and `CubicStrongMixing`).
 
 ## What is proved
 
@@ -59,7 +61,10 @@ the earlier association-route headline, Lemma 4.2 (since v0.5.0) and Proposition
 > **Not proved here.**
 > - The three inputs above are assumptions of the headline theorem, not theorems.
 >   `GOELeftTail` is an extra explicit input relative to the paper, which starts from an
->   existing continuous Airy₁ process.
+>   existing continuous Airy₁ process. Since v0.9.0 the first input, `Airy1FddPositive`,
+>   is proved under the second (`airy1FddPositive_of_goeLeftTail`), not unconditionally;
+>   `_final₂_no_fdd_input` has the headline's conclusion under `GOELeftTail` and
+>   `CubicStrongMixing` only, and those two remain assumptions.
 > - The paper proves its mesoscopic step through association (Pu 2025), Newman's
 >   inequality and the Basu–Busani–Ferrari covariance asymptotic. The headline's Lean
 >   proof takes a different route for that step (a two-time Fredholm determinant bound)
@@ -96,13 +101,54 @@ the earlier association-route headline, Lemma 4.2 (since v0.5.0) and Proposition
 >   input, `FerrariLiuPersistence`: the finite-length persistence expansion of Ferrari–Liu
 >   (2024), which is assumed, not proved, here and is used only by Remark 5.3. The headline
 >   `_final₂` does not use it.
-> - `Airy1FddPositive` is still an input. Since v0.8.0 it is reduced
->   (`airy1FddPositive_of_rectangle`) to three properties of the distribution functions
->   `AiryFdd.airy1FinCdf` (nonnegativity, monotonicity, nonnegative rectangle increments)
->   and `GOELeftTail`; those three properties are not proved here.
+> - `Airy1FddPositive` is proved under `GOELeftTail` (since v0.9.0), not
+>   unconditionally. The original theorems, the headline `_final₂` and the statements the
+>   comparator checks among them, still take it as a hypothesis, unchanged; the
+>   `_no_fdd_input` forms do not take it, and the comparator does not check them.
+> - Lemmas 3.3–3.8 (the intermediate lemmas of the paper's proof of Proposition 1.4) are
+>   proved in the contrib package, 3.6 and 3.7 as stated, 3.3, 3.4 and 3.5 in a different
+>   form and 3.8 in a weaker form (Hilbert–Schmidt norms, not trace norms); they are not
+>   claims of the main package, so `coverage.yaml` lists them outside its table, each
+>   with its declarations. Lemmas B.1–B.6 of Appendix B are not checked as stated.
 > - This repository does not certify the whole manuscript: it checks the main theorem
 >   along the route described above and the component results listed in
 >   [`claims.yaml`](claims.yaml) and [`contrib/claims.yaml`](contrib/claims.yaml).
+
+Since v0.9.0, `Airy1FddPositive` is proved under `GOELeftTail`, and the headline holds
+under two named inputs.
+[`Airy1Gumbel.airy1FddPositive_of_goeLeftTail`](Airy1Gumbel/FddFromTasep.lean)
+`(hT : GOELeftTail) : Airy1FddPositive` constructs, for every finite set of times, a
+probability law whose box distribution function is `AiryFdd.airy1FinCdf`: the nested package
+formalizes flat discrete TASEP (sequential update) and its finite-window law, writes its
+gap probabilities as Fredholm series of the Borodin–Ferrari–Prähofer kernel, and proves that
+the rescaled distribution functions converge to the extended Airy₁ determinants
+(`AiryFdd.tendsto_flatTasepCdf_extendedSeries`,
+`AiryFdd.airyExtendedSeries_eq_airy1FinCdf`, in
+[`contrib/Airy1GumbelContrib/FddMeasure/`](contrib/Airy1GumbelContrib/FddMeasure)). The
+limits inherit nonnegativity, monotonicity and nonnegative rectangle increments, and the
+v0.8.0 reduction `airy1FddPositive_of_rectangle` turns them into the measures, with
+`GOELeftTail` for the behaviour at `−∞`. It is proved under `GOELeftTail`, not
+unconditionally. The new headline is
+[`Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input`](Airy1Gumbel/FddFromTasepCorollaries.lean):
+
+```lean
+theorem gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input (hT : GOELeftTail)
+    (M : CubicStrongMixing (airy1SRP (airy1FddPositive_of_goeLeftTail hT) hT)) (z : ℝ) :
+    Tendsto (fun T : ℝ => (airy1Law (airy1FddPositive_of_goeLeftTail hT)).real {f | ∀ x ∈ Set.Icc (0 : ℝ) T,
+      (airy1ContR (airy1FddPositive_of_goeLeftTail hT) x f - gumbelAR T) / gumbelBR T ≤ z})
+      atTop (𝓝 (Real.exp (-Real.exp (-z))))
+```
+
+It is `_final₂` at `h := airy1FddPositive_of_goeLeftTail hT`: the same conclusion under
+`GOELeftTail` and `CubicStrongMixing` only. No input is added, and `_final₂` and every
+earlier statement are unchanged; the originals still take `Airy1FddPositive` as a
+hypothesis. [`Airy1Gumbel/FddFromTasepCorollaries.lean`](Airy1Gumbel/FddFromTasepCorollaries.lean)
+has 175 such `_no_fdd_input` forms of earlier results, each its original with the
+hypothesis `Airy1FddPositive` supplied by `airy1FddPositive_of_goeLeftTail` (taking
+`GOELeftTail` where the original did not); every other hypothesis of the original, among
+them the named inputs of Lemmas 4.1, 4.2, Proposition 4.3 and Remark 5.3, is kept. The 44 new claims of
+the main package and the 9 of the contrib package are `internal`: Lean's kernel checked
+their proofs, but the comparator does not compare their statements.
 
 Since v0.8.0, Remark 5.3 (the Gumbel limit derived from the Ferrari–Liu persistence
 estimates) is proved for the constructed continuous process, along integer lengths as the
@@ -142,9 +188,8 @@ box `(a, b]` a nonnegative alternating corner sum (`boxCdfIncrement F a b ≥ 0`
 [`Airy1Gumbel.airy1FddPositive_of_rectangle`](Airy1Gumbel/FddRectangle.lean) derives
 `Airy1FddPositive` from `GOELeftTail` and three properties of the Fredholm-determinant
 formulas `AiryFdd.airy1FinCdf I`, for every finite set of times `I`: nonnegativity,
-monotonicity and nonnegative rectangle increments. Those three properties are hypotheses
-of the theorem, not proved here, so `Airy1FddPositive` remains a named input of every
-result above; this reduction removes none. The new claims (one in each package) are
+monotonicity and nonnegative rectangle increments. In v0.8.0 those three properties were
+hypotheses of the theorem; v0.9.0 proves them (see above). The new claims (one in each package) are
 `internal`.
 
 Since v0.6.0, Proposition 4.3 (the mesoscopic sum, eq. (4.6)) is proved as a standalone
@@ -337,8 +382,9 @@ Since v0.3.1 the contrib package has its own comparator configuration,
 [`contrib/comparator.json`](contrib/comparator.json): the 103 theorem claims of
 [`contrib/claims.yaml`](contrib/claims.yaml) up to v0.7.0, one Challenge theorem
 `Airy1GumbelLeanContribAudit.<decl>` each. The theorem claim added in v0.8.0
-(`box-cdf-measure`, the finite-box measure constructor) is `internal` and is not compared,
-and its module `FddMeasure/BoxCdf.lean` is not in the copied library.
+(`box-cdf-measure`, the finite-box measure constructor) and the nine added in v0.9.0 (flat
+TASEP and the extended Airy₁ determinants) are `internal` and are not compared, and their
+modules under `FddMeasure/` are not in the copied library.
 [`contrib/Comparator/Challenge.lean`](contrib/Comparator/Challenge.lean)
 states them (76 as the elaborated types Lean prints, 27 as the declarations' own source
 statements) over [`contrib/Comparator/Defs`](contrib/Comparator/Defs), a verbatim copy of the
@@ -359,7 +405,7 @@ To use the library from another Lake project:
 [[require]]
 name = "airy1-gumbel-lean"
 git = "https://github.com/chenle02/airy1-gumbel-lean"
-rev = "v0.8.0"
+rev = "v0.9.0"
 ```
 
 ## Trust and axioms
@@ -378,8 +424,10 @@ rev = "v0.8.0"
   proved here. Remark 5.3 (`gumbel_limit_continuum_airy1_ferrariLiu`) assumes, besides
   the first two, the new input `FerrariLiuPersistence` (the finite-length persistence
   expansion of Ferrari–Liu 2024), which is not proved here and which no other result uses.
-- `airy1FddPositive_of_rectangle` proves `Airy1FddPositive` only from three hypotheses on
-  `AiryFdd.airy1FinCdf` that are not proved here; `Airy1FddPositive` stays an input.
+- `airy1FddPositive_of_goeLeftTail` proves `Airy1FddPositive` under `GOELeftTail`, not
+  unconditionally. The `_no_fdd_input` headline therefore assumes `GOELeftTail` and
+  `CubicStrongMixing`, neither of which is proved here. The comparator checks the two
+  `_final₂` statements under the three inputs, not the `_no_fdd_input` forms.
 - The correspondence between the Lean statements and the paper was checked by AI-assisted
   review, not by an independent human referee.
 
