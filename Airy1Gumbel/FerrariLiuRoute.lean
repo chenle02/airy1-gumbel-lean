@@ -54,14 +54,16 @@ with one-point CDF `F₁(2s)`. The fields give the raw estimates for real
 `c ≥ 3/2` and `L ≥ 1`.
 
 The expansion assumes the Ferrari–Liu trace-log identity
-`log det(1 - K) = -Σ Tr(K^n)/n`, used without proof in Section 2 (source lines
-194–195) and Section 2.4 (source lines 889–891).
-Ferrari–Liu's equation (2.79) (source line 599) has a sign typo.
-The rate uses the sign in their Lemma 2.6 and in the assembled trace formulas
-(source lines 552, 652–654, and 915).
+`log det(1 - K) = -Σ Tr(K^n)/n`, used without proof in their (2.10)
+(Section 2) and (2.110) (Section 2.4).
+Ferrari–Liu's equation (2.66) has a sign typo.
+The rate uses the sign in their Lemma 2.6 and in the assembled trace formulas:
+(2.58), Proposition 2.13, and the definition of `κₙ` after (2.114).
 The degree-one error uses coefficient 2. The display in Proposition 2.5
-(source lines 297–301) prints 1, and the intermediate estimates give
-`(1 + β) exp(-4 L³/3) ≤ 2 exp(-4 L³/3)`. -/
+prints 1, and the intermediate estimates give
+`(1 + β) exp(-4 L³/3) ≤ 2 exp(-4 L³/3)`.
+Equation, lemma and proposition numbers are those of the published paper
+(Electron. J. Probab. 29 (2024), paper 149; the same in arXiv:2402.10661v2). -/
 structure FerrariLiuPersistence {Ω : Type*} [MeasurableSpace Ω]
     (μ : Measure Ω) [IsProbabilityMeasure μ] (A : ℝ → Ω → ℝ) where
   S : ℝ → ℝ

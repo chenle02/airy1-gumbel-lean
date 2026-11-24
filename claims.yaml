@@ -680,3 +680,311 @@ claims:
     file: Airy1Gumbel/FddRectangle.lean
     status: internal
     keywords: [airy1, finite-dimensional-distributions, probability]
+  - id: airy1-gumbel-lean/fdd-positive-of-goe-left-tail
+    decl: Airy1Gumbel.airy1FddPositive_of_goeLeftTail
+    kind: theorem
+    summary: "The Airy₁ finite-dimensional laws follow from flat TASEP with grounding supplied by GOELeftTail."
+    file: Airy1Gumbel/FddFromTasep.lean
+    status: internal
+    keywords: [airy1, tasep, finite-dimensional-distributions]
+  - id: airy1-gumbel-lean/airy1-fincdf-rectangle-nonneg
+    decl: Airy1Gumbel.airy1FinCdf_rectangle_nonneg
+    kind: theorem
+    summary: "Every half-open rectangle increment of the Airy₁ finite-dimensional CDF is nonnegative."
+    file: Airy1Gumbel/FddFromTasep.lean
+    status: internal
+    keywords: [airy1, tasep, rectangle]
+  - id: airy1-gumbel-lean/airy1-fdd-positive-record-no-fdd-input
+    decl: Airy1Gumbel.airy1Fdd_map_erase_no_fdd_input
+    kind: theorem
+    summary: "Corollary of airy1Fdd_map_erase. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [external-record, finite-dimensional-distributions, airy1, vacuity-falsity-audit, p8-m2]
+  - id: airy1-gumbel-lean/airy1-process-law-no-fdd-input
+    decl: Airy1Gumbel.airy1Law_map_timeShift_no_fdd_input
+    kind: theorem
+    summary: "Corollary of airy1Law_map_timeShift. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [kolmogorov-extension, finite-dimensional-distributions, airy1, stationarity, p8-m3]
+  - id: airy1-gumbel-lean/truncated-moment-no-fdd-input
+    decl: Airy1Gumbel.lintegral_clamp_incr_rpow_le_no_fdd_input
+    kind: theorem
+    summary: "Corollary of lintegral_clamp_incr_rpow_le. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [kolmogorov-chentsov, truncated-moment, airy1, continuity, p8-m4]
+  - id: airy1-gumbel-lean/continuous-version-lower-clamped-no-fdd-input
+    decl: Airy1Gumbel.exists_continuous_version_max_no_fdd_input
+    kind: theorem
+    summary: "Corollary of exists_continuous_version_max. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [kolmogorov-chentsov, continuity, airy1, upper-boundedness, p8-m4]
+  - id: airy1-gumbel-lean/goe-left-tail-record-no-fdd-input
+    decl: Airy1Gumbel.GOELeftTail.airy1Law_le_no_fdd_input
+    kind: theorem
+    summary: "Corollary of GOELeftTail.airy1Law_le. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [external-record, goe-left-tail, airy1, vacuity-falsity-audit, p8-m4]
+  - id: airy1-gumbel-lean/continuous-version-no-fdd-input
+    decl: Airy1Gumbel.exists_continuous_version_no_fdd_input
+    kind: theorem
+    summary: "Corollary of exists_continuous_version. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [kolmogorov-chentsov, continuity, airy1, lower-boundedness, p8-m4]
+  - id: airy1-gumbel-lean/continuous-instance-headline-no-fdd-input
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of gumbel_limit_continuum_real_normalized_airy1. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [continuity, stationarity, block-maxima, airy1, p8-m4]
+  - id: airy1-gumbel-lean/local-modulus-coordinate-regression-no-fdd-input
+    decl: Airy1Gumbel.isEmpty_localModulusEstimate_airy1Process_no_fdd_input
+    kind: theorem
+    summary: "Corollary of isEmpty_localModulusEstimate_airy1Process. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [regression, outer-measure, local-modulus, airy1, p8-m4]
+  - id: airy1-gumbel-lean/continuous-instance-headline-qr6-no-fdd-input
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₆_no_fdd_input
+    kind: theorem
+    summary: "Corollary of gumbel_limit_continuum_real_normalized_airy1_of_QR₆. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [continuity, block-maxima, airy1, headline, p8-m4c]
+  - id: airy1-gumbel-lean/block-law-core-no-fdd-input
+    decl: Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_no_fdd_input
+    kind: theorem
+    summary: "Corollary of airy1Law_sup_le_eq_fredholmDet. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [block-law, fredholm-determinant, dyadic-mesh, airy1, p8-m5]
+  - id: airy1-gumbel-lean/qr-block-laws-theorems-no-fdd-input
+    decl: Airy1Gumbel.qrTwoBlockLaw_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of qrTwoBlockLaw_airy1. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [external-record-discharge, block-law, airy1, p8-m5]
+  - id: airy1-gumbel-lean/interval-hitting-law-at-weight-no-fdd-input
+    decl: Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_at_weight_no_fdd_input
+    kind: theorem
+    summary: "Corollary of airy1Law_sup_le_eq_fredholmDet_at_weight. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, interval-hitting, fredholm-determinant, dyadic-mesh]
+  - id: airy1-gumbel-lean/continuous-instance-headline-qr7-no-fdd-input
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₇_no_fdd_input
+    kind: theorem
+    summary: "Corollary of gumbel_limit_continuum_real_normalized_airy1_of_QR₇. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [continuity, block-maxima, airy1, headline, p8-m5]
+  - id: airy1-gumbel-lean/qr-block-laws-unconditional-no-fdd-input
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₈_no_fdd_input
+    kind: theorem
+    summary: "Corollary of gumbel_limit_continuum_real_normalized_airy1_of_QR₈. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [external-record-discharge, block-law, airy1, headline, p8-m5]
+  - id: airy1-gumbel-lean/interval-hitting-law-positive-length-no-fdd-input
+    decl: Airy1Gumbel.airy1Law_sup_le_eq_fredholmDet_at_weight'_no_fdd_input
+    kind: theorem
+    summary: "Corollary of airy1Law_sup_le_eq_fredholmDet_at_weight'. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, interval-hitting, fredholm-determinant]
+  - id: airy1-gumbel-lean/fixed-interval-tail-expansion-no-fdd-input
+    decl: Airy1Gumbel.airy1Law_interval_tail_sub_traceLead_isLittleO_no_fdd_input
+    kind: theorem
+    summary: "Corollary of airy1Law_interval_tail_sub_traceLead_isLittleO. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, interval-maximum, sharp-tail, asymptotics]
+  - id: airy1-gumbel-lean/high-level-upcrossing-discharged-no-fdd-input
+    decl: Airy1Gumbel.highLevelUpcrossingTail_airy1SRP_no_fdd_input
+    kind: theorem
+    summary: "Corollary of highLevelUpcrossingTail_airy1SRP. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [external-record-discharge, upcrossing, airy1, headline, p8-m4]
+  - id: airy1-gumbel-lean/two-block-law-no-fdd-input
+    decl: Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_no_fdd_input
+    kind: theorem
+    summary: "Corollary of airy1Law_two_blocks_le_eq_fredholmDet. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [block-law, two-interval, fredholm-determinant, dyadic-mesh, airy1, p8-m5]
+  - id: airy1-gumbel-lean/qr-two-interval-law-theorem-no-fdd-input
+    decl: Airy1Gumbel.qrTwoIntervalLaw_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of qrTwoIntervalLaw_airy1. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [external-record-discharge, block-law, two-interval, airy1, p8-m5]
+  - id: airy1-gumbel-lean/continuous-instance-headline-qr10-no-fdd-input
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_of_QR₁₀_no_fdd_input
+    kind: theorem
+    summary: "Corollary of gumbel_limit_continuum_real_normalized_airy1_of_QR₁₀. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [continuity, block-maxima, airy1, headline, p8-m5]
+  - id: airy1-gumbel-lean/continuous-instance-headline-final-no-fdd-input
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final_no_fdd_input
+    kind: theorem
+    summary: "Corollary of gumbel_limit_continuum_real_normalized_airy1_final. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [continuity, block-maxima, airy1, headline, final, p8-m5]
+  - id: airy1-gumbel-lean/carrier-transfer-literature-records-no-fdd-input
+    decl: Airy1Gumbel.cubicStrongMixing_airy1SRP_iff_no_fdd_input
+    kind: theorem
+    summary: "Corollary of cubicStrongMixing_airy1SRP_iff. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [carrier-transfer, modification, mixing, covariance, association, airy1, p8]
+  - id: airy1-gumbel-lean/two-point-excess-airy1-no-fdd-input
+    decl: Airy1Gumbel.twoPointExcess_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of twoPointExcess_airy1. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [two-point-bound, fredholm-determinant, trace-norm, airy1, m6]
+  - id: airy1-gumbel-lean/pair-tp-airy1-srp-no-fdd-input
+    decl: Airy1Gumbel.pairTP_airy1SRP_field_no_fdd_input
+    kind: theorem
+    summary: "Corollary of pairTP_airy1SRP_field. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [two-point-bound, carrier-transfer, mesoscopic, airy1, m6]
+  - id: airy1-gumbel-lean/continuous-instance-headline-final2-no-fdd-input
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input
+    kind: theorem
+    summary: "Normalized continuum Gumbel limit under GOELeftTail and CubicStrongMixing. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [continuity, block-maxima, airy1, headline, final, m6]
+  - id: airy1-gumbel-lean/continuous-instance-headline-final2-coord-no-fdd-input
+    decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord_no_fdd_input
+    kind: theorem
+    summary: "Corollary of gumbel_limit_continuum_real_normalized_airy1_final₂_coord. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [continuity, carrier-transfer, airy1, headline, final, m6]
+  - id: airy1-gumbel-lean/two-point-excess-sharp-no-fdd-input
+    decl: Airy1Gumbel.twoPointExcess_airy1_sharp_no_fdd_input
+    kind: theorem
+    summary: "Corollary of twoPointExcess_airy1_sharp. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [two-point-bound, airy1, m6, sharp]
+  - id: airy1-gumbel-lean/two-point-excess-sharp-sqrt-no-fdd-input
+    decl: Airy1Gumbel.twoPointExcess_airy1_sharp_sqrt_no_fdd_input
+    kind: theorem
+    summary: "Corollary of twoPointExcess_airy1_sharp_sqrt. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [two-point-bound, airy1, m6, sharp]
+  - id: airy1-gumbel-lean/two-point-excess-sharp-d-no-fdd-input
+    decl: Airy1Gumbel.twoPointExcess_airy1_sharp_d_no_fdd_input
+    kind: theorem
+    summary: "Corollary of twoPointExcess_airy1_sharp_d. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [two-point-bound, airy1, m6, sharp]
+  - id: airy1-gumbel-lean/two-point-excess-sharp-e-no-fdd-input
+    decl: Airy1Gumbel.twoPointExcess_airy1_sharp_e_no_fdd_input
+    kind: theorem
+    summary: "Corollary of twoPointExcess_airy1_sharp_e. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [two-point-bound, airy1, m6, sharp]
+  - id: airy1-gumbel-lean/two-interval-law-equal-length-no-fdd-input
+    decl: Airy1Gumbel.airy1Law_two_blocks_le_eq_fredholmDet_of_length_no_fdd_input
+    kind: theorem
+    summary: "Corollary of airy1Law_two_blocks_le_eq_fredholmDet_of_length. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, fredholm-determinant, two-interval]
+  - id: airy1-gumbel-lean/block-modulus-lemma-4-1-no-fdd-input
+    decl: Airy1Gumbel.block_modulus_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of block_modulus_airy1. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, block-modulus, discretization]
+  - id: airy1-gumbel-lean/airy1-one-point-tail-profile-no-fdd-input
+    decl: Airy1Gumbel.one_point_tail_profile_bounds_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of one_point_tail_profile_bounds_airy1. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, right-tail, asymptotics]
+  - id: airy1-gumbel-lean/airy1-one-point-tail-shift-no-fdd-input
+    decl: Airy1Gumbel.one_point_tail_shift_le_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of one_point_tail_shift_le_airy1. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, right-tail, threshold]
+  - id: airy1-gumbel-lean/airy1-continuous-point-second-moment-no-fdd-input
+    decl: Airy1Gumbel.memLp_two_airy1ContR_no_fdd_input
+    kind: theorem
+    summary: "Corollary of memLp_two_airy1ContR. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, square-integrable, covariance]
+  - id: airy1-gumbel-lean/threshold-sensitive-newman-lemma-4-2-no-fdd-input
+    decl: Airy1Gumbel.tail_sensitive_newman_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of tail_sensitive_newman_airy1. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, association, newman, joint-exceedance]
+  - id: airy1-gumbel-lean/unit-block-oscillation-shift-no-fdd-input
+    decl: Airy1Gumbel.block_oscillation_probability_shift_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of block_oscillation_probability_shift_airy1. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, stationarity, block-modulus]
+  - id: airy1-gumbel-lean/mesoscopic-block-pair-grid-cover-no-fdd-input
+    decl: Airy1Gumbel.block_pair_grid_cover_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of block_pair_grid_cover_airy1. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, mesoscopic, discretization]
+  - id: airy1-gumbel-lean/one-point-tail-minus-one-no-fdd-input
+    decl: Airy1Gumbel.one_point_tail_minus_one_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of one_point_tail_minus_one_airy1. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, right-tail, mesoscopic]
+  - id: airy1-gumbel-lean/standalone-mesoscopic-sum-prop-4-3-no-fdd-input
+    decl: Airy1Gumbel.mesoscopic_sum_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of mesoscopic_sum_airy1. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, mesoscopic, anti-clustering]
+  - id: airy1-gumbel-lean/ferrari-liu-persistence-event-measurable-no-fdd-input
+    decl: Airy1Gumbel.ferrariLiu_event_measurable_airy1_no_fdd_input
+    kind: theorem
+    summary: "Corollary of ferrariLiu_event_measurable_airy1. This corollary trades Airy1FddPositive for GOELeftTail."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, persistence, measurability]
+  - id: airy1-gumbel-lean/ferrari-liu-gumbel-limit-remark-5-3-no-fdd-input
+    decl: Airy1Gumbel.gumbel_limit_continuum_airy1_ferrariLiu_no_fdd_input
+    kind: theorem
+    summary: "Corollary of gumbel_limit_continuum_airy1_ferrariLiu. Airy1FddPositive discharged (proved from GOELeftTail)."
+    file: Airy1Gumbel/FddFromTasepCorollaries.lean
+    status: internal
+    keywords: [airy1, persistence, gumbel, conditional]

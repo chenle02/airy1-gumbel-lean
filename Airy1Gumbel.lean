@@ -53,3 +53,5 @@ import Airy1Gumbel.MesoscopicTP
 import Airy1Gumbel.FinalHeadlineTP
 import Airy1Gumbel.FerrariLiuRoute
 import Airy1Gumbel.FddRectangle
+import Airy1Gumbel.FddFromTasep
+import Airy1Gumbel.FddFromTasepCorollaries

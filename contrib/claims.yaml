@@ -806,3 +806,66 @@ claims:
     file: Airy1GumbelContrib/FddMeasure/BoxCdf.lean
     status: internal
     keywords: [measure, distribution-function, finite-dimensional-distributions]
+  - id: airy1-gumbel-lean-contrib/flat-tasep-rectangle-nonneg
+    decl: AiryFdd.flatTasepCdf_rectangle_nonneg
+    kind: theorem
+    summary: "Nonnegative rectangle masses for the rescaled flat TASEP observation law."
+    file: Airy1GumbelContrib/FddMeasure/FlatTasep.lean
+    status: internal
+    keywords: [tasep, probability, rectangle]
+  - id: airy1-gumbel-lean-contrib/flat-tasep-window-coupling
+    decl: AiryFdd.flatPosLaw_eq_map_finiteSeqLaw
+    kind: theorem
+    summary: "Invariance of the sampled flat TASEP law under the choice of an admissible finite window."
+    file: Airy1GumbelContrib/FddMeasure/FlatTasep.lean
+    status: internal
+    keywords: [tasep, probability, coupling]
+  - id: airy1-gumbel-lean-contrib/airy1-qr-path-operator
+    decl: AiryFdd.airyFromTagged_comp_upperInv_comp_airyToTagged
+    kind: theorem
+    summary: "The reduced QR operator for the extended Airy₁ kernel equals the finite-time path-integral operator."
+    file: Airy1GumbelContrib/FddMeasure/AiryExtendedPath.lean
+    status: internal
+    keywords: [airy1, fredholm-determinant, path-integral]
+  - id: airy1-gumbel-lean-contrib/airy1-extended-series-cdf
+    decl: AiryFdd.airyExtendedSeries_eq_airy1FinCdf
+    kind: theorem
+    summary: "The extended Airy₁ Fredholm series equals the path-integral CDF for every finite time set and all real thresholds."
+    file: Airy1GumbelContrib/FddMeasure/AiryExtendedPath.lean
+    status: internal
+    keywords: [airy1, fredholm-determinant, finite-dimensional-distributions]
+  - id: airy1-gumbel-lean-contrib/tasep-atom-transition-det
+    decl: AiryFdd.finiteSeqLaw_atom_eq_det
+    kind: theorem
+    summary: "The backward sequential TASEP transition atom equals the finite transition determinant for strictly ordered starts and ends."
+    file: Airy1GumbelContrib/FddMeasure/TasepTransition.lean
+    status: internal
+    keywords: [tasep, probability, determinant]
+  - id: airy1-gumbel-lean-contrib/tasep-gap-matrix-det
+    decl: AiryFdd.finiteSeqLaw_gap_eq_matrix_det
+    kind: theorem
+    summary: "The finite TASEP upper-gap probability equals a determinant of the biorthogonal kernel on sites strictly below the selected cutoffs."
+    file: Airy1GumbelContrib/FddMeasure/TasepSignedArray.lean
+    status: internal
+    keywords: [tasep, probability, determinant]
+  - id: airy1-gumbel-lean-contrib/flat-tasep-gap-bfp-series
+    decl: AiryFdd.flatPosLaw_gap_eq_bfp_series
+    kind: theorem
+    summary: "The alternating TASEP upper-gap law equals the counting-measure Fredholm series of the period-two Borodin–Ferrari–Prähofer kernel."
+    file: Airy1GumbelContrib/FddMeasure/TasepKernel.lean
+    status: internal
+    keywords: [tasep, probability, determinant]
+  - id: airy1-gumbel-lean-contrib/flat-tasep-cdf-extended-series-limit
+    decl: AiryFdd.tendsto_flatTasepCdf_extendedSeries
+    kind: theorem
+    summary: "The rescaled flat TASEP finite-dimensional CDF converges to the rank-conjugated extended Airy Fredholm series."
+    file: Airy1GumbelContrib/FddMeasure/TasepScaling.lean
+    status: internal
+    keywords: [tasep, airy1, fredholm-determinant]
+  - id: airy1-gumbel-lean-contrib/flat-tasep-step-series
+    decl: AiryFdd.flatTasepCdf_eventually_eq_stepSeries
+    kind: theorem
+    summary: "For all sufficiently large times, the rescaled flat TASEP finite-dimensional CDF equals the Lebesgue Fredholm series obtained by embedding the lattice kernel on cells."
+    file: Airy1GumbelContrib/FddMeasure/TasepScaling.lean
+    status: internal
+    keywords: [tasep, airy1, fredholm-determinant]
