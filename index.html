@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Lean 4 companion to Le Chen and Fei Pu, Gumbel Fluctuations of the Maximum of the Airy_1 Process (arXiv:2611.23658v1): Theorem 1.1 verified (build and statement comparison) under three named inputs, Airy1FddPositive, GOELeftTail and CubicStrongMixing; the mesoscopic step is proved by a two-time Fredholm determinant bound instead of the paper&#x27;s association route. It does not certify the whole manuscript. Apache-2.0.">
+  <meta name="description" content="Lean 4 companion to Le Chen and Fei Pu, Gumbel Fluctuations of the Maximum of the Airy_1 Process (arXiv:2611.23658v1): Theorem 1.1 verified (build and statement comparison) for the constructed Airy_1 process under one named input, CubicStrongMixing (Airy1FddPositive and GOELeftTail are proved); the three- and two-input forms remain; the mesoscopic step is proved by a two-time Fredholm determinant bound instead of the paper&#x27;s association route. It does not certify the whole manuscript. Apache-2.0.">
   <title>Airy₁ Gumbel: Lean Companion</title>
   <link rel="stylesheet" href="assets/site.css">
   <link rel="stylesheet" href="assets/code.css">
@@ -14,8 +14,8 @@
   <a class="skip" href="#content">Skip to content</a>
   <header>
     <a class="brand" href="./"><span>Airy₁ Gumbel: Lean Companion</span></a>
-    <a class="version" href="https://github.com/chenle02/airy1-gumbel-lean/releases/tag/v0.9.0" title="Release v0.9.0">v0.9.0</a>
-    <span class="tagline">Lean 4 paper companion · Theorem 1.1 under three named inputs · Apache-2.0</span>
+    <a class="version" href="https://github.com/chenle02/airy1-gumbel-lean/releases/tag/v0.10.0" title="Release v0.10.0">v0.10.0</a>
+    <span class="tagline">Lean 4 paper companion · Theorem 1.1 under one named input, CubicStrongMixing · Apache-2.0</span>
   </header>
   <div class="shell">
     <nav class="side" aria-label="Site"><p class="group">Start</p>
@@ -68,7 +68,7 @@
 </ul></nav></details>
     <main id="content">
 <section class="hero">
-<p class="eyebrow">Lean 4 / Mathlib paper companion · Theorem 1.1 under three named inputs, and under two since v0.9.0 · Apache-2.0</p>
+<p class="eyebrow">Lean 4 / Mathlib paper companion · Theorem 1.1 under three named inputs, and under CubicStrongMixing only since v0.10.0 · Apache-2.0</p>
 <h1>Airy₁ Gumbel: Lean Companion</h1>
 </section>
 
@@ -76,9 +76,10 @@
 <p>Lean 4 companion to Le Chen and Fei Pu, <em>Gumbel Fluctuations of the Maximum of the
 Airy₁ Process</em> (<a href="https://arxiv.org/abs/2611.23658">arXiv 2611.23658</a>): a kernel-checked
 proof that the maximum of a constructed Airy₁ process over <code>[0, T]</code>, centred and scaled
-as in the paper, converges to the Gumbel law, under three named inputs. Since v0.9.0 the
-first input, <code>Airy1FddPositive</code>, is proved under the second, <code>GOELeftTail</code>, so the same
-limit also holds under two named inputs (<code>GOELeftTail</code> and <code>CubicStrongMixing</code>).</p>
+as in the paper, converges to the Gumbel law, under three named inputs. Since v0.10.0 the
+first two inputs, <code>Airy1FddPositive</code> and <code>GOELeftTail</code>, are theorems with no hypothesis
+(<code>airy1FddPositive_holds</code>, <code>goeLeftTail_holds</code>), so the same limit also holds under one named
+input, <code>CubicStrongMixing</code>. The original statements are unchanged and still take all three.</p>
 <p class="actions"><a class="button" href="verification.html">Verification page</a> <a class="button secondary" href="coverage.html">Coverage by result</a> <a class="button secondary" href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Challenge.lean">Challenge.lean</a> <a class="button secondary" href="getting-started.html">Build and verify</a></p>
 
 <h2 id="what-is-proved">What is proved</h2>
@@ -131,6 +132,10 @@ equations (1.1)–(1.2) for real <code>T</code>. The three hypotheses are Lean s
 </tr>
 </tbody>
 </table>
+<p>Since v0.10.0 the first two inputs are proved in Lean with no hypothesis:
+<code>Airy1Gumbel.airy1FddPositive_holds : Airy1FddPositive</code> and
+<code>Airy1Gumbel.goeLeftTail_holds : GOELeftTail</code>. The headline above still takes them as
+hypotheses, unchanged; its one-input form, under <code>CubicStrongMixing</code> only, is described below.</p>
 <p>Proved in Lean on the way, among others: the centering and normalization lemmas; the
 block-maxima (blocking) assembly; the sharp one-block tail and the touching and separated
 pair bounds from the Quastel–Remenik block laws, which are themselves derived for the
@@ -146,12 +151,12 @@ the earlier association-route headline, Lemma 4.2 (since v0.5.0) and Proposition
 <p><strong>Not proved here.</strong></p>
 <ul>
 <li>
-<p>The three inputs above are assumptions of the headline theorem, not theorems.
-<code>GOELeftTail</code> is an extra explicit input relative to the paper, which starts from an
-existing continuous Airy₁ process. Since v0.9.0 the first input, <code>Airy1FddPositive</code>,
-is proved under the second (<code>airy1FddPositive_of_goeLeftTail</code>), not unconditionally;
-<code>_final₂_no_fdd_input</code> has the headline's conclusion under <code>GOELeftTail</code> and
-<code>CubicStrongMixing</code> only, and those two remain assumptions.</p>
+<p><code>CubicStrongMixing</code> is an assumption, not a theorem. The three inputs above are
+hypotheses of the headline theorem <code>_final₂</code>, which is unchanged. Since v0.10.0 the
+first two are proved with no hypothesis (<code>airy1FddPositive_holds</code>, <code>goeLeftTail_holds</code>),
+and <code>_final₂_no_fdd_goe_input</code> has the headline's conclusion under <code>CubicStrongMixing</code>
+only. <code>GOELeftTail</code> is an extra explicit input relative to the paper, which starts from
+an existing continuous Airy₁ process.</p>
 </li>
 <li>
 <p>The paper proves its mesoscopic step through association (Pu 2025), Newman's
@@ -202,12 +207,16 @@ input, <code>FerrariLiuPersistence</code>: the finite-length persistence expansi
 <code>_final₂</code> does not use it.</p>
 </li>
 <li>
-<p><code>Airy1FddPositive</code> is proved under <code>GOELeftTail</code> (since v0.9.0), not
-unconditionally. The original theorems, the headline <code>_final₂</code> and the statements the
-comparator checks among them, still take it as a hypothesis, unchanged; the
-<code>_no_fdd_input</code> forms do not take it. Since v0.9.0 the comparator also checks
-<code>airy1FddPositive_of_goeLeftTail</code> and <code>_final₂_no_fdd_input</code>; the other
-<code>_no_fdd_input</code> forms are built, not compared.</p>
+<p><code>Airy1FddPositive</code> is proved under <code>GOELeftTail</code> (since v0.9.0), and both are proved
+with no hypothesis (since v0.10.0). The original theorems, the headline <code>_final₂</code> and
+the statements the comparator checks among them, still take them as hypotheses,
+unchanged: the <code>_no_fdd_input</code> forms do not take <code>Airy1FddPositive</code>, and the
+<code>_no_fdd_goe_input</code> corollaries take neither. The standing inputs <code>Airy1FddPositive</code>
+and <code>GOELeftTail</code> named in the items above are hypotheses of those original theorems.
+Since v0.9.0 the comparator also checks <code>airy1FddPositive_of_goeLeftTail</code> and
+<code>_final₂_no_fdd_input</code>, and since v0.10.0 <code>goeLeftTail_holds</code>,
+<code>airy1FddPositive_holds</code> and <code>_final₂_no_fdd_goe_input</code>; the other <code>_no_fdd_input</code>
+and <code>_no_fdd_goe_input</code> forms are built, not compared.</p>
 </li>
 <li>
 <p>Lemmas 3.3–3.8 (the intermediate lemmas of the paper's proof of Proposition 1.4) are
@@ -225,6 +234,55 @@ along the route described above and the component results listed in
 </li>
 </ul>
 </div>
+<p>Since v0.10.0, <code>GOELeftTail</code> and <code>Airy1FddPositive</code> are theorems with no hypothesis, and
+the headline holds under one named input, <code>CubicStrongMixing</code>.
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/GOELeftTailDischarge.lean"><code>Airy1Gumbel.goeLeftTail_holds</code></a> <code>: GOELeftTail</code>
+proves the cubic left-tail bound of the one-point law,
+<code>airy1FinCdf {0} (fun _ =&gt; −M) ≤ C e^{−cM³}</code> for every <code>M ≥ 0</code>, with <code>c = 1/163840</code>. For
+<code>M ≥ 16</code> it bounds the GOE Fredholm determinant: the GOE kernel operator is the real Airy
+involution compressed to a half-line, localized Hermite packets give an orthonormal family
+with small defect on each finite section, and Hadamard's inequality with a uniform bound on
+the trace of the GOE operator at nonpositive cuts
+(<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/GOETraceBound.lean"><code>abs_trace_goeOp_left_bounded</code></a>) bounds the determinant
+(five new modules under <a href="https://github.com/chenle02/airy1-gumbel-lean/tree/main/contrib/Airy1GumbelContrib/GOE"><code>contrib/Airy1GumbelContrib/GOE/</code></a>).
+For <code>0 ≤ M &lt; 16</code> the one-point function is at most <code>1</code>, as a limit of flat TASEP
+probabilities. Then
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/GOELeftTailCorollaries.lean"><code>Airy1Gumbel.airy1FddPositive_holds</code></a>
+<code>: Airy1FddPositive</code> is <code>airy1FddPositive_of_goeLeftTail goeLeftTail_holds</code>. The new headline
+is
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/GOELeftTailCorollaries.lean"><code>Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input</code></a>:</p>
+<pre><code class="language-lean">theorem gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input
+    (M : CubicStrongMixing (airy1SRP airy1FddPositive_holds goeLeftTail_holds)) (z : ℝ) :
+    Tendsto (fun T : ℝ =&gt; (airy1Law airy1FddPositive_holds).real {f | ∀ x ∈ Set.Icc (0 : ℝ) T,
+      (airy1ContR airy1FddPositive_holds x f - gumbelAR T) / gumbelBR T ≤ z})
+      atTop (𝓝 (Real.exp (-Real.exp (-z))))
+</code></pre>
+<p>It is <code>_final₂</code> at <code>h := airy1FddPositive_holds</code> and <code>hT := goeLeftTail_holds</code>: the same
+conclusion under <code>CubicStrongMixing</code> only. No input is added. <code>_final₂</code>,
+<code>_final₂_no_fdd_input</code> and every original statement are unchanged and still take the records
+as hypotheses.
+<a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/GOELeftTailCorollaries.lean"><code>Airy1Gumbel/GOELeftTailCorollaries.lean</code></a> has 15
+input-free corollaries of paper statements, each its original with <code>Airy1FddPositive</code> and
+<code>GOELeftTail</code> supplied by the two theorems and every other hypothesis kept:
+Theorem 1.1 (<code>_final₂_no_fdd_goe_input</code> and <code>_final₂_no_fdd_input_no_goe_input</code>, under
+<code>CubicStrongMixing</code> only); Proposition 1.2 (<code>airy1Law_interval_tail_sub_traceLead_isLittleO_no_fdd_goe_input</code>,
+every <code>T &gt; 0</code>, and <code>airy1Law_sup_le_eq_fredholmDet'_no_fdd_goe_input</code>), Corollary 1.3
+(<code>qrUnitBlockLaw_airy1'_no_fdd_goe_input</code>, <code>qrTwoBlockLaw_airy1'_no_fdd_goe_input</code>), Lemma 3.1
+and Remark 3.2 (<code>airy1Law_two_blocks_le_eq_fredholmDet_no_fdd_goe_input</code>,
+<code>airy1Law_two_blocks_le_eq_fredholmDet_of_length_no_fdd_goe_input</code>,
+<code>qrTwoIntervalLaw_airy1_no_fdd_goe_input</code>) and the steps (4.10) and (4.11) of Proposition 4.3
+(<code>block_pair_grid_cover_airy1_no_fdd_input_no_goe_input</code>,
+<code>one_point_tail_minus_one_airy1_no_fdd_goe_input</code>), with no named input; Lemma 4.1
+(<code>block_modulus_airy1_no_fdd_goe_input</code>) under <code>NonnegativeWindowModulusEstimate</code> only; Lemma 4.2
+(<code>tail_sensitive_newman_airy1_no_fdd_goe_input</code>) under <code>ProcessAssociated</code> only; Proposition 4.3
+(<code>mesoscopic_sum_airy1_no_fdd_goe_input</code>) under <code>NonnegativeWindowModulusEstimate</code>,
+<code>ProcessAssociated</code> and <code>CubicCovarianceDecay</code> only; Remark 5.3
+(<code>gumbel_limit_continuum_airy1_ferrariLiu_no_fdd_goe_input</code>) under <code>FerrariLiuPersistence</code> only.
+Of the 18 new claims of the main package, three are compared (the comparator checks
+<code>goeLeftTail_holds</code>, <code>airy1FddPositive_holds</code> and <code>_final₂_no_fdd_goe_input</code> against
+statements of <code>Challenge.lean</code>; see below). The other 15 and the 12 new claims of the contrib
+package are <code>internal</code>: Lean's kernel checked their proofs, but the comparator does not
+compare their statements.</p>
 <p>Since v0.9.0, <code>Airy1FddPositive</code> is proved under <code>GOELeftTail</code>, and the headline holds
 under two named inputs.
 <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/Airy1Gumbel/FddFromTasep.lean"><code>Airy1Gumbel.airy1FddPositive_of_goeLeftTail</code></a>
@@ -438,7 +496,7 @@ narrated by a synthetic voice). Episode 2 explains that mixing bound.</p>
     </main>
   </div>
   <footer>
-    Version 0.9.0 (released 2026-11-24) · <a href="https://doi.org/10.5281/zenodo.24488645">doi:10.5281/zenodo.24488645</a> · airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
+    Version 0.10.0 (released 2026-11-24) · <a href="https://doi.org/10.5281/zenodo.24507461">doi:10.5281/zenodo.24507461</a> · airy1-gumbel-lean · Lean code by Le Chen · the paper is by Le Chen and Fei Pu (<a href="https://arxiv.org/abs/2611.23658v1">arXiv:2611.23658v1</a>) · developed with <a href="https://github.com/lean-pkg/lean-pkg">lean-pkg</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/CITATION.cff">CITATION.cff</a> · <a href="https://github.com/chenle02/airy1-gumbel-lean/blob/main/LICENSE">Apache-2.0</a>
   </footer>
 </body>
 </html>
