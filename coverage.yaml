@@ -6,7 +6,7 @@ kind: paper
 manuscript:
   title: "Gumbel Fluctuations of the Maximum of the Airy_1 Process"
   version: "arXiv:2611.23658v1"
-summary: "Theorem 1.1 is proved for a constructed continuous Airy_1 process under three named inputs, and since v0.9.0 under GOELeftTail and CubicStrongMixing only (Airy1FddPositive proved under GOELeftTail); Lemmas 4.1, 4.2, Proposition 4.3 and Remark 5.3 under further named inputs, each assumed. Lemmas 3.3-3.8 are contrib results outside this table; Lemmas B.1-B.6 are outside."
+summary: "Theorem 1.1 is proved for a constructed continuous Airy_1 process under three named inputs, and since v0.9.0 under GOELeftTail and CubicStrongMixing only (Airy1FddPositive proved under GOELeftTail); Lemmas 4.1, 4.2, Proposition 4.3 and Remark 5.3 under further named inputs, each assumed. Lemmas 3.3-3.8 and B.1-B.6 are contrib results, outside this table only because rows name main-package claims."
 rows:
   - paper: {number: "Theorem 1.1", title: "Gumbel limit of the normalized maximum"}
     class: inputs-supplied
@@ -22,12 +22,11 @@ rows:
     class: inputs-supplied
     claims:
       - airy1-gumbel-lean/continuous-instance-headline-final2-no-fdd-input
-      - airy1-gumbel-lean/continuous-instance-headline-final2-coord-no-fdd-input
       - airy1-gumbel-lean/fdd-positive-of-goe-left-tail
     inputs:
       - "GOELeftTail: the cubic left-tail bound for the one-point law, as in the row above; it also supplies Airy1FddPositive, through airy1FddPositive_of_goeLeftTail"
       - "CubicStrongMixing: strong mixing between past and future sigma-algebras at rate exp(-c d^3) (Chen-Pu, arXiv 2607.17113, Proposition 3.1), stated for the process built from airy1FddPositive_of_goeLeftTail"
-    note: "New in v0.9.0: the conclusion of the row above under GOELeftTail and CubicStrongMixing only. Airy1FddPositive is proved under GOELeftTail, not unconditionally (airy1FddPositive_of_goeLeftTail, via flat discrete TASEP and its scaling limit). No input is added. Built, no sorry, standard axioms; the comparator does not check these statements."
+    note: "New in v0.9.0: the conclusion of the row above under GOELeftTail and CubicStrongMixing only. Airy1FddPositive is proved under GOELeftTail, not unconditionally (airy1FddPositive_of_goeLeftTail, via flat discrete TASEP and its scaling limit). No input is added. Both claims are compared. The coordinate form _final2_coord_no_fdd_input is built, not compared."
   - paper: {number: "Proposition 1.2", title: "Two-term expansion of the one-block tail"}
     class: inputs-supplied
     claims:
@@ -64,22 +63,22 @@ rows:
     note: "Proved for every T > 0, r > 0, M > 0 at any weight a >= 2T + r + 1 (two-interval-law-equal-length), in the trace-class form (3.3) of Remark 3.2: det(I - K~), K~ the conjugated kernel of (3.2). The determinant displayed in (3.1) has no separate Lean definition; the paper reads it through (3.3). Versions 0.1.0 and 0.2.0 had T = 1 only."
   - paper: {number: "Lemma 3.3", title: "Joint inclusion for separated blocks"}
     class: outside
-    note: "In a different form, not a claim of this table: joint_exceed_eq_detComb (Airy1Gumbel/Separated.lean) holds eventually in u (the paper: sqrt(2M) >= r + 3) under the QR block-law records, proved for airy1Law under Airy1FddPositive and GOELeftTail; the decomposition is AiryTwoInt.twoIntKCup_decomp (contrib TwoInterval/TwoIntervalOps.lean), as stated."
+    note: "Proved in a different form: joint_exceed_eq_detComb (Airy1Gumbel/Separated.lean) holds eventually in u (paper: sqrt(2M) >= r + 3) under the QR records, proved for airy1Law under Airy1FddPositive and GOELeftTail; the decomposition, AiryTwoInt.twoIntKCup_decomp (contrib TwoInterval/TwoIntervalOps.lean), as stated. Shown as outside only because coverage rows can name main-package claims alone."
   - paper: {number: "Lemma 3.4", title: "Interaction trace formula"}
     class: outside
-    note: "In a different form in contrib, not a claim of this table: C_r is trace class (AiryTwoInt.isTraceClass_crKerT, TwoInterval/TwoIntervalMembership.lean) with trace the sum of four sector traces, each an iterated integral (AiryTwoInt.trace_crKerT_eq_sectors, TwoInterval/TwoIntervalTrace.lean); absolute convergence over R^4 is not stated."
+    note: "Proved in contrib in a different form: C_r trace class (AiryTwoInt.isTraceClass_crKerT, TwoInterval/TwoIntervalMembership.lean), trace = sum of four sector traces as iterated integrals (AiryTwoInt.trace_crKerT_eq_sectors, TwoInterval/TwoIntervalTrace.lean); no R^4 absolute-convergence statement. Shown as outside only because coverage rows can name main-package claims alone."
   - paper: {number: "Lemma 3.5", title: "RR trace"}
     class: outside
-    note: "In a different form in contrib, not a claim of this table: the saddle bound as stated (AiryConj.saddleF_ge, AiryKernel/GaussianSaddle.lean); the RR bound (AiryTwoInt.trSectorRR_abs_le, TwoInterval/SectorRR.lean) has an extra term C2 exp(-c2 M^2), absorbed only in AiryTwoInt.abs_trace_crKerT_le_discharged (TwoInterval/TwoIntervalTraceBound.lean)."
+    note: "Proved in contrib in a different form: saddle bound as stated (AiryConj.saddleF_ge, AiryKernel/GaussianSaddle.lean); RR bound (AiryTwoInt.trSectorRR_abs_le, TwoInterval/SectorRR.lean) with an extra C2 exp(-c2 M^2), absorbed only in abs_trace_crKerT_le_discharged. Shown as outside only because coverage rows can name main-package claims alone."
   - paper: {number: "Lemma 3.6", title: "Mixed traces"}
     class: outside
-    note: "Proved as stated in the contrib package, not a claim of this table (rows name main-package claims only): AiryTwoInt.trSectorRF_eq_trSectorFR (contrib/Airy1GumbelContrib/TwoInterval/SectorRF.lean) and AiryTwoInt.abs_trSectorFR_le_absorbed (TwoInterval/SectorFR.lean). Used by Proposition 1.4."
+    note: "Proved in the contrib library as stated, with no named input: AiryTwoInt.trSectorRF_eq_trSectorFR (contrib/Airy1GumbelContrib/TwoInterval/SectorRF.lean) and AiryTwoInt.abs_trSectorFR_le_absorbed (TwoInterval/SectorFR.lean). Shown as outside only because coverage rows can name main-package claims alone."
   - paper: {number: "Lemma 3.7", title: "FF trace"}
     class: outside
-    note: "Proved as stated in the contrib package, not a claim of this table (rows name main-package claims only): AiryTwoInt.trSectorFF_abs_le (contrib/Airy1GumbelContrib/TwoInterval/SectorFF.lean). Used by Proposition 1.4."
+    note: "Proved in the contrib library as stated, with no named input: AiryTwoInt.trSectorFF_abs_le (contrib/Airy1GumbelContrib/TwoInterval/SectorFF.lean). Shown as outside only because coverage rows can name main-package claims alone."
   - paper: {number: "Lemma 3.8", title: "Joint trace norms"}
     class: outside
-    note: "In a weaker form in contrib, not a claim of this table: traces and Hilbert-Schmidt norms are bounded (AiryTwoInt.twoInt_stepThree, TwoInterval/TwoIntervalDetRem.lean; AiryTwoInt.hsNorm_crKerT_le_discharged, TwoInterval/TwoIntervalN3.lean; AiryTwoInt.abs_trace_crKerT_le_discharged), but no trace-norm bound is stated; Proposition 1.4 uses this form."
+    note: "Proved in contrib in a weaker form: traces and Hilbert-Schmidt norms bounded (AiryTwoInt.twoInt_stepThree, TwoInterval/TwoIntervalDetRem.lean; hsNorm_crKerT_le_discharged, TwoInterval/TwoIntervalN3.lean; abs_trace_crKerT_le_discharged), no trace-norm bound; Proposition 1.4 uses this form. Shown as outside only because coverage rows can name main-package claims alone."
   - paper: {number: "Lemma 4.1", title: "Block modulus"}
     class: inputs-supplied
     claims:
@@ -140,6 +139,21 @@ rows:
       - "FerrariLiuPersistence, assumed, not proved: the finite-length persistence expansion of Ferrari-Liu (2024, Theorem 1.1, Proposition 2.5, Section 2.4): for c >= 3/2 and L >= 1, P(A <= c on [0, L]) = exp(-L kappa(c) - S(c) + E(c, L)), |S(c)| <= -6 log(1 - 2 beta(c)), E(c, L) bounded by their trace remainder; it includes their identity log det(1 - K) = -sum Tr(K^n)/n. Used only by Remark 5.3"
       - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process"
     note: "Proved as the remark states: P(A(x) <= a_N + b_N z for all x in [0, N]) -> exp(-e^(-z)) along integer N, every real z (gumbel_limit_continuum_airy1_ferrariLiu). The input is new in v0.8.0. The summation of the error series and kappa(c) ~ rho(c) are proved. The headline (Theorem 1.1) does not use this result or FerrariLiuPersistence, and its three inputs are unchanged."
-  - paper: {number: "Lemmas B.1-B.6", title: "Auxiliary operator estimates of Appendix B"}
+  - paper: {number: "Lemma B.1", title: "Airy Laplace-type integral"}
     class: outside
-    note: "The auxiliary Airy-integral, Hilbert-Schmidt, weighted heat-operator and Gaussian-convolution estimates of the paper's proofs. Not checked as stated here. The contrib package proves its own estimates of this kind (e.g. Airy/AiryLaplace.lean, AiryKernel/Conjugate*.lean), used by the results above; they are not mapped to Lemmas B.1-B.6."
+    note: "Proved in the contrib library as stated, with no named input: airyAiReal_laplace (contrib/Airy1GumbelContrib/Airy/AiryLaplaceFull.lean), with the integrability AiryConj.integrable_exp_mul_airyAiReal_sq (AiryKernel/ConjugateW.lean). Shown as outside only because coverage rows can name main-package claims alone."
+  - paper: {number: "Lemma B.2", title: "Hilbert-Schmidt bound for W"}
+    class: outside
+    note: "Proved in the contrib library as stated (absolute C, T > 0, lambda >= T + 1), with no named input: AiryConj.wKernel_sq_integral_le (contrib/Airy1GumbelContrib/AiryKernel/ConjugateW.lean). Shown as outside only because coverage rows can name main-package claims alone."
+  - paper: {number: "Lemma B.3", title: "Hilbert-Schmidt bound for V"}
+    class: outside
+    note: "Proved in the contrib library as stated (the bound e^(2T lambda^2 - 4M lambda), the paper's form with a^2 = 2M), with no named input: AiryConj.vKernel_sq_integral_le (contrib/Airy1GumbelContrib/AiryKernel/ConjugateV.lean). Shown as outside only because coverage rows can name main-package claims alone."
+  - paper: {number: "Lemma B.4", title: "Weighted heat-operator norm"}
+    class: outside
+    note: "Proved in the contrib library as stated, on a larger parameter range (every real a; the paper has a > 0), with no named input: AiryTwoInt.enorm_conjHeatCLM_le (contrib/Airy1GumbelContrib/TwoInterval/TwoIntervalMembership.lean). Shown as outside only because coverage rows can name main-package claims alone."
+  - paper: {number: "Lemma B.5", title: "Hilbert-Schmidt bound for the U Q P U Phi product"}
+    class: outside
+    note: "Proved in the contrib library as stated (the Hilbert-Schmidt bound of the paper's own product), with no named input: AiryConj.uphi_hs_le (contrib/Airy1GumbelContrib/AiryKernel/ConjugateUPhi.lean). Shown as outside only because coverage rows can name main-package claims alone."
+  - paper: {number: "Lemma B.6", title: "Truncated Gaussian convolution"}
+    class: outside
+    note: "Proved in the contrib library as stated, on a larger parameter range (all M, alpha, beta; the paper has x >= M, w <= M), with no named input: AiryConj.heatKernel_conv_cdf (contrib/Airy1GumbelContrib/AiryKernel/GaussianSaddle.lean). Shown as outside only because coverage rows can name main-package claims alone."

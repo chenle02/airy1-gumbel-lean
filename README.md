@@ -104,12 +104,16 @@ the earlier association-route headline, Lemma 4.2 (since v0.5.0) and Proposition
 > - `Airy1FddPositive` is proved under `GOELeftTail` (since v0.9.0), not
 >   unconditionally. The original theorems, the headline `_final₂` and the statements the
 >   comparator checks among them, still take it as a hypothesis, unchanged; the
->   `_no_fdd_input` forms do not take it, and the comparator does not check them.
+>   `_no_fdd_input` forms do not take it. Since v0.9.0 the comparator also checks
+>   `airy1FddPositive_of_goeLeftTail` and `_final₂_no_fdd_input`; the other
+>   `_no_fdd_input` forms are built, not compared.
 > - Lemmas 3.3–3.8 (the intermediate lemmas of the paper's proof of Proposition 1.4) are
 >   proved in the contrib package, 3.6 and 3.7 as stated, 3.3, 3.4 and 3.5 in a different
->   form and 3.8 in a weaker form (Hilbert–Schmidt norms, not trace norms); they are not
->   claims of the main package, so `coverage.yaml` lists them outside its table, each
->   with its declarations. Lemmas B.1–B.6 of Appendix B are not checked as stated.
+>   form and 3.8 in a weaker form (Hilbert–Schmidt norms, not trace norms). Lemmas
+>   B.1–B.6 of Appendix B are proved in the contrib library as stated (B.4 and B.6 on a
+>   larger parameter range), with no named input. All twelve are shown as outside in
+>   `coverage.yaml` only because its rows can name main-package claims alone; each row
+>   gives the declarations.
 > - This repository does not certify the whole manuscript: it checks the main theorem
 >   along the route described above and the component results listed in
 >   [`claims.yaml`](claims.yaml) and [`contrib/claims.yaml`](contrib/claims.yaml).
@@ -146,9 +150,12 @@ hypothesis. [`Airy1Gumbel/FddFromTasepCorollaries.lean`](Airy1Gumbel/FddFromTase
 has 175 such `_no_fdd_input` forms of earlier results, each its original with the
 hypothesis `Airy1FddPositive` supplied by `airy1FddPositive_of_goeLeftTail` (taking
 `GOELeftTail` where the original did not); every other hypothesis of the original, among
-them the named inputs of Lemmas 4.1, 4.2, Proposition 4.3 and Remark 5.3, is kept. The 44 new claims of
-the main package and the 9 of the contrib package are `internal`: Lean's kernel checked
-their proofs, but the comparator does not compare their statements.
+them the named inputs of Lemmas 4.1, 4.2, Proposition 4.3 and Remark 5.3, is kept. Of the
+44 new claims of the main package, two are compared (since v0.9.0 the comparator checks
+`airy1FddPositive_of_goeLeftTail` and `_final₂_no_fdd_input` against statements of
+`Challenge.lean`; see below). The other 42 and the 9 new claims of the contrib package are
+`internal`: Lean's kernel checked their proofs, but the comparator does not compare their
+statements.
 
 Since v0.8.0, Remark 5.3 (the Gumbel limit derived from the Ferrari–Liu persistence
 estimates) is proved for the constructed continuous process, along integer lengths as the
@@ -367,8 +374,12 @@ are not constructed there: each statement asserts that an Airy₁ law exists, an
 laws a version continuous on `[0, ∞)` exists and the Gumbel limit holds for every such version
 (in the first form for every law and every continuous version satisfying the mixing input; in
 the second for every law whose coordinate process satisfies it). The check verifies the
-headline under the three inputs, not the inputs.
-[`Solution.lean`](Solution.lean) proves both statements from the package headlines, and
+headline under the three inputs, not the inputs. Since v0.9.0 `Challenge.lean` has two more
+statements: `airy1FddPositive_of_goeLeftTail` (under `GOELeftTail` alone, the Airy₁
+finite-dimensional laws exist) and `gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input`
+(the first form without the hypothesis `Airy1FddPositive`, so under `GOELeftTail` and
+`CubicStrongMixing` only); neither proves those two inputs.
+[`Solution.lean`](Solution.lean) proves all four statements from the package, and
 [`comparator.json`](comparator.json) is the configuration the comparator checks (each Solution
 theorem has exactly its Challenge type and uses only the three standard axioms):
 
@@ -427,7 +438,9 @@ rev = "v0.9.0"
 - `airy1FddPositive_of_goeLeftTail` proves `Airy1FddPositive` under `GOELeftTail`, not
   unconditionally. The `_no_fdd_input` headline therefore assumes `GOELeftTail` and
   `CubicStrongMixing`, neither of which is proved here. The comparator checks the two
-  `_final₂` statements under the three inputs, not the `_no_fdd_input` forms.
+  `_final₂` statements under the three inputs and, since v0.9.0,
+  `airy1FddPositive_of_goeLeftTail` and `_final₂_no_fdd_input`; the other `_no_fdd_input`
+  forms are built, not compared.
 - The correspondence between the Lean statements and the paper was checked by AI-assisted
   review, not by an independent human referee.
 

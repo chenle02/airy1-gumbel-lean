@@ -21,18 +21,22 @@ Result numbers are those of arXiv:2611.23658v1.
   each its original with `Airy1FddPositive` supplied by `airy1FddPositive_of_goeLeftTail`
   and every other hypothesis kept.
 - No input is added. `_final₂`, `_final₂_coord` and every earlier statement are
-  unchanged and still take `Airy1FddPositive` as a hypothesis; the comparator checks the
-  same two `_final₂` statements as before and does not check the `_no_fdd_input` forms.
-  44 claims appended to `claims.yaml` and 9 to `contrib/claims.yaml`, all `internal`
-  (built, not compared).
+  unchanged and still take `Airy1FddPositive` as a hypothesis. The main comparator checks
+  two more statements (Le's decision): `airy1FddPositive_of_goeLeftTail` and
+  `_final₂_no_fdd_input`, each stated in `Challenge.lean` from its meaning (the second is
+  the first `_final₂` statement without the hypothesis `Airy1FddPositive`) and proved in
+  one line in `Solution.lean`; their claims are `reusable`. 44 claims appended to
+  `claims.yaml` (those two compared, 42 `internal`) and 9 to `contrib/claims.yaml`
+  (`internal`).
 - `coverage.yaml`: a row "Theorem 1.1, two-input form" with the two inputs `GOELeftTail`
   and `CubicStrongMixing`; the Theorem 1.1 row keeps its three inputs and says that the
   first is now proved under `GOELeftTail`. The single row "Lemmas 3.3-3.8" is replaced by
   one row per lemma, each giving the contrib declarations that prove it: Lemmas 3.6 and
   3.7 as stated, 3.3, 3.4 and 3.5 in a different form, 3.8 in a weaker form
-  (Hilbert–Schmidt norms, not trace norms). They stay outside the table because its rows
-  name claims of the main package only. A new outside row records that Lemmas B.1–B.6 of
-  Appendix B are not checked as stated.
+  (Hilbert–Schmidt norms, not trace norms). New rows for Lemmas B.1–B.6 of Appendix B,
+  each proved in the contrib library as stated (B.4 and B.6 on a larger parameter range),
+  with no named input. All twelve are shown as outside only because coverage rows can
+  name main-package claims alone.
 - The docstring of `FerrariLiuPersistence` cites Ferrari–Liu by the numbering of their
   published paper (Electron. J. Probab. 29 (2024), paper 149) instead of line numbers of a
   local source (comment only).

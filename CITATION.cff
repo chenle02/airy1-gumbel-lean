@@ -71,8 +71,9 @@ abstract: >-
   (FerrariLiuPersistence), which is assumed, not proved, and used only
   there. The first input is proved under the second (not unconditionally),
   through flat discrete TASEP and its scaling limit, so the main theorem
-  also holds under the second and third inputs alone; the original
-  statements, which the comparator checks, still take the first input as a
+  also holds under the second and third inputs alone; the comparator checks
+  that form and the proof of the first input from the second, as well as
+  the original statements, which still take the first input as a
   hypothesis. This checks the paper's main theorem along that route and the listed component
   results; it does not certify the whole manuscript.
 keywords:
