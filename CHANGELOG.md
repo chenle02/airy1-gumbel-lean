@@ -2,6 +2,45 @@
 
 Result numbers are those of arXiv:2611.23658v1.
 
+## 0.10.0
+
+- `GOELeftTail` and `Airy1FddPositive` are proved with no hypothesis:
+  `Airy1Gumbel.goeLeftTail_holds : GOELeftTail` in `Airy1Gumbel/GOELeftTailDischarge.lean`
+  (the cubic left-tail bound with `c = 1/163840`: Hermite localization of the GOE kernel
+  operator, Hadamard's inequality on finite sections and a uniform trace bound at
+  nonpositive cuts, in `Airy1Gumbel/GOETraceBound.lean` and five new modules under
+  `contrib/Airy1GumbelContrib/GOE/`), and
+  `Airy1Gumbel.airy1FddPositive_holds : Airy1FddPositive := airy1FddPositive_of_goeLeftTail
+  goeLeftTail_holds` in `Airy1Gumbel/GOELeftTailCorollaries.lean`. The two records are now
+  theorems.
+- New headline form:
+  `Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input
+  (M : CubicStrongMixing (airy1SRP airy1FddPositive_holds goeLeftTail_holds)) (z : ℝ)`,
+  Theorem 1.1 under `CubicStrongMixing` only. With it, 15 input-free corollaries of paper
+  statements in `Airy1Gumbel/GOELeftTailCorollaries.lean`, each its original with
+  `Airy1FddPositive` and `GOELeftTail` supplied by the two theorems and every other
+  hypothesis kept (Proposition 1.2, Corollary 1.3, Lemma 3.1 and the steps (4.10), (4.11)
+  with no named input; Lemma 4.1, Lemma 4.2, Proposition 4.3 and Remark 5.3 under their
+  own inputs only).
+- No input is added. `_final₂`, `_final₂_no_fdd_input` and every original statement are
+  unchanged and still take the records as hypotheses. The main comparator checks three
+  more statements (Le's decision): `goeLeftTail_holds`, `airy1FddPositive_holds` and
+  `_final₂_no_fdd_goe_input`, each stated in `Challenge.lean` from its meaning (the last is
+  the first `_final₂` statement without the hypotheses `Airy1FddPositive` and
+  `GOELeftTail`) and proved in one line in `Solution.lean`; their claims are `reusable`.
+  18 claims appended to `claims.yaml` (those three compared, 15 `internal`) and 12 to
+  `contrib/claims.yaml` (`internal`).
+- `coverage.yaml`: a row "Theorem 1.1, one-input form" under `CubicStrongMixing` only; the
+  three- and two-input rows are kept. Two rows for the records, each proved with no
+  hypothesis. The Proposition 1.2 row is checked against the current library: it names the
+  process-level expansion for every `T > 0` and the actual-process determinant law for
+  `T ≥ 1` (the earlier `block-law-core`, under the extra hypothesis `MeshHittingLimit`, and
+  the sharp one-block tail `sharp-tail-discharge` are no longer listed there). The 15
+  corollaries are named on their paper rows. Lemmas 3.3–3.8 and B.1–B.6 are unchanged.
+- The contrib module directory `GOE/` holds the development line's `Stage13` modules.
+- Both packages move to version 0.10.0; the lower-tier and comparator receipts of both are
+  re-cut.
+
 ## 0.9.0
 
 Zenodo: version DOI [10.5281/zenodo.24488645](https://doi.org/10.5281/zenodo.24488645); concept DOI [10.5281/zenodo.24398888](https://doi.org/10.5281/zenodo.24398888).

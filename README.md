@@ -5,9 +5,10 @@
 Lean 4 companion to Le Chen and Fei Pu, *Gumbel Fluctuations of the Maximum of the
 Airy₁ Process* ([arXiv 2611.23658](https://arxiv.org/abs/2611.23658)): a kernel-checked
 proof that the maximum of a constructed Airy₁ process over `[0, T]`, centred and scaled
-as in the paper, converges to the Gumbel law, under three named inputs. Since v0.9.0 the
-first input, `Airy1FddPositive`, is proved under the second, `GOELeftTail`, so the same
-limit also holds under two named inputs (`GOELeftTail` and `CubicStrongMixing`).
+as in the paper, converges to the Gumbel law, under three named inputs. Since v0.10.0 the
+first two inputs, `Airy1FddPositive` and `GOELeftTail`, are theorems with no hypothesis
+(`airy1FddPositive_holds`, `goeLeftTail_holds`), so the same limit also holds under one named
+input, `CubicStrongMixing`. The original statements are unchanged and still take all three.
 
 ## What is proved
 
@@ -45,6 +46,11 @@ equations (1.1)–(1.2) for real `T`. The three hypotheses are Lean structures s
 | `GOELeftTail` | a cubic left-tail bound `F(−M) ≤ C e^{−cM³}` (`M ≥ 0`) for the one-point law | Baik–Buckingham–DiFranco (2008), Section 1.2, with the Ferrari–Spohn GOE identity |
 | `CubicStrongMixing` | strong mixing of the process between past and future σ-algebras at rate `exp(−c d³)` in the gap `d` | Chen–Pu, Proposition 3.1 ([arXiv 2607.17113](https://arxiv.org/abs/2607.17113)) |
 
+Since v0.10.0 the first two inputs are proved in Lean with no hypothesis:
+`Airy1Gumbel.airy1FddPositive_holds : Airy1FddPositive` and
+`Airy1Gumbel.goeLeftTail_holds : GOELeftTail`. The headline above still takes them as
+hypotheses, unchanged; its one-input form, under `CubicStrongMixing` only, is described below.
+
 Proved in Lean on the way, among others: the centering and normalization lemmas; the
 block-maxima (blocking) assembly; the sharp one-block tail and the touching and separated
 pair bounds from the Quastel–Remenik block laws, which are themselves derived for the
@@ -59,12 +65,12 @@ the earlier association-route headline, Lemma 4.2 (since v0.5.0) and Proposition
 
 > [!IMPORTANT]
 > **Not proved here.**
-> - The three inputs above are assumptions of the headline theorem, not theorems.
->   `GOELeftTail` is an extra explicit input relative to the paper, which starts from an
->   existing continuous Airy₁ process. Since v0.9.0 the first input, `Airy1FddPositive`,
->   is proved under the second (`airy1FddPositive_of_goeLeftTail`), not unconditionally;
->   `_final₂_no_fdd_input` has the headline's conclusion under `GOELeftTail` and
->   `CubicStrongMixing` only, and those two remain assumptions.
+> - `CubicStrongMixing` is an assumption, not a theorem. The three inputs above are
+>   hypotheses of the headline theorem `_final₂`, which is unchanged. Since v0.10.0 the
+>   first two are proved with no hypothesis (`airy1FddPositive_holds`, `goeLeftTail_holds`),
+>   and `_final₂_no_fdd_goe_input` has the headline's conclusion under `CubicStrongMixing`
+>   only. `GOELeftTail` is an extra explicit input relative to the paper, which starts from
+>   an existing continuous Airy₁ process.
 > - The paper proves its mesoscopic step through association (Pu 2025), Newman's
 >   inequality and the Basu–Busani–Ferrari covariance asymptotic. The headline's Lean
 >   proof takes a different route for that step (a two-time Fredholm determinant bound)
@@ -101,12 +107,16 @@ the earlier association-route headline, Lemma 4.2 (since v0.5.0) and Proposition
 >   input, `FerrariLiuPersistence`: the finite-length persistence expansion of Ferrari–Liu
 >   (2024), which is assumed, not proved, here and is used only by Remark 5.3. The headline
 >   `_final₂` does not use it.
-> - `Airy1FddPositive` is proved under `GOELeftTail` (since v0.9.0), not
->   unconditionally. The original theorems, the headline `_final₂` and the statements the
->   comparator checks among them, still take it as a hypothesis, unchanged; the
->   `_no_fdd_input` forms do not take it. Since v0.9.0 the comparator also checks
->   `airy1FddPositive_of_goeLeftTail` and `_final₂_no_fdd_input`; the other
->   `_no_fdd_input` forms are built, not compared.
+> - `Airy1FddPositive` is proved under `GOELeftTail` (since v0.9.0), and both are proved
+>   with no hypothesis (since v0.10.0). The original theorems, the headline `_final₂` and
+>   the statements the comparator checks among them, still take them as hypotheses,
+>   unchanged: the `_no_fdd_input` forms do not take `Airy1FddPositive`, and the
+>   `_no_fdd_goe_input` corollaries take neither. The standing inputs `Airy1FddPositive`
+>   and `GOELeftTail` named in the items above are hypotheses of those original theorems.
+>   Since v0.9.0 the comparator also checks `airy1FddPositive_of_goeLeftTail` and
+>   `_final₂_no_fdd_input`, and since v0.10.0 `goeLeftTail_holds`,
+>   `airy1FddPositive_holds` and `_final₂_no_fdd_goe_input`; the other `_no_fdd_input`
+>   and `_no_fdd_goe_input` forms are built, not compared.
 > - Lemmas 3.3–3.8 (the intermediate lemmas of the paper's proof of Proposition 1.4) are
 >   proved in the contrib package, 3.6 and 3.7 as stated, 3.3, 3.4 and 3.5 in a different
 >   form and 3.8 in a weaker form (Hilbert–Schmidt norms, not trace norms). Lemmas
@@ -117,6 +127,59 @@ the earlier association-route headline, Lemma 4.2 (since v0.5.0) and Proposition
 > - This repository does not certify the whole manuscript: it checks the main theorem
 >   along the route described above and the component results listed in
 >   [`claims.yaml`](claims.yaml) and [`contrib/claims.yaml`](contrib/claims.yaml).
+
+Since v0.10.0, `GOELeftTail` and `Airy1FddPositive` are theorems with no hypothesis, and
+the headline holds under one named input, `CubicStrongMixing`.
+[`Airy1Gumbel.goeLeftTail_holds`](Airy1Gumbel/GOELeftTailDischarge.lean) `: GOELeftTail`
+proves the cubic left-tail bound of the one-point law,
+`airy1FinCdf {0} (fun _ => −M) ≤ C e^{−cM³}` for every `M ≥ 0`, with `c = 1/163840`. For
+`M ≥ 16` it bounds the GOE Fredholm determinant: the GOE kernel operator is the real Airy
+involution compressed to a half-line, localized Hermite packets give an orthonormal family
+with small defect on each finite section, and Hadamard's inequality with a uniform bound on
+the trace of the GOE operator at nonpositive cuts
+([`abs_trace_goeOp_left_bounded`](Airy1Gumbel/GOETraceBound.lean)) bounds the determinant
+(five new modules under [`contrib/Airy1GumbelContrib/GOE/`](contrib/Airy1GumbelContrib/GOE)).
+For `0 ≤ M < 16` the one-point function is at most `1`, as a limit of flat TASEP
+probabilities. Then
+[`Airy1Gumbel.airy1FddPositive_holds`](Airy1Gumbel/GOELeftTailCorollaries.lean)
+`: Airy1FddPositive` is `airy1FddPositive_of_goeLeftTail goeLeftTail_holds`. The new headline
+is
+[`Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input`](Airy1Gumbel/GOELeftTailCorollaries.lean):
+
+```lean
+theorem gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input
+    (M : CubicStrongMixing (airy1SRP airy1FddPositive_holds goeLeftTail_holds)) (z : ℝ) :
+    Tendsto (fun T : ℝ => (airy1Law airy1FddPositive_holds).real {f | ∀ x ∈ Set.Icc (0 : ℝ) T,
+      (airy1ContR airy1FddPositive_holds x f - gumbelAR T) / gumbelBR T ≤ z})
+      atTop (𝓝 (Real.exp (-Real.exp (-z))))
+```
+
+It is `_final₂` at `h := airy1FddPositive_holds` and `hT := goeLeftTail_holds`: the same
+conclusion under `CubicStrongMixing` only. No input is added. `_final₂`,
+`_final₂_no_fdd_input` and every original statement are unchanged and still take the records
+as hypotheses.
+[`Airy1Gumbel/GOELeftTailCorollaries.lean`](Airy1Gumbel/GOELeftTailCorollaries.lean) has 15
+input-free corollaries of paper statements, each its original with `Airy1FddPositive` and
+`GOELeftTail` supplied by the two theorems and every other hypothesis kept:
+Theorem 1.1 (`_final₂_no_fdd_goe_input` and `_final₂_no_fdd_input_no_goe_input`, under
+`CubicStrongMixing` only); Proposition 1.2 (`airy1Law_interval_tail_sub_traceLead_isLittleO_no_fdd_goe_input`,
+every `T > 0`, and `airy1Law_sup_le_eq_fredholmDet'_no_fdd_goe_input`), Corollary 1.3
+(`qrUnitBlockLaw_airy1'_no_fdd_goe_input`, `qrTwoBlockLaw_airy1'_no_fdd_goe_input`), Lemma 3.1
+and Remark 3.2 (`airy1Law_two_blocks_le_eq_fredholmDet_no_fdd_goe_input`,
+`airy1Law_two_blocks_le_eq_fredholmDet_of_length_no_fdd_goe_input`,
+`qrTwoIntervalLaw_airy1_no_fdd_goe_input`) and the steps (4.10) and (4.11) of Proposition 4.3
+(`block_pair_grid_cover_airy1_no_fdd_input_no_goe_input`,
+`one_point_tail_minus_one_airy1_no_fdd_goe_input`), with no named input; Lemma 4.1
+(`block_modulus_airy1_no_fdd_goe_input`) under `NonnegativeWindowModulusEstimate` only; Lemma 4.2
+(`tail_sensitive_newman_airy1_no_fdd_goe_input`) under `ProcessAssociated` only; Proposition 4.3
+(`mesoscopic_sum_airy1_no_fdd_goe_input`) under `NonnegativeWindowModulusEstimate`,
+`ProcessAssociated` and `CubicCovarianceDecay` only; Remark 5.3
+(`gumbel_limit_continuum_airy1_ferrariLiu_no_fdd_goe_input`) under `FerrariLiuPersistence` only.
+Of the 18 new claims of the main package, three are compared (the comparator checks
+`goeLeftTail_holds`, `airy1FddPositive_holds` and `_final₂_no_fdd_goe_input` against
+statements of `Challenge.lean`; see below). The other 15 and the 12 new claims of the contrib
+package are `internal`: Lean's kernel checked their proofs, but the comparator does not
+compare their statements.
 
 Since v0.9.0, `Airy1FddPositive` is proved under `GOELeftTail`, and the headline holds
 under two named inputs.
@@ -373,13 +436,18 @@ the Quastel-Remenik path integral, the entire Fredholm determinant, the distribu
 are not constructed there: each statement asserts that an Airy₁ law exists, and that for such
 laws a version continuous on `[0, ∞)` exists and the Gumbel limit holds for every such version
 (in the first form for every law and every continuous version satisfying the mixing input; in
-the second for every law whose coordinate process satisfies it). The check verifies the
-headline under the three inputs, not the inputs. Since v0.9.0 `Challenge.lean` has two more
+the second for every law whose coordinate process satisfies it). These two statements verify
+the headline under the three inputs, not the inputs. Since v0.9.0 `Challenge.lean` has two more
 statements: `airy1FddPositive_of_goeLeftTail` (under `GOELeftTail` alone, the Airy₁
 finite-dimensional laws exist) and `gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input`
 (the first form without the hypothesis `Airy1FddPositive`, so under `GOELeftTail` and
-`CubicStrongMixing` only); neither proves those two inputs.
-[`Solution.lean`](Solution.lean) proves all four statements from the package, and
+`CubicStrongMixing` only); neither proves those two inputs. Since v0.10.0 it has three more:
+`goeLeftTail_holds` (`GOELeftTail`, with no hypothesis), `airy1FddPositive_holds`
+(`Airy1FddPositive`, with no hypothesis) and
+`gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_goe_input` (the first form without
+the hypotheses `Airy1FddPositive` and `GOELeftTail`, so under `CubicStrongMixing` only); none
+proves `CubicStrongMixing`.
+[`Solution.lean`](Solution.lean) proves all seven statements from the package, and
 [`comparator.json`](comparator.json) is the configuration the comparator checks (each Solution
 theorem has exactly its Challenge type and uses only the three standard axioms):
 
@@ -393,9 +461,10 @@ Since v0.3.1 the contrib package has its own comparator configuration,
 [`contrib/comparator.json`](contrib/comparator.json): the 103 theorem claims of
 [`contrib/claims.yaml`](contrib/claims.yaml) up to v0.7.0, one Challenge theorem
 `Airy1GumbelLeanContribAudit.<decl>` each. The theorem claim added in v0.8.0
-(`box-cdf-measure`, the finite-box measure constructor) and the nine added in v0.9.0 (flat
-TASEP and the extended Airy₁ determinants) are `internal` and are not compared, and their
-modules under `FddMeasure/` are not in the copied library.
+(`box-cdf-measure`, the finite-box measure constructor), the nine added in v0.9.0 (flat
+TASEP and the extended Airy₁ determinants) and the twelve added in v0.10.0 (the GOE left
+tail) are `internal` and are not compared, and their modules under `FddMeasure/` and `GOE/`
+are not in the copied library.
 [`contrib/Comparator/Challenge.lean`](contrib/Comparator/Challenge.lean)
 states them (76 as the elaborated types Lean prints, 27 as the declarations' own source
 statements) over [`contrib/Comparator/Defs`](contrib/Comparator/Defs), a verbatim copy of the
@@ -416,7 +485,7 @@ To use the library from another Lake project:
 [[require]]
 name = "airy1-gumbel-lean"
 git = "https://github.com/chenle02/airy1-gumbel-lean"
-rev = "v0.9.0"
+rev = "v0.10.0"
 ```
 
 ## Trust and axioms
@@ -435,12 +504,14 @@ rev = "v0.9.0"
   proved here. Remark 5.3 (`gumbel_limit_continuum_airy1_ferrariLiu`) assumes, besides
   the first two, the new input `FerrariLiuPersistence` (the finite-length persistence
   expansion of Ferrari–Liu 2024), which is not proved here and which no other result uses.
-- `airy1FddPositive_of_goeLeftTail` proves `Airy1FddPositive` under `GOELeftTail`, not
-  unconditionally. The `_no_fdd_input` headline therefore assumes `GOELeftTail` and
-  `CubicStrongMixing`, neither of which is proved here. The comparator checks the two
-  `_final₂` statements under the three inputs and, since v0.9.0,
-  `airy1FddPositive_of_goeLeftTail` and `_final₂_no_fdd_input`; the other `_no_fdd_input`
-  forms are built, not compared.
+- `airy1FddPositive_of_goeLeftTail` proves `Airy1FddPositive` under `GOELeftTail`, and
+  since v0.10.0 `goeLeftTail_holds` and `airy1FddPositive_holds` prove both with no
+  hypothesis. The `_no_fdd_goe_input` headline therefore assumes `CubicStrongMixing` only,
+  which is not proved here. The original statements still take the records as hypotheses,
+  unchanged. The comparator checks the two `_final₂` statements under the three inputs,
+  since v0.9.0 `airy1FddPositive_of_goeLeftTail` and `_final₂_no_fdd_input`, and since
+  v0.10.0 `goeLeftTail_holds`, `airy1FddPositive_holds` and `_final₂_no_fdd_goe_input`; the
+  other `_no_fdd_input` and `_no_fdd_goe_input` forms are built, not compared.
 - The correspondence between the Lean statements and the paper was checked by AI-assisted
   review, not by an independent human referee.
 

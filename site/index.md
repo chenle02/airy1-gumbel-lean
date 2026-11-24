@@ -1,5 +1,5 @@
 <section class="hero">
-<p class="eyebrow">Lean 4 / Mathlib paper companion · Theorem 1.1 under three named inputs, and under two since v0.9.0 · Apache-2.0</p>
+<p class="eyebrow">Lean 4 / Mathlib paper companion · Theorem 1.1 under three named inputs, and under CubicStrongMixing only since v0.10.0 · Apache-2.0</p>
 <h1>Airy₁ Gumbel: Lean Companion</h1>
 </section>
 

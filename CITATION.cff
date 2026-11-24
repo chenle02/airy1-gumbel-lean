@@ -3,7 +3,7 @@ message: "If you use this software, please cite it by its release version or exa
 title: "airy1-gumbel-lean: Lean companion to Gumbel fluctuations of the maximum of the Airy_1 process"
 type: software
 license: Apache-2.0
-version: "0.9.0"
+version: "0.10.0"
 doi: "10.5281/zenodo.24398888"
 date-released: "2026-11-24"
 identifiers:
@@ -12,7 +12,7 @@ identifiers:
     description: "Concept DOI: all versions (resolves to the latest)"
   - type: doi
     value: "10.5281/zenodo.24488645"
-    description: "Version DOI: v0.9.0"
+    description: "Version DOI of the earlier release v0.9.0"
   - type: doi
     value: "10.5281/zenodo.24466896"
     description: "Version DOI of the earlier release v0.8.0"
@@ -74,10 +74,14 @@ abstract: >-
   (FerrariLiuPersistence), which is assumed, not proved, and used only
   there. The first input is proved under the second (not unconditionally),
   through flat discrete TASEP and its scaling limit, so the main theorem
-  also holds under the second and third inputs alone; the comparator checks
-  that form and the proof of the first input from the second, as well as
-  the original statements, which still take the first input as a
-  hypothesis. This checks the paper's main theorem along that route and the listed component
+  also holds under the second and third inputs alone. Since v0.10.0 the
+  first two inputs are theorems: the cubic GOE left tail is proved with no
+  hypothesis (by Hermite localization of the GOE kernel operator), and with
+  it the first input, so the main theorem also holds under cubic strong
+  mixing only. The comparator checks that one-input form, the two proved
+  inputs, the two-input form, the proof of the first input from the second
+  and the original statements, which are unchanged and still take the
+  first two inputs as hypotheses; no input is added. This checks the paper's main theorem along that route and the listed component
   results; it does not certify the whole manuscript.
 keywords:
   - Lean 4

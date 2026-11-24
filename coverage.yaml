@@ -6,7 +6,7 @@ kind: paper
 manuscript:
   title: "Gumbel Fluctuations of the Maximum of the Airy_1 Process"
   version: "arXiv:2611.23658v1"
-summary: "Theorem 1.1 is proved for a constructed continuous Airy_1 process under three named inputs, and since v0.9.0 under GOELeftTail and CubicStrongMixing only (Airy1FddPositive proved under GOELeftTail); Lemmas 4.1, 4.2, Proposition 4.3 and Remark 5.3 under further named inputs, each assumed. Lemmas 3.3-3.8 and B.1-B.6 are contrib results, outside this table only because rows name main-package claims."
+summary: "Theorem 1.1 is proved for a constructed continuous Airy_1 process under three named inputs, and since v0.10.0 under CubicStrongMixing only (GOELeftTail and Airy1FddPositive proved); Lemmas 4.1, 4.2, Proposition 4.3 and Remark 5.3 under further named inputs, each assumed. Lemmas 3.3-3.8 and B.1-B.6 are contrib results, outside only because rows name main-package claims."
 rows:
   - paper: {number: "Theorem 1.1", title: "Gumbel limit of the normalized maximum"}
     class: inputs-supplied
@@ -14,10 +14,10 @@ rows:
       - airy1-gumbel-lean/continuous-instance-headline-final2
       - airy1-gumbel-lean/continuous-instance-headline-final2-coord
     inputs:
-      - "Airy1FddPositive: for every finite set of times, a probability law whose box distribution function is the Airy_1 Fredholm-determinant formula (Quastel-Remenik, Theorem 1; Borodin-Ferrari-Prahofer 2007). A hypothesis of these two theorems; since v0.9.0 it is proved under GOELeftTail (airy1FddPositive_of_goeLeftTail), so the next row has the same conclusion without it"
-      - "GOELeftTail: a cubic left-tail bound for the one-point law (Baik-Buckingham-DiFranco 2008 with the Ferrari-Spohn GOE identity); an input the paper does not need, since it starts from an existing continuous process"
+      - "Airy1FddPositive: for every finite set of times, a probability law whose box distribution function is the Airy_1 Fredholm-determinant formula (Quastel-Remenik, Theorem 1; Borodin-Ferrari-Prahofer 2007). A hypothesis of these two theorems; proved under GOELeftTail since v0.9.0 and with no hypothesis since v0.10.0 (airy1FddPositive_holds), so the next two rows have the same conclusion without it"
+      - "GOELeftTail: a cubic left-tail bound for the one-point law (Baik-Buckingham-DiFranco 2008 with the Ferrari-Spohn GOE identity); an input the paper does not need, since it starts from an existing continuous process. A hypothesis of these two theorems; proved with no hypothesis since v0.10.0 (goeLeftTail_holds)"
       - "CubicStrongMixing: strong mixing between past and future sigma-algebras at rate exp(-c d^3) (Chen-Pu, arXiv 2607.17113, Proposition 3.1)"
-    note: "The process is the version of the Kolmogorov-extension law with continuous paths on [0, infinity); centering and scaling are those of (1.1)-(1.2) for real T. The mesoscopic step is proved by the two-time Fredholm determinant bound and a high-level upcrossing bound, not by association and the covariance asymptotic. The comparator checks these two statements, unchanged in v0.9.0."
+    note: "The process is the version of the Kolmogorov-extension law with continuous paths on [0, infinity); centering and scaling are those of (1.1)-(1.2) for real T. The mesoscopic step is proved by the two-time Fredholm determinant bound and a high-level upcrossing bound, not by association and the covariance asymptotic. The comparator checks these two statements, unchanged in v0.10.0."
   - paper: {number: "Theorem 1.1, two-input form", title: "Gumbel limit of the normalized maximum without the input Airy1FddPositive"}
     class: inputs-supplied
     claims:
@@ -27,39 +27,64 @@ rows:
       - "GOELeftTail: the cubic left-tail bound for the one-point law, as in the row above; it also supplies Airy1FddPositive, through airy1FddPositive_of_goeLeftTail"
       - "CubicStrongMixing: strong mixing between past and future sigma-algebras at rate exp(-c d^3) (Chen-Pu, arXiv 2607.17113, Proposition 3.1), stated for the process built from airy1FddPositive_of_goeLeftTail"
     note: "New in v0.9.0: the conclusion of the row above under GOELeftTail and CubicStrongMixing only. Airy1FddPositive is proved under GOELeftTail, not unconditionally (airy1FddPositive_of_goeLeftTail, via flat discrete TASEP and its scaling limit). No input is added. Both claims are compared. The coordinate form _final2_coord_no_fdd_input is built, not compared."
+  - paper: {number: "Theorem 1.1, one-input form", title: "Gumbel limit of the normalized maximum under CubicStrongMixing only"}
+    class: inputs-supplied
+    claims:
+      - airy1-gumbel-lean/gumbel-limit-continuum-real-normalized-airy1-final2-no-fdd-goe-input
+      - airy1-gumbel-lean/goe-left-tail-holds
+      - airy1-gumbel-lean/airy1-fdd-positive-holds
+    inputs:
+      - "CubicStrongMixing: strong mixing between past and future sigma-algebras at rate exp(-c d^3) (Chen-Pu, arXiv 2607.17113, Proposition 3.1), stated for the process built from airy1FddPositive_holds and goeLeftTail_holds"
+    note: "New in v0.10.0: the conclusion of the first row under CubicStrongMixing only, with GOELeftTail and Airy1FddPositive proved with no hypothesis. No input is added; _final2, _final2_no_fdd_input and every original statement are unchanged and still take the records as hypotheses. All three claims are compared. The form _final2_no_fdd_input_no_goe_input is built, not compared."
+  - paper: {number: "Input GOELeftTail", title: "Cubic left tail of the one-point GOE law"}
+    class: same-assumptions
+    claims:
+      - airy1-gumbel-lean/goe-left-tail-holds
+    note: "Not a numbered result of the paper: an input of the Lean construction (Baik-Buckingham-DiFranco 2008 with the Ferrari-Spohn identity). Proved with no hypothesis since v0.10.0: goeLeftTail_holds, with c = 1/163840, by Hermite localization of the GOE kernel operator (contrib GOE/). Compared. The original statements still take it as a hypothesis, unchanged."
+  - paper: {number: "Input Airy1FddPositive", title: "The finite-dimensional Airy_1 laws"}
+    class: same-assumptions
+    claims:
+      - airy1-gumbel-lean/airy1-fdd-positive-holds
+    note: "Not a numbered result of the paper, which starts from the Airy_1 process (Quastel-Remenik, Theorem 1; Borodin-Ferrari-Prahofer 2007). Proved with no hypothesis since v0.10.0: airy1FddPositive_holds := airy1FddPositive_of_goeLeftTail goeLeftTail_holds (flat discrete TASEP, since v0.9.0). Compared. The original statements still take it as a hypothesis, unchanged."
   - paper: {number: "Proposition 1.2", title: "Two-term expansion of the one-block tail"}
     class: inputs-supplied
     claims:
       - airy1-gumbel-lean/fixed-interval-tail-expansion
       - airy1-gumbel-lean/interval-hitting-law-positive-length
-      - airy1-gumbel-lean/block-law-core
       - airy1-gumbel-lean/block-law-unconditional
-      - airy1-gumbel-lean/sharp-tail-discharge
+      - airy1-gumbel-lean/airy1law-interval-tail-sub-tracelead-islittleo-no-fdd-goe-input
+      - airy1-gumbel-lean/airy1law-sup-le-eq-fredholmdet-prime-no-fdd-goe-input
     inputs:
-      - "Airy1FddPositive and GOELeftTail, for the process-level interval hitting law"
-    note: "Proved for the continuous version of the constructed process on [0, T], for every fixed T > 0 (fixed-interval-tail-expansion). The interval hitting law is proved at any weight a >= T + 1 by the dyadic mesh limit and combined with the determinant expansion of contrib. Version 0.1.0 had the process-level statement for T >= 1 only."
+      - "Airy1FddPositive and GOELeftTail, for the process-level interval hitting law; since v0.10.0 both are proved, and the two _no_fdd_goe_input corollaries take no input"
+    note: "Proved at the process level on [0, T] for every T > 0 (fixed-interval-tail-expansion), from the contrib expansion AiryConj.piT_sub_traceLead_isLittleO, the hitting law at weight a >= T + 1 and the eventual determinant agreement; block-law-unconditional is the law for T >= 1. Since v0.10.0 both with no input (_no_fdd_goe_input). Version 0.1.0 had the process-level statement for T >= 1 only."
   - paper: {number: "Corollary 1.3", title: "Touching blocks"}
     class: inputs-supplied
     claims:
       - airy1-gumbel-lean/touching-discharge
       - airy1-gumbel-lean/qr-block-laws-theorems
+      - airy1-gumbel-lean/qrunitblocklaw-airy1-prime-no-fdd-goe-input
+      - airy1-gumbel-lean/qrtwoblocklaw-airy1-prime-no-fdd-goe-input
     inputs:
-      - "Airy1FddPositive and GOELeftTail, for the one- and two-block laws of the constructed process"
+      - "Airy1FddPositive and GOELeftTail, for the one- and two-block laws of the constructed process; since v0.10.0 both are proved, and the two _no_fdd_goe_input corollaries take no input"
   - paper: {number: "Proposition 1.4", title: "Separated blocks"}
     class: inputs-supplied
     claims:
       - airy1-gumbel-lean/separated-discharge
       - airy1-gumbel-lean/qr-two-interval-law-theorem
+      - airy1-gumbel-lean/qrtwointervallaw-airy1-no-fdd-goe-input
     inputs:
-      - "Airy1FddPositive and GOELeftTail, for the unit-block and two-interval laws of the constructed process"
+      - "Airy1FddPositive and GOELeftTail, for the unit-block and two-interval laws of the constructed process; since v0.10.0 both are proved, and the _no_fdd_goe_input corollary takes no input"
   - paper: {number: "Lemma 3.1", title: "Two-interval determinant formula"}
     class: inputs-supplied
     claims:
       - airy1-gumbel-lean/two-interval-law-equal-length
       - airy1-gumbel-lean/two-block-law
       - airy1-gumbel-lean/qr-two-interval-law-theorem
+      - airy1-gumbel-lean/airy1law-two-blocks-le-eq-fredholmdet-of-length-no-fdd-goe-input
+      - airy1-gumbel-lean/airy1law-two-blocks-le-eq-fredholmdet-no-fdd-goe-input
+      - airy1-gumbel-lean/qrtwointervallaw-airy1-no-fdd-goe-input
     inputs:
-      - "Airy1FddPositive and GOELeftTail, for the two-interval hitting law of the constructed process"
+      - "Airy1FddPositive and GOELeftTail, for the two-interval hitting law of the constructed process; since v0.10.0 both are proved, and the three _no_fdd_goe_input corollaries take no input"
     note: "Proved for every T > 0, r > 0, M > 0 at any weight a >= 2T + r + 1 (two-interval-law-equal-length), in the trace-class form (3.3) of Remark 3.2: det(I - K~), K~ the conjugated kernel of (3.2). The determinant displayed in (3.1) has no separate Lean definition; the paper reads it through (3.3). Versions 0.1.0 and 0.2.0 had T = 1 only."
   - paper: {number: "Lemma 3.3", title: "Joint inclusion for separated blocks"}
     class: outside
@@ -86,9 +111,10 @@ rows:
       - airy1-gumbel-lean/nonnegative-window-modulus-input
       - airy1-gumbel-lean/nonnegative-window-modulus-constant
       - airy1-gumbel-lean/nonnegative-window-modulus-falsity-witness
+      - airy1-gumbel-lean/block-modulus-airy1-no-fdd-goe-input
     inputs:
       - "NonnegativeWindowModulusEstimate, assumed, not proved: the transferred local oscillation bound (4.2) of arXiv:2611.23658v1 on windows inside [0, infinity): for large l, 0 < s <= 1 and centres c >= s, P(|A(t1) - A(t2)| > C0 l sqrt(s) for some t1, t2 in [c - s, c + s]) <= C0 exp(-c0 l). The paper derives it from Basu-Bhattacharjee (2024, arXiv 2406.11826); that derivation is not formalized"
-      - "Airy1FddPositive and GOELeftTail, for the continuous version of the constructed process"
+      - "Airy1FddPositive and GOELeftTail, for the continuous version of the constructed process; since v0.10.0 both are proved, and block_modulus_airy1_no_fdd_goe_input takes only NonnegativeWindowModulusEstimate"
     note: "Proved as eq. (4.1) for the continuous version on [0, 1] (block-modulus-lemma-4-1). The input is new in v0.4.0; the zero process satisfies it and the process t^2 violates it (the two audit claims). The headline (Theorem 1.1) does not use this lemma or the new input: its mesoscopic step goes through a high-level upcrossing bound."
   - paper: {number: "Lemma 4.2", title: "Pair bound under association"}
     class: inputs-supplied
@@ -99,9 +125,10 @@ rows:
       - airy1-gumbel-lean/airy1-one-point-tail-profile
       - airy1-gumbel-lean/goe-singleton-right-tail
       - airy1-gumbel-lean/goe-operator-diagonal-trace
+      - airy1-gumbel-lean/tail-sensitive-newman-airy1-no-fdd-goe-input
     inputs:
       - "ProcessAssociated, assumed, not proved: the association of the Airy_1 process (Pu 2025, Theorem 1.2), in the form that every finite-dimensional marginal gives nonnegative covariance to bounded, monotone, measurable test functions. An existing named input, until v0.5.0 used only by the earlier association-route headline"
-      - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process; GOELeftTail is not a hypothesis of the paper's Lemma 4.2"
+      - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process; GOELeftTail is not a hypothesis of the paper's Lemma 4.2; since v0.10.0 both are proved, and tail_sensitive_newman_airy1_no_fdd_goe_input takes only ProcessAssociated"
     note: "Proved as eq. (4.3) for every u >= u0 and every lag d >= 0, constants independent of d. The covariance is genuine: both marginals are proved square-integrable. The one-point tail ratio, from a density bound in the paper, is proved from the GOE Fredholm determinant: no new named input. The headline (Theorem 1.1) does not use this lemma."
   - paper: {number: "Proposition 4.3", title: "Mesoscopic sum"}
     class: inputs-supplied
@@ -111,11 +138,14 @@ rows:
       - airy1-gumbel-lean/one-point-tail-minus-one
       - airy1-gumbel-lean/unit-block-oscillation-shift
       - airy1-gumbel-lean/unit-block-oscillation-event
+      - airy1-gumbel-lean/mesoscopic-sum-airy1-no-fdd-goe-input
+      - airy1-gumbel-lean/block-pair-grid-cover-airy1-no-fdd-input-no-goe-input
+      - airy1-gumbel-lean/one-point-tail-minus-one-airy1-no-fdd-goe-input
     inputs:
       - "NonnegativeWindowModulusEstimate, assumed, not proved: the transferred local oscillation bound (4.2) on windows inside [0, infinity) (Basu-Bhattacharjee 2024); already the input of Lemma 4.1, through which it is used"
       - "ProcessAssociated, assumed, not proved: the association of the Airy_1 process (Pu 2025, Theorem 1.2); already the input of Lemma 4.2, through which it is used"
       - "CubicCovarianceDecay, assumed, not proved: the covariance asymptotic of the Airy_1 process (Basu-Busani-Ferrari 2023, Theorem 1.1), as the upper bound Cov(A(0), A(d)) <= exp(c d^2 - (4/3) d^3) for d > 1; used only through its proved corollary Cov(A(0), A(d)) <= exp(-theta d^3) for theta < 4/3 and large d. Until v0.6.0 used only by the earlier association-route headline and its intermediate forms"
-      - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process"
+      - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process; since v0.10.0 both are proved: mesoscopic_sum_airy1_no_fdd_goe_input takes only the three inputs above, and the (4.10), (4.11) corollaries take none"
     note: "Proved as eq. (4.6) for the block maxima Y_j of the continuous version, every chi in ((1/2)^(1/3), 1) and every cutoff R(M) = O(sqrt(M)), M real (mesoscopic_sum_airy1), along the paper's route. No new named input. The headline does not use this result or these three inputs; it proves the Section 5.2 specialisation along the two-point route (mesoscopic-of-bounds-tp)."
   - paper: {number: "Lemmas 5.1-5.2", title: "Centering, normalization and the blocking assembly of Section 5.2"}
     class: inputs-supplied
@@ -135,9 +165,10 @@ rows:
       - airy1-gumbel-lean/ferrari-liu-persistence-remainders
       - airy1-gumbel-lean/ferrari-liu-rate-normalization
       - airy1-gumbel-lean/ferrari-liu-kappa-div-rho-limit
+      - airy1-gumbel-lean/gumbel-limit-continuum-airy1-ferrariliu-no-fdd-goe-input
     inputs:
       - "FerrariLiuPersistence, assumed, not proved: the finite-length persistence expansion of Ferrari-Liu (2024, Theorem 1.1, Proposition 2.5, Section 2.4): for c >= 3/2 and L >= 1, P(A <= c on [0, L]) = exp(-L kappa(c) - S(c) + E(c, L)), |S(c)| <= -6 log(1 - 2 beta(c)), E(c, L) bounded by their trace remainder; it includes their identity log det(1 - K) = -sum Tr(K^n)/n. Used only by Remark 5.3"
-      - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process"
+      - "Airy1FddPositive and GOELeftTail, standing inputs for the continuous version of the constructed process; since v0.10.0 both are proved, and gumbel_limit_continuum_airy1_ferrariLiu_no_fdd_goe_input takes only FerrariLiuPersistence"
     note: "Proved as the remark states: P(A(x) <= a_N + b_N z for all x in [0, N]) -> exp(-e^(-z)) along integer N, every real z (gumbel_limit_continuum_airy1_ferrariLiu). The input is new in v0.8.0. The summation of the error series and kappa(c) ~ rho(c) are proved. The headline (Theorem 1.1) does not use this result or FerrariLiuPersistence, and its three inputs are unchanged."
   - paper: {number: "Lemma B.1", title: "Airy Laplace-type integral"}
     class: outside
