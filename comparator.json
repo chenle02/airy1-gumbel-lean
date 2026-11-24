@@ -3,7 +3,9 @@
   "solution_module": "Solution",
   "theorem_names": [
     "Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂",
-    "Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord"
+    "Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord",
+    "Airy1GumbelAudit.Airy1Gumbel.airy1FddPositive_of_goeLeftTail",
+    "Airy1GumbelAudit.Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input"
   ],
   "definition_names": [],
   "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],

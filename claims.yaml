@@ -685,7 +685,7 @@ claims:
     kind: theorem
     summary: "The Airy₁ finite-dimensional laws follow from flat TASEP with grounding supplied by GOELeftTail."
     file: Airy1Gumbel/FddFromTasep.lean
-    status: internal
+    status: reusable
     keywords: [airy1, tasep, finite-dimensional-distributions]
   - id: airy1-gumbel-lean/airy1-fincdf-rectangle-nonneg
     decl: Airy1Gumbel.airy1FinCdf_rectangle_nonneg
@@ -867,7 +867,7 @@ claims:
     kind: theorem
     summary: "Normalized continuum Gumbel limit under GOELeftTail and CubicStrongMixing. Airy1FddPositive discharged (proved from GOELeftTail)."
     file: Airy1Gumbel/FddFromTasepCorollaries.lean
-    status: internal
+    status: reusable
     keywords: [continuity, block-maxima, airy1, headline, final, m6]
   - id: airy1-gumbel-lean/continuous-instance-headline-final2-coord-no-fdd-input
     decl: Airy1Gumbel.gumbel_limit_continuum_real_normalized_airy1_final₂_coord_no_fdd_input

@@ -12,11 +12,17 @@ The trusted statements of the comparator check. They use Mathlib and the definit
 `ChallengeDefs.Airy1Gumbel.Analytic` and `ChallengeDefs.Airy1Gumbel.Process` only (both import
 Mathlib only and contain no proof); `Solution.lean` proves each statement from the package.
 
-Both theorems state the conclusion of Theorem 1.1 of Le Chen and Fei Pu, *Gumbel Fluctuations of
-the Maximum of the Airy₁ Process* (arXiv 2611.23658v1), in its normalized real-length form, under
-the three named inputs `Airy1FddPositive`, `GOELeftTail` and `CubicStrongMixing`. The three
-inputs are assumptions, so the comparator check verifies the headline under these inputs; it
-does not verify the inputs themselves.
+The first two theorems state the conclusion of Theorem 1.1 of Le Chen and Fei Pu, *Gumbel
+Fluctuations of the Maximum of the Airy₁ Process* (arXiv 2611.23658v1), in its normalized
+real-length form, under the three named inputs `Airy1FddPositive`, `GOELeftTail` and
+`CubicStrongMixing`. The inputs are assumptions, so the comparator check verifies the headline
+under these inputs; it does not verify the inputs themselves.
+
+Since v0.9.0 two more statements are compared. `airy1FddPositive_of_goeLeftTail` states that the
+first input follows from the second: under `GOELeftTail` alone, the Airy₁ finite-dimensional
+laws exist. `gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input` is the first
+theorem without the hypothesis `Airy1FddPositive`, so its conclusion holds under `GOELeftTail`
+and `CubicStrongMixing` only. Neither proves `GOELeftTail` or `CubicStrongMixing`.
 
 Both theorems assert, from `Airy1FddPositive` and `GOELeftTail` alone, that an Airy₁ process
 law exists. They differ in where the mixing input enters.
@@ -67,6 +73,27 @@ theorem gumbel_limit_continuum_real_normalized_airy1_final₂_coord
       ∀ μ : Measure (ℝ → ℝ), IsAiry1Law μ → CubicStrongMixing μ (fun x f => f x) →
         (∃ Y : ℝ → (ℝ → ℝ) → ℝ, IsContinuousVersion μ Y) ∧
           ∀ Y : ℝ → (ℝ → ℝ) → ℝ, IsContinuousVersion μ Y →
+            ∀ z : ℝ, Tendsto (fun T : ℝ => μ.real {f | ∀ x ∈ Icc (0 : ℝ) T,
+              (Y x f - gumbelAR T) / gumbelBR T ≤ z})
+              atTop (𝓝 (Real.exp (-Real.exp (-z)))) := by
+  sorry
+
+/-- **The first input from the second (since v0.9.0).** Under `GOELeftTail`, for every finite
+time set `I` there is a probability measure on `I → ℝ` whose distribution function is
+`airy1FinCdf I`: the Airy₁ finite-dimensional laws exist. -/
+theorem airy1FddPositive_of_goeLeftTail (hT : GOELeftTail) : Airy1FddPositive := by
+  sorry
+
+/-- **Theorem 1.1 (arXiv 2611.23658v1) under `GOELeftTail` and `CubicStrongMixing` only (since
+v0.9.0).** Under `GOELeftTail` alone, an Airy₁ process law exists; for every Airy₁ law `μ` a
+version `Y` with paths continuous on `[0, ∞)` exists; and for every such version on which
+`CubicStrongMixing` holds, and every real `z`,
+`μ{f : (Y x f − a_T)/b_T ≤ z for all x ∈ [0, T]} → exp(−e^{−z})` as `T → ∞`. -/
+theorem gumbel_limit_continuum_real_normalized_airy1_final₂_no_fdd_input (hT : GOELeftTail) :
+    (∃ μ : Measure (ℝ → ℝ), IsAiry1Law μ) ∧
+      ∀ μ : Measure (ℝ → ℝ), IsAiry1Law μ →
+        (∃ Y : ℝ → (ℝ → ℝ) → ℝ, IsContinuousVersion μ Y) ∧
+          ∀ Y : ℝ → (ℝ → ℝ) → ℝ, IsContinuousVersion μ Y → CubicStrongMixing μ Y →
             ∀ z : ℝ, Tendsto (fun T : ℝ => μ.real {f | ∀ x ∈ Icc (0 : ℝ) T,
               (Y x f - gumbelAR T) / gumbelBR T ≤ z})
               atTop (𝓝 (Real.exp (-Real.exp (-z)))) := by
